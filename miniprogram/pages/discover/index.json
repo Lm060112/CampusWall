@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "校园广场",
+  "disableScroll": true,
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

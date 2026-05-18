@@ -1,6 +1,21 @@
 const db = wx.cloud.database();
 const _ = db.command;
 
+const HOT_TOPICS = [
+  { id: 1, title: "期末复习攻略来了", tag: "热", tagType: "hot" },
+  { id: 2, title: "食堂新窗口排队实况", tag: "新", tagType: "new" },
+  { id: 3, title: "社团招新火热进行中", tag: "荐", tagType: "rec" },
+  { id: 4, title: "图书馆占座大战", tag: "", tagType: "" },
+  { id: 5, title: "校园二手市集开张", tag: "热", tagType: "hot" },
+  { id: 6, title: "羽毛球馆预约攻略", tag: "", tagType: "" },
+  { id: 7, title: "校运会报名通道", tag: "新", tagType: "new" },
+  { id: 8, title: "失物招领集中帖", tag: "", tagType: "" },
+  { id: 9, title: "考研自习室推荐", tag: "荐", tagType: "rec" },
+  { id: 10, title: "宿舍断电通知汇总", tag: "热", tagType: "hot" },
+  { id: 11, title: "校园摄影大赛投稿", tag: "", tagType: "" },
+  { id: 12, title: "兼职信息互助墙", tag: "新", tagType: "new" },
+];
+
 Page({
   data: {
     content: "",
@@ -9,33 +24,102 @@ Page({
     posts: [],
     loading: true,
     publishing: false,
-    fieldAutosize: { minHeight: 160, maxHeight: 320 },
+    hotLeft: [],
+    hotRight: [],
+    hotAll: HOT_TOPICS,
+    filterKeyword: "",
+    allPosts: [],
   },
 
   onLoad() {
+    this.initHotTopics();
     this.fetchPosts();
   },
 
-  onContentChange(e) {
-    this.setData({ content: e.detail || "" });
+  initHotTopics() {
+    const list = HOT_TOPICS.slice();
+    const hotLeft = [];
+    const hotRight = [];
+    list.forEach((item, index) => {
+      if (index % 2 === 0) hotLeft.push(item);
+      else hotRight.push(item);
+    });
+    this.setData({ hotLeft, hotRight });
   },
 
-  onUploaderAfterRead(e) {
-    const { file } = e.detail;
-    const f = Array.isArray(file) ? file[0] : file;
-    const url = f.url || f.tempFilePath || f.path || "";
-    if (!url) return;
-    this.setData({
-      fileList: [{ url, type: "image", name: f.name || "image" }],
+  filterPostsByKeyword(allPosts, keyword) {
+    if (!keyword) return allPosts;
+    const core = keyword.length > 4 ? keyword.slice(0, 4) : keyword;
+    return allPosts.filter((p) => {
+      const text = p.content || "";
+      return text.indexOf(keyword) >= 0 || text.indexOf(core) >= 0;
     });
   },
 
-  onUploaderDelete() {
+  applyPostFilter(keyword) {
+    const allPosts = this.data.allPosts || [];
+    const posts = this.filterPostsByKeyword(allPosts, keyword);
+    this.setData({ filterKeyword: keyword, posts });
+  },
+
+  onHotTap(e) {
+    const title = e.currentTarget.dataset.title;
+    if (!title) return;
+    const next = this.data.filterKeyword === title ? "" : title;
+    this.applyPostFilter(next);
+    if (next) {
+      wx.showToast({ title: "已筛选相关帖子", icon: "none" });
+    }
+  },
+
+  onClearFilter() {
+    this.applyPostFilter("");
+  },
+
+  onHotBriefTap() {
+    wx.showToast({ title: "热搜简报开发中", icon: "none" });
+  },
+
+  onHotMoreTap() {
+    const names = this.data.hotAll.map((item) => item.title).join("\n");
+    wx.showModal({
+      title: "更多校园热搜",
+      content: names,
+      showCancel: false,
+      confirmText: "知道了",
+    });
+  },
+
+  onContentInput(e) {
+    this.setData({ content: e.detail.value || "" });
+  },
+
+  onChooseImage() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ["image"],
+      sourceType: ["album", "camera"],
+      success: (res) => {
+        const f = res.tempFiles && res.tempFiles[0];
+        if (!f || !f.tempFilePath) return;
+        this.setData({
+          fileList: [{ url: f.tempFilePath, type: "image" }],
+        });
+      },
+    });
+  },
+
+  onRemoveImage() {
     this.setData({ fileList: [] });
   },
 
-  onAnonymousChange(e) {
-    this.setData({ anonymousPost: !!e.detail });
+  onToggleAnonymous() {
+    const next = !this.data.anonymousPost;
+    this.setData({ anonymousPost: next });
+    wx.showToast({
+      title: next ? "已开启匿名" : "已关闭匿名",
+      icon: "none",
+    });
   },
 
   formatTime(ts) {
@@ -85,8 +169,9 @@ Page({
       .limit(20)
       .get()
       .then((res) => {
-        const posts = (res.data || []).map((doc) => this.normalizePost(doc));
-        this.setData({ posts, loading: false });
+        const allPosts = (res.data || []).map((doc) => this.normalizePost(doc));
+        const posts = this.filterPostsByKeyword(allPosts, this.data.filterKeyword);
+        this.setData({ allPosts, posts, loading: false });
       })
       .catch((err) => {
         console.error(err);
@@ -170,6 +255,7 @@ Page({
   },
 
   onPublish() {
+    if (this.data.publishing) return;
     const text = (this.data.content || "").trim();
     if (!text) {
       wx.showToast({ title: "请先输入内容", icon: "none" });

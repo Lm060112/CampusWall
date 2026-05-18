@@ -1,0 +1,14 @@
+<view class="container">
+  <view class="user-info" wx:if="{{hasUserInfo}}">
+    <view class="avatar">
+      <text class="avatar-text">{{userInfo.nickName[0]}}</text>
+    </view>
+    <text class="nickname">{{userInfo.nickName}}</text>
+    <button class="logout-btn" bindtap="onLogout">退出登录</button>
+  </view>
+  
+  <view class="login-guide" wx:else>
+    <text class="guide-text">你还没有登录</text>
+    <button class="login-btn" bindtap="onLogin">模拟登录</button>
+  </view>
+</view>

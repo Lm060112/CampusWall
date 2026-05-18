@@ -1,59 +1,258 @@
 .page {
-  min-height: 100vh;
-  padding: 24rpx 32rpx 48rpx;
-  box-sizing: border-box;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #f5f6f8;
+  overflow: hidden;
 }
 
-.section {
-  margin-bottom: 32rpx;
+.feed-scroll {
+  flex: 1;
+  height: 0;
+}
+
+.feed-inner {
+  padding: 24rpx 32rpx 32rpx;
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+.feed-inner--thumb {
+  padding-bottom: calc(260rpx + env(safe-area-inset-bottom));
+}
+
+/* 校园热搜（参考微博双列布局） */
+.hot-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx 24rpx 20rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  border: 1rpx solid #f0f0f0;
+}
+
+.hot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.hot-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.hot-header-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #323233;
+}
+
+.hot-header-link {
+  font-size: 24rpx;
+  color: #ff6a00;
+}
+
+.hot-grid {
+  display: flex;
+  gap: 16rpx;
+}
+
+.hot-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.hot-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  min-height: 40rpx;
+}
+
+.hot-item:active {
+  opacity: 0.65;
+}
+
+.hot-item--active .hot-item-text {
+  color: #ff6a00;
+  font-weight: 600;
+}
+
+.hot-item-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 28rpx;
+  color: #323233;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hot-tag {
+  flex-shrink: 0;
+  margin-left: 8rpx;
+  font-size: 20rpx;
+  line-height: 1;
+  padding: 4rpx 8rpx;
+  border-radius: 6rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+.hot-tag--hot {
+  background: #ff6a00;
+}
+
+.hot-tag--new {
+  background: #07c160;
+}
+
+.hot-tag--rec {
+  background: #1989fa;
+}
+
+.hot-tag--live {
+  background: #ee0a24;
+}
+
+.hot-more {
+  text-align: center;
+  font-size: 26rpx;
+  color: #ff6a00;
+  padding-top: 8rpx;
+}
+
+.hot-more:active {
+  opacity: 0.65;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
 }
 
 .section-title {
   font-size: 30rpx;
   font-weight: 600;
   color: #323233;
-  margin-bottom: 20rpx;
 }
 
-.post-form {
+.filter-hint {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #ff6a00;
+}
+
+.filter-clear {
+  font-size: 24rpx;
+  color: #969799;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+/* 底部搜索框式发帖栏 */
+.post-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
   background: #fff;
-  border-radius: 16rpx;
-  padding: 24rpx 24rpx 28rpx;
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #ebedf0;
 }
 
-.post-field {
-  background: #f7f8fa;
+.post-thumb-row {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 16rpx;
+}
+
+.post-thumb {
+  width: 120rpx;
+  height: 120rpx;
   border-radius: 12rpx;
-  margin-bottom: 20rpx;
-  padding: 8rpx 16rpx !important;
-}
-
-.uploader-row {
-  margin-bottom: 20rpx;
-}
-
-.post-uploader {
   display: block;
 }
 
-.toolbar {
+.post-thumb-del {
+  position: absolute;
+  top: -12rpx;
+  right: -12rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12rpx 8rpx 24rpx;
-  border-bottom: 1rpx solid #f0f0f0;
-  margin-bottom: 24rpx;
+  justify-content: center;
 }
 
-.toolbar-label {
+.post-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.post-icon-btn {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.post-icon-btn:active {
+  opacity: 0.7;
+}
+
+.search-input-wrap {
+  flex: 1;
+  min-width: 0;
+  height: 72rpx;
+  background: #f5f6f8;
+  border-radius: 36rpx;
+  padding: 0 28rpx;
+  display: flex;
+  align-items: center;
+  border: 1rpx solid #ebedf0;
+}
+
+.search-input {
+  flex: 1;
+  width: 100%;
+  height: 72rpx;
   font-size: 28rpx;
-  color: #646566;
+  color: #323233;
 }
 
-.list-section {
-  padding-bottom: 24rpx;
+.search-placeholder {
+  color: #c8c9cc;
+  font-size: 28rpx;
+}
+
+.send-btn {
+  flex-shrink: 0;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1989fa;
+  padding: 0 8rpx;
+  line-height: 72rpx;
+}
+
+.send-btn:active {
+  opacity: 0.7;
+}
+
+.send-btn--disabled {
+  color: #c8c9cc;
 }
 
 .empty {

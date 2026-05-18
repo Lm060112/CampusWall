@@ -1,76 +1,116 @@
 <view class="page">
-  <view class="section post-form">
-    <view class="section-title">发帖</view>
-    <van-field
-      value="{{ content }}"
-      type="textarea"
-      placeholder="分享你的新鲜事..."
-      autosize="{{ fieldAutosize }}"
-      border="{{ false }}"
-      custom-class="post-field"
-      bind:change="onContentChange"
-    />
-    <view class="uploader-row">
-      <van-uploader
-        file-list="{{ fileList }}"
-        max-count="{{ 1 }}"
-        preview-size="176rpx"
-        upload-icon="plus"
-        deletable="{{ true }}"
-        bind:after-read="onUploaderAfterRead"
-        bind:delete="onUploaderDelete"
-        custom-class="post-uploader"
-      />
-    </view>
-    <view class="toolbar">
-      <text class="toolbar-label">匿名发帖</text>
-      <van-switch checked="{{ anonymousPost }}" bind:change="onAnonymousChange" />
-    </view>
-    <van-button
-      type="primary"
-      block
-      round
-      loading="{{ publishing }}"
-      disabled="{{ publishing }}"
-      bind:click="onPublish"
-    >
-      发布
-    </van-button>
-  </view>
-
-  <view class="section list-section">
-    <view class="section-title">最新动态</view>
-    <view wx:if="{{ !loading && posts.length === 0 }}" class="empty">暂无帖子，来发第一条吧</view>
-    <view wx:for="{{ posts }}" wx:key="_id" class="card">
-      <view class="card-meta">
-        <view class="avatar {{ item.is_anonymous ? 'avatar--anon' : 'avatar--real' }}">
-          <image wx:if="{{ item.avatarUrl }}" class="avatar-img" src="{{ item.avatarUrl }}" mode="aspectFill" />
-          <text wx:else class="avatar-fallback">{{ item.is_anonymous ? '匿' : '实' }}</text>
+  <scroll-view class="feed-scroll" scroll-y enable-back-to-top>
+    <view class="feed-inner {{ fileList.length ? 'feed-inner--thumb' : '' }}">
+      <view class="hot-card">
+        <view class="hot-header">
+          <view class="hot-header-left">
+            <van-icon name="fire" size="36rpx" color="#ff6a00" />
+            <text class="hot-header-title">校园热搜</text>
+          </view>
+          <text class="hot-header-link" catch:tap="onHotBriefTap">热搜简报 ></text>
         </view>
-        <text class="card-author">{{ item.displayName }}</text>
+        <view class="hot-grid">
+          <view class="hot-col">
+            <view
+              wx:for="{{ hotLeft }}"
+              wx:key="id"
+              class="hot-item {{ filterKeyword === item.title ? 'hot-item--active' : '' }}"
+              data-title="{{ item.title }}"
+              catch:tap="onHotTap"
+            >
+              <text class="hot-item-text">{{ item.title }}</text>
+              <text wx:if="{{ item.tag }}" class="hot-tag hot-tag--{{ item.tagType }}">{{ item.tag }}</text>
+            </view>
+          </view>
+          <view class="hot-col">
+            <view
+              wx:for="{{ hotRight }}"
+              wx:key="id"
+              class="hot-item {{ filterKeyword === item.title ? 'hot-item--active' : '' }}"
+              data-title="{{ item.title }}"
+              catch:tap="onHotTap"
+            >
+              <text class="hot-item-text">{{ item.title }}</text>
+              <text wx:if="{{ item.tag }}" class="hot-tag hot-tag--{{ item.tagType }}">{{ item.tag }}</text>
+            </view>
+          </view>
+        </view>
+        <view class="hot-more" catch:tap="onHotMoreTap">更多热搜 ></view>
       </view>
-      <text class="card-text">{{ item.content }}</text>
-      <view wx:if="{{ item.imageUrl }}" class="card-pic-wrap">
-        <image
-          class="card-pic"
-          src="{{ item.imageUrl }}"
-          mode="aspectFill"
-          data-url="{{ item.imageUrl }}"
-          catch:tap="onPreviewImage"
+
+      <view class="section-header">
+        <view class="section-title">
+          最新动态
+          <text wx:if="{{ filterKeyword }}" class="filter-hint">· {{ filterKeyword }}</text>
+        </view>
+        <text wx:if="{{ filterKeyword }}" class="filter-clear" catch:tap="onClearFilter">取消筛选</text>
+      </view>
+      <view wx:if="{{ !loading && !filterKeyword && posts.length === 0 }}" class="empty">暂无帖子，来发第一条吧</view>
+      <view wx:if="{{ !loading && filterKeyword && posts.length === 0 }}" class="empty">
+        暂无「{{ filterKeyword }}」相关帖子，快来发第一条吧
+      </view>
+      <view wx:for="{{ posts }}" wx:key="_id" class="card">
+        <view class="card-meta">
+          <view class="avatar {{ item.is_anonymous ? 'avatar--anon' : 'avatar--real' }}">
+            <image wx:if="{{ item.avatarUrl }}" class="avatar-img" src="{{ item.avatarUrl }}" mode="aspectFill" />
+            <text wx:else class="avatar-fallback">{{ item.is_anonymous ? '匿' : '实' }}</text>
+          </view>
+          <text class="card-author">{{ item.displayName }}</text>
+        </view>
+        <text class="card-text">{{ item.content }}</text>
+        <view wx:if="{{ item.imageUrl }}" class="card-pic-wrap">
+          <image
+            class="card-pic"
+            src="{{ item.imageUrl }}"
+            mode="aspectFill"
+            data-url="{{ item.imageUrl }}"
+            catch:tap="onPreviewImage"
+          />
+        </view>
+        <view class="card-footer">
+          <text class="card-time">{{ item.timeText }}</text>
+          <view class="card-footer-actions">
+            <view class="like-wrap" data-id="{{ item._id }}" catch:tap="onLikeTap">
+              <van-icon name="good-job-o" size="40rpx" color="#646566" />
+              <text class="like-num">{{ item.likes }}</text>
+            </view>
+            <view class="delete-wrap" data-id="{{ item._id }}" catch:tap="onDeleteTap">
+              <van-icon name="delete" size="36rpx" color="#c8c9cc" />
+              <text class="delete-text">删除</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="post-bar">
+    <view wx:if="{{ fileList.length }}" class="post-thumb-row">
+      <image class="post-thumb" src="{{ fileList[0].url }}" mode="aspectFill" />
+      <view class="post-thumb-del" catch:tap="onRemoveImage">
+        <van-icon name="cross" size="28rpx" color="#fff" />
+      </view>
+    </view>
+    <view class="post-input-row">
+      <view class="post-icon-btn" catch:tap="onChooseImage">
+        <van-icon name="photo-o" size="44rpx" color="#646566" />
+      </view>
+      <view class="search-input-wrap">
+        <input
+          class="search-input"
+          value="{{ content }}"
+          placeholder="分享你的新鲜事..."
+          placeholder-class="search-placeholder"
+          confirm-type="send"
+          bindinput="onContentInput"
+          bindconfirm="onPublish"
         />
       </view>
-      <view class="card-footer">
-        <text class="card-time">{{ item.timeText }}</text>
-        <view class="card-footer-actions">
-          <view class="like-wrap" data-id="{{ item._id }}" catch:tap="onLikeTap">
-            <van-icon name="good-job-o" size="40rpx" color="#646566" />
-            <text class="like-num">{{ item.likes }}</text>
-          </view>
-          <view class="delete-wrap" data-id="{{ item._id }}" catch:tap="onDeleteTap">
-            <van-icon name="delete" size="36rpx" color="#c8c9cc" />
-            <text class="delete-text">删除</text>
-          </view>
-        </view>
+      <view class="post-icon-btn {{ anonymousPost ? 'post-icon-btn--on' : '' }}" catch:tap="onToggleAnonymous">
+        <van-icon name="eye-o" size="44rpx" color="{{ anonymousPost ? '#1989fa' : '#646566' }}" />
+      </view>
+      <view class="send-btn {{ publishing ? 'send-btn--disabled' : '' }}" catch:tap="onPublish">
+        {{ publishing ? '发布中' : '发布' }}
       </view>
     </view>
   </view>

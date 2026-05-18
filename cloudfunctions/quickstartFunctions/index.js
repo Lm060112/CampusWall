@@ -164,8 +164,69 @@ const deleteRecord = async (event) => {
 // const updateRecord = require('./updateRecord/index');
 // const fetchGoodsList = require('./fetchGoodsList/index');
 // const genMpQrcode = require('./genMpQrcode/index');
+// 删除帖子
+const deletePost = async (event) => {
+  try {
+    const { id } = event;
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID;
+
+    // 先查询帖子，核实身份
+    const postRes = await db.collection("posts").doc(id).get().catch(() => null);
+    if (!postRes || !postRes.data) {
+      return {
+        success: false,
+        errMsg: "帖子不存在",
+      };
+    }
+
+    if (postRes.data._openid !== openid) {
+      return {
+        success: false,
+        errMsg: "无权删除他人帖子",
+      };
+    }
+
+    await db.collection("posts").doc(id).remove();
+    return {
+      success: true,
+    };
+  } catch (e) {
+    return {
+      success: false,
+      errMsg: e.message,
+    };
+  }
+};
+
+// 点赞帖子
+const likePost = async (event) => {
+  try {
+    const { id } = event;
+    await db
+      .collection("posts")
+      .doc(id)
+      .update({
+        data: {
+          likes: db.command.inc(1),
+        },
+      });
+    return {
+      success: true,
+    };
+  } catch (e) {
+    return {
+      success: false,
+      errMsg: e.message,
+    };
+  }
+};
+
 // 云函数入口函数
 exports.main = async (event, context) => {
+  console.log("云函数收到请求:", event);
+  const db = cloud.database();
+
   switch (event.type) {
     case "getOpenId":
       return await getOpenId();
@@ -181,5 +242,45 @@ exports.main = async (event, context) => {
       return await insertRecord(event);
     case "deleteRecord":
       return await deleteRecord(event);
+    case "likePost":
+      try {
+        const { id } = event;
+        if (!id) return { success: false, errMsg: "帖子ID缺失" };
+        await db
+          .collection("posts")
+          .doc(id)
+          .update({
+            data: {
+              likes: db.command.inc(1),
+            },
+          });
+        return { success: true };
+      } catch (e) {
+        return { success: false, errMsg: e.message };
+      }
+    case "deletePost":
+      try {
+        const { id } = event;
+        const wxContext = cloud.getWXContext();
+        const openid = wxContext.OPENID;
+
+        const postRes = await db
+          .collection("posts")
+          .doc(id)
+          .get()
+          .catch(() => null);
+        if (!postRes || !postRes.data) {
+          return { success: false, errMsg: "帖子不存在" };
+        }
+
+        if (postRes.data._openid !== openid) {
+          return { success: false, errMsg: "无权删除他人帖子" };
+        }
+
+        await db.collection("posts").doc(id).remove();
+        return { success: true };
+      } catch (e) {
+        return { success: false, errMsg: e.message };
+      }
   }
 };
