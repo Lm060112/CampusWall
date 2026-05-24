@@ -357,7 +357,125 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 8rpx;
+  gap: 16rpx;
+}
+
+.comment-wrap {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 12rpx;
+  margin: -8rpx 0;
+  border-radius: 999rpx;
+}
+
+.comment-num {
+  margin-left: 8rpx;
+  font-size: 26rpx;
+  color: #646566;
+  font-weight: 500;
+}
+
+/* 评论区样式 */
+.comment-section {
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f2f3f5;
+}
+
+.comment-item {
+  margin-bottom: 20rpx;
+}
+
+.comment-content {
+  font-size: 28rpx;
+  line-height: 1.5;
+  color: #323233;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #1989fa;
+}
+
+.comment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8rpx;
+}
+
+.comment-time {
+  font-size: 22rpx;
+  color: #c8c9cc;
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.comment-like {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.comment-like-num {
+  font-size: 24rpx;
+  color: #969799;
+}
+
+.comment-like-num--active {
+  color: #1989fa;
+}
+
+.comment-delete {
+  font-size: 24rpx;
+  color: #ee0a24;
+  opacity: 0.8;
+}
+
+/* 评论输入框遮罩和栏 */
+.comment-input-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.comment-input-bar {
+  background: #fff;
+  padding: 20rpx 30rpx calc(20rpx + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.c-input {
+  flex: 1;
+  height: 72rpx;
+  background: #f5f6f8;
+  border-radius: 36rpx;
+  padding: 0 30rpx;
+  font-size: 28rpx;
+}
+
+.c-send-btn {
+  color: #1989fa;
+  font-size: 30rpx;
+  font-weight: 500;
+  padding: 10rpx 20rpx;
+}
+
+.c-send-btn--disabled {
+  color: #c8c9cc;
 }
 
 .like-wrap {
@@ -380,6 +498,10 @@
   font-weight: 500;
   min-width: 2em;
   text-align: left;
+}
+
+.like-num--active {
+  color: #1989fa;
 }
 
 .delete-wrap {
