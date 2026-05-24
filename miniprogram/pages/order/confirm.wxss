@@ -1,0 +1,246 @@
+.page {
+  min-height: 100vh;
+  padding: 28rpx 28rpx 150rpx;
+  box-sizing: border-box;
+  background: #fbfbfb;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.back-btn,
+.header-placeholder {
+  width: 68rpx;
+  height: 68rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  color: #111;
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.pickup-card,
+.address-card,
+.order-card,
+.remark-card {
+  margin-top: 22rpx;
+  padding: 26rpx;
+  border: 1rpx solid #edf0f2;
+  border-radius: 8rpx;
+  background: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(38, 47, 56, 0.05);
+}
+
+.address-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #111;
+  font-size: 30rpx;
+  font-weight: 900;
+}
+
+.contact-text {
+  display: block;
+  margin-top: 16rpx;
+  color: #222;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.address-text {
+  display: block;
+  margin-top: 8rpx;
+  color: #5f6872;
+  font-size: 25rpx;
+  line-height: 1.4;
+}
+
+.pickup-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f2f4;
+}
+
+.pickup-type {
+  display: block;
+  color: #111;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.pickup-tip {
+  display: block;
+  margin-top: 8rpx;
+  color: #69707a;
+  font-size: 25rpx;
+}
+
+.info-row,
+.amount-row,
+.card-title,
+.item-row,
+.item-main,
+.submit-bar {
+  display: flex;
+  align-items: center;
+}
+
+.info-row {
+  gap: 22rpx;
+  margin-top: 18rpx;
+  font-size: 26rpx;
+}
+
+.info-label {
+  width: 112rpx;
+  flex: 0 0 auto;
+  color: #8a9099;
+}
+
+.info-value {
+  flex: 1;
+  min-width: 0;
+  color: #242a31;
+  line-height: 1.35;
+}
+
+.card-title {
+  justify-content: space-between;
+  color: #111;
+  font-size: 31rpx;
+  font-weight: 800;
+}
+
+.merchant-tag {
+  padding: 6rpx 12rpx;
+  border-radius: 8rpx;
+  color: #0b9b4b;
+  font-size: 22rpx;
+  background: #e5f8ec;
+}
+
+.item-row {
+  gap: 18rpx;
+  margin-top: 24rpx;
+}
+
+.item-img {
+  width: 112rpx;
+  height: 112rpx;
+  flex: 0 0 auto;
+  border-radius: 8rpx;
+  background: #eef2f5;
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.item-name {
+  max-width: 100%;
+  color: #111;
+  font-size: 28rpx;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-count {
+  color: #8a9099;
+  font-size: 24rpx;
+}
+
+.item-price {
+  color: #111;
+  font-size: 27rpx;
+  font-weight: 800;
+}
+
+.amount-row {
+  justify-content: space-between;
+  margin-top: 22rpx;
+  color: #555d66;
+  font-size: 26rpx;
+}
+
+.remark-title {
+  color: #111;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.remark-input {
+  width: 100%;
+  height: 132rpx;
+  margin-top: 16rpx;
+  padding: 18rpx;
+  box-sizing: border-box;
+  border-radius: 8rpx;
+  color: #222;
+  font-size: 26rpx;
+  line-height: 1.45;
+  background: #f6f8fa;
+}
+
+.submit-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120rpx;
+  gap: 24rpx;
+  padding: 16rpx 28rpx 24rpx;
+  box-sizing: border-box;
+  border-top: 1rpx solid #edf0f2;
+  background: #fff;
+}
+
+.submit-total {
+  flex: 1;
+  min-width: 0;
+}
+
+.total-label {
+  color: #737b85;
+  font-size: 24rpx;
+}
+
+.total-price {
+  margin-left: 10rpx;
+  color: #f0442e;
+  font-size: 38rpx;
+  font-weight: 900;
+}
+
+.submit-btn {
+  width: 210rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  color: #fff;
+  font-size: 29rpx;
+  font-weight: 800;
+  border-radius: 36rpx;
+  background: #12b85b;
+}
+
+.submit-btn--disabled {
+  background: #9aa3ad;
+}

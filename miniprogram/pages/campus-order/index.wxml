@@ -1,0 +1,71 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <view class="header-copy">
+      <text class="title">校内点单</text>
+      <text class="subtitle">{{ campusName }} · 到店自取</text>
+    </view>
+    <view class="search-btn" catch:tap="onSearchTap">
+      <van-icon name="search" size="38rpx" color="#111" />
+    </view>
+  </view>
+
+  <view class="intro">
+    <view class="intro-main">
+      <text class="intro-title">校内服务在线点单</text>
+      <text class="intro-desc">咖啡厅、食堂窗口、轻食和便利服务，提前下单，到点自取。</text>
+    </view>
+    <view class="intro-icon">
+      <van-icon name="shop-o" size="76rpx" color="#19b35a" />
+    </view>
+  </view>
+
+  <scroll-view class="category-scroll" scroll-x enhanced show-scrollbar="{{ false }}">
+    <view class="category-list">
+      <view
+        wx:for="{{ categories }}"
+        wx:key="*this"
+        class="category-item {{ activeCategory === item ? 'category-item--active' : '' }}"
+        data-category="{{ item }}"
+        catch:tap="onCategoryTap"
+      >
+        {{ item }}
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="service-list">
+    <view
+      wx:for="{{ visibleServices }}"
+      wx:key="id"
+      class="service-card"
+      data-id="{{ item.id }}"
+      catch:tap="onServiceTap"
+    >
+      <image class="service-img" src="{{ item.image }}" mode="aspectFill" />
+      <view class="service-info">
+        <view class="service-head">
+          <text class="service-name">{{ item.name }}</text>
+          <text class="status {{ item.status === '营业中' ? 'status--open' : 'status--closed' }}">{{ item.status }}</text>
+        </view>
+        <text class="service-notice">{{ item.notice }}</text>
+        <view class="meta-row">
+          <van-icon name="location-o" size="26rpx" color="#18a957" />
+          <text>{{ item.location }}</text>
+        </view>
+        <view class="tag-row">
+          <text wx:for="{{ item.tags }}" wx:key="*this" class="tag">{{ item }}</text>
+        </view>
+        <view class="bottom-row">
+          <text class="pickup">{{ item.pickupTime }}</text>
+          <view class="rating">
+            <van-icon name="star" size="24rpx" color="#18a957" />
+            <text>{{ item.rating }}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

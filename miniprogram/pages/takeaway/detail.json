@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "外卖点单",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

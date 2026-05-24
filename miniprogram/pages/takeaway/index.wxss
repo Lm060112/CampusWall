@@ -1,0 +1,21 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-main { flex: 1; }
+.title { display: block; color: #111; font-size: 42rpx; font-weight: 900; }
+.subtitle { display: block; margin-top: 6rpx; color: #69707a; font-size: 25rpx; }
+.notice { display: flex; align-items: center; gap: 14rpx; margin-top: 24rpx; padding: 22rpx; border-radius: 8rpx; color: #8a5a18; font-size: 25rpx; background: #fff4e5; }
+.merchant-list { display: flex; flex-direction: column; gap: 20rpx; margin-top: 24rpx; }
+.merchant-card { display: flex; gap: 20rpx; padding: 20rpx; border: 1rpx solid #edf0f2; border-radius: 8rpx; background: #fff; box-shadow: 0 8rpx 24rpx rgba(38,47,56,.05); }
+.merchant-img { width: 150rpx; height: 150rpx; flex: 0 0 auto; border-radius: 8rpx; background: #eef2f5; }
+.merchant-main { flex: 1; min-width: 0; }
+.merchant-head, .tag-row, .bottom-row { display: flex; align-items: center; }
+.merchant-head { justify-content: space-between; gap: 12rpx; }
+.merchant-name { color: #111; font-size: 30rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rating { color: #0b9b4b; font-size: 24rpx; font-weight: 800; }
+.merchant-meta, .merchant-address, .package { display: block; margin-top: 8rpx; color: #69707a; font-size: 24rpx; }
+.tag-row { flex-wrap: wrap; gap: 8rpx; margin-top: 10rpx; }
+.tag { padding: 5rpx 10rpx; border-radius: 6rpx; color: #e35d25; font-size: 22rpx; background: #fff0e8; }
+.bottom-row { justify-content: space-between; gap: 14rpx; margin-top: 14rpx; }
+.package { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order-btn { flex: 0 0 auto; height: 54rpx; line-height: 54rpx; padding: 0 24rpx; border-radius: 27rpx; color: #fff; font-size: 25rpx; font-weight: 800; background: #f08a1f; }

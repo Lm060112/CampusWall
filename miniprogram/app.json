@@ -1,6 +1,16 @@
 {
   "pages": [
     "pages/home/index",
+    "pages/campus-order/index",
+    "pages/takeaway/index",
+    "pages/takeaway/detail",
+    "pages/errand/index",
+    "pages/nearby/index",
+    "pages/merchant/detail",
+    "pages/order/confirm",
+    "pages/order/list",
+    "pages/order/detail",
+    "pages/address/index",
     "pages/discover/index",
     "pages/message/index",
     "pages/mine/index",
@@ -12,7 +22,7 @@
     "backgroundColor": "#F6F6F6",
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#F6F6F6",
-    "navigationBarTitleText": "校园墙",
+    "navigationBarTitleText": "校园生活",
     "navigationBarTextStyle": "black"
   },
   "tabBar": {

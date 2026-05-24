@@ -1,156 +1,152 @@
 <view class="page">
-  <scroll-view class="feed-scroll" scroll-y enable-back-to-top>
-    <view class="feed-inner {{ fileList.length ? 'feed-inner--thumb' : '' }}">
-      <view class="hot-card">
-        <view class="hot-header">
-          <view class="hot-header-left">
-            <van-icon name="fire" size="36rpx" color="#ff6a00" />
-            <text class="hot-header-title">校园热搜</text>
-          </view>
-          <text class="hot-header-link" catch:tap="onHotBriefTap">热搜简报 ></text>
-        </view>
-        <view class="hot-grid">
-          <view class="hot-col">
-            <view
-              wx:for="{{ hotLeft }}"
-              wx:key="id"
-              class="hot-item {{ filterKeyword === item.title ? 'hot-item--active' : '' }}"
-              data-title="{{ item.title }}"
-              catch:tap="onHotTap"
-            >
-              <text class="hot-item-text">{{ item.title }}</text>
-              <text wx:if="{{ item.tag }}" class="hot-tag hot-tag--{{ item.tagType }}">{{ item.tag }}</text>
-            </view>
-          </view>
-          <view class="hot-col">
-            <view
-              wx:for="{{ hotRight }}"
-              wx:key="id"
-              class="hot-item {{ filterKeyword === item.title ? 'hot-item--active' : '' }}"
-              data-title="{{ item.title }}"
-              catch:tap="onHotTap"
-            >
-              <text class="hot-item-text">{{ item.title }}</text>
-              <text wx:if="{{ item.tag }}" class="hot-tag hot-tag--{{ item.tagType }}">{{ item.tag }}</text>
-            </view>
-          </view>
-        </view>
-        <view class="hot-more" catch:tap="onHotMoreTap">更多热搜 ></view>
-      </view>
+  <view class="top-row">
+    <text class="page-title">发现</text>
+    <view class="search-box" catch:tap="onSearchTap">
+      <van-icon name="search" size="36rpx" color="#7a7e83" />
+      <text>搜索帖子 / 用户 / 话题</text>
+    </view>
+    <view class="scan-btn" catch:tap="onScanTap">
+      <van-icon name="scan" size="42rpx" color="#111" />
+    </view>
+  </view>
 
-      <view class="section-header">
-        <view class="section-title">
-          最新动态
-          <text wx:if="{{ filterKeyword }}" class="filter-hint">· {{ filterKeyword }}</text>
-        </view>
-        <text wx:if="{{ filterKeyword }}" class="filter-clear" catch:tap="onClearFilter">取消筛选</text>
-      </view>
-      <view wx:if="{{ !loading && !filterKeyword && posts.length === 0 }}" class="empty">暂无帖子，来发第一条吧</view>
-      <view wx:if="{{ !loading && filterKeyword && posts.length === 0 }}" class="empty">
-        暂无「{{ filterKeyword }}」相关帖子，快来发第一条吧
-      </view>
-      <view wx:for="{{ posts }}" wx:key="_id" class="card">
-        <view class="card-meta">
-          <view class="avatar">
-            <image wx:if="{{ item.avatarUrl }}" class="avatar-img" src="{{ item.avatarUrl }}" mode="aspectFill" />
-            <text wx:else class="avatar-fallback">{{ item.displayName[0] }}</text>
+  <view class="tabs">
+    <view
+      wx:for="{{ tabs }}"
+      wx:key="*this"
+      class="tab {{ activeTab === item ? 'tab--active' : '' }}"
+      data-tab="{{ item }}"
+      catch:tap="onTabTap"
+    >
+      {{ item }}
+    </view>
+  </view>
+
+  <scroll-view class="feed-scroll" scroll-y enhanced show-scrollbar="{{ false }}">
+    <view class="feed-list">
+      <view wx:if="{{ loading }}" class="empty-state">加载中...</view>
+      <view wx:if="{{ !loading && feedList.length === 0 }}" class="empty-state">暂无内容，来发布第一条吧</view>
+
+      <view wx:for="{{ feedList }}" wx:key="id" class="feed-card">
+        <view class="feed-header">
+          <image class="avatar" src="{{ item.avatar }}" mode="aspectFill" />
+          <view class="author-main">
+            <view class="author-row">
+              <text class="author-name">{{ item.author }}</text>
+              <text class="tag tag--{{ item.tagClass }}">{{ item.tag }}</text>
+            </view>
+            <text class="feed-meta">{{ item.time }} · {{ item.topic }}</text>
           </view>
-          <text class="card-author">{{ item.displayName }}</text>
+          <view wx:if="{{ item.canDelete }}" class="delete-link" data-id="{{ item.id }}" catch:tap="onDeletePost">删除</view>
         </view>
-        <text class="card-text">{{ item.content }}</text>
-        <view wx:if="{{ item.imageUrl }}" class="card-pic-wrap">
+
+        <view class="feed-content">
+          <text>{{ item.content }}</text>
+          <text wx:if="{{ item.priceText }}" class="price-inline">{{ item.priceText }}</text>
+        </view>
+
+        <view wx:if="{{ item.images && item.images.length }}" class="image-grid image-grid--{{ item.imageClass }}">
           <image
-            class="card-pic"
-            src="{{ item.imageUrl }}"
+            wx:for="{{ item.images }}"
+            wx:for-item="img"
+            wx:key="*this"
+            class="feed-image"
+            src="{{ img }}"
             mode="aspectFill"
-            data-url="{{ item.imageUrl }}"
-            catch:tap="onPreviewImage"
           />
         </view>
-        <view class="card-footer">
-          <text class="card-time">{{ item.timeText }}</text>
-          <view class="card-footer-actions">
-            <view class="comment-wrap" data-id="{{ item._id }}" catch:tap="onShowCommentInput">
-              <van-icon name="comment-o" size="40rpx" color="#646566" />
-              <text class="comment-num">{{ item.comments.length || 0 }}</text>
+
+        <view class="feed-footer">
+          <view class="location">
+            <van-icon name="location" size="30rpx" color="#18b957" />
+            <text>{{ item.location }}</text>
+          </view>
+          <view class="actions">
+            <view class="action {{ item.isLiked ? 'action--liked' : '' }}" data-id="{{ item.id }}" catch:tap="onLikeTap">
+              <van-icon name="{{ item.isLiked ? 'like' : 'like-o' }}" size="40rpx" color="{{ item.isLiked ? '#12b85b' : '#333' }}" />
+              <text>{{ item.likes }}</text>
             </view>
-            <view class="like-wrap {{ item.isLiked ? 'like-wrap--active' : '' }}" data-id="{{ item._id }}" catch:tap="onLikeTap">
-              <van-icon name="{{ item.isLiked ? 'good-job' : 'good-job-o' }}" size="40rpx" color="{{ item.isLiked ? '#1989fa' : '#646566' }}" />
-              <text class="like-num {{ item.isLiked ? 'like-num--active' : '' }}">{{ item.likes }}</text>
-            </view>
-            <view class="delete-wrap" data-id="{{ item._id }}" catch:tap="onDeleteTap">
-              <van-icon name="delete" size="36rpx" color="#c8c9cc" />
-              <text class="delete-text">删除</text>
+            <view class="action" data-id="{{ item.id }}" catch:tap="onShowCommentInput">
+              <van-icon name="comment-o" size="40rpx" color="#333" />
+              <text>{{ item.commentCount }}</text>
             </view>
           </view>
         </view>
 
-        <!-- 评论列表 -->
-        <view class="comment-section" wx:if="{{ item.comments && item.comments.length > 0 }}">
-          <view wx:for="{{ item.comments }}" wx:for-item="comment" wx:key="_id" class="comment-item">
-            <view class="comment-content">
-              <text class="comment-author">{{ comment.nickname }}: </text>
-              <text class="comment-text">{{ comment.content }}</text>
-            </view>
-            <view class="comment-footer">
-              <text class="comment-time">{{ comment.timeText }}</text>
-              <view class="comment-actions">
-                <view class="comment-like" data-id="{{ comment._id }}" catch:tap="onLikeCommentTap">
-                  <van-icon name="{{ comment.isLiked ? 'good-job' : 'good-job-o' }}" size="32rpx" color="{{ comment.isLiked ? '#1989fa' : '#969799' }}" />
-                  <text class="comment-like-num {{ comment.isLiked ? 'comment-like-num--active' : '' }}">{{ comment.likes || 0 }}</text>
-                </view>
-                <view class="comment-delete" data-id="{{ comment._id }}" catch:tap="onDeleteCommentTap" wx:if="{{ comment._openid === openid }}">
-                  <text>删除</text>
-                </view>
-              </view>
-            </view>
+        <view wx:if="{{ item.comments && item.comments.length }}" class="comment-list">
+          <view wx:for="{{ item.comments }}" wx:for-item="comment" wx:key="_id" class="comment-row">
+            <text class="comment-author">{{ comment.nickname }}：</text>
+            <text class="comment-content">{{ comment.content }}</text>
+            <text wx:if="{{ comment.canDelete }}" class="comment-delete" data-id="{{ comment._id }}" catch:tap="onDeleteComment">删除</text>
           </view>
         </view>
       </view>
     </view>
   </scroll-view>
 
-  <!-- 评论输入弹窗 -->
+  <view class="publish-fab" catch:tap="onPublishTap">
+    <van-icon name="edit" size="44rpx" color="#fff" />
+    <text>发布</text>
+  </view>
+
+  <view wx:if="{{ showComposer }}" class="overlay" catch:tap="onCloseComposer">
+    <view class="composer" catch:tap="stopBubble">
+      <view class="composer-head">
+        <text>发布动态</text>
+        <van-icon name="cross" size="34rpx" color="#777" catch:tap="onCloseComposer" />
+      </view>
+      <view class="category-row">
+        <view
+          wx:for="{{ categoryOptions }}"
+          wx:key="*this"
+          class="category-chip {{ draftCategory === item ? 'category-chip--active' : '' }}"
+          data-category="{{ item }}"
+          catch:tap="onCategoryTap"
+        >
+          {{ item }}
+        </view>
+      </view>
+      <textarea
+        class="composer-textarea"
+        value="{{ draftContent }}"
+        maxlength="300"
+        placeholder="分享校园新鲜事..."
+        bindinput="onDraftInput"
+      />
+      <input
+        class="location-input"
+        value="{{ draftLocation }}"
+        placeholder="地点，如 崇明校区 · 一食堂"
+        bindinput="onLocationInput"
+      />
+      <view class="draft-images">
+        <view wx:for="{{ draftImages }}" wx:key="url" class="draft-image-wrap">
+          <image class="draft-image" src="{{ item.url }}" mode="aspectFill" />
+          <view class="draft-image-remove" data-index="{{ index }}" catch:tap="onRemoveDraftImage">
+            <van-icon name="cross" size="22rpx" color="#fff" />
+          </view>
+        </view>
+        <view wx:if="{{ draftImages.length < 3 }}" class="image-picker" catch:tap="onChooseImage">
+          <van-icon name="photo-o" size="42rpx" color="#8a8f98" />
+          <text>图片</text>
+        </view>
+      </view>
+      <button class="submit-btn" loading="{{ publishing }}" bindtap="onSubmitPost">发布</button>
+    </view>
+  </view>
+
   <view class="comment-input-overlay" wx:if="{{ activePostId }}" catch:tap="onHideCommentInput">
     <view class="comment-input-bar" catch:tap="stopBubble">
       <input
-        class="c-input"
+        class="comment-input"
         placeholder="写下你的评论..."
         focus="{{ !!activePostId }}"
         bindinput="onCommentInput"
         value="{{ commentInput }}"
         confirm-type="send"
-        bindconfirm="onPublishComment"
+        bindconfirm="onSubmitComment"
       />
-      <view class="c-send-btn {{ !commentInput.trim() ? 'c-send-btn--disabled' : '' }}" catch:tap="onPublishComment">发送</view>
-    </view>
-  </view>
-
-  <view class="post-bar">
-    <view wx:if="{{ fileList.length }}" class="post-thumb-row">
-      <image class="post-thumb" src="{{ fileList[0].url }}" mode="aspectFill" />
-      <view class="post-thumb-del" catch:tap="onRemoveImage">
-        <van-icon name="cross" size="28rpx" color="#fff" />
-      </view>
-    </view>
-    <view class="post-input-row">
-      <view class="post-icon-btn" catch:tap="onChooseImage">
-        <van-icon name="photo-o" size="44rpx" color="#646566" />
-      </view>
-      <view class="search-input-wrap">
-        <input
-          class="search-input"
-          model:value="{{ content }}"
-          placeholder="分享你的新鲜事..."
-          placeholder-class="search-placeholder"
-          confirm-type="send"
-          bindinput="onContentInput"
-          bindconfirm="onPublish"
-        />
-      </view>
-      <view class="send-btn {{ publishing ? 'send-btn--disabled' : '' }}" catch:tap="onPublish">
-        {{ publishing ? '发布中' : '发布' }}
-      </view>
+      <view class="comment-send" catch:tap="onSubmitComment">发送</view>
     </view>
   </view>
 </view>

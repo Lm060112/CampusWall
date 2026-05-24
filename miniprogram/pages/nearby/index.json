@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "周边玩乐",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

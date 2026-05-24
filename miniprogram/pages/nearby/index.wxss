@@ -1,0 +1,23 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-main { flex: 1; }
+.title { display: block; color: #111; font-size: 42rpx; font-weight: 900; }
+.subtitle { display: block; margin-top: 6rpx; color: #69707a; font-size: 25rpx; }
+.hero { display: flex; align-items: center; justify-content: space-between; gap: 22rpx; margin-top: 24rpx; padding: 28rpx; border-radius: 8rpx; background: linear-gradient(135deg, #f6efff, #fff7ea); box-shadow: 0 8rpx 24rpx rgba(38,47,56,.05); }
+.hero-title { display: block; color: #111; font-size: 34rpx; font-weight: 900; }
+.hero-desc { display: block; margin-top: 12rpx; color: #5f6872; font-size: 25rpx; line-height: 1.45; }
+.activity-list { display: flex; flex-direction: column; gap: 20rpx; margin-top: 24rpx; }
+.activity-card { display: flex; gap: 20rpx; padding: 20rpx; border: 1rpx solid #edf0f2; border-radius: 8rpx; background: #fff; box-shadow: 0 8rpx 24rpx rgba(38,47,56,.05); }
+.activity-img { width: 150rpx; height: 170rpx; flex: 0 0 auto; border-radius: 8rpx; background: #eef2f5; }
+.activity-main { flex: 1; min-width: 0; }
+.activity-head, .info-row, .bottom-row { display: flex; align-items: center; }
+.activity-head { justify-content: space-between; gap: 12rpx; }
+.activity-name { color: #111; font-size: 30rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rating { color: #8b62f2; font-size: 24rpx; font-weight: 800; }
+.desc { display: block; margin-top: 10rpx; color: #4f5964; font-size: 24rpx; line-height: 1.35; }
+.info-row { gap: 6rpx; margin-top: 8rpx; color: #737b85; font-size: 23rpx; }
+.bottom-row { gap: 12rpx; margin-top: 12rpx; }
+.price { color: #f0442e; font-size: 31rpx; font-weight: 900; }
+.tag { padding: 5rpx 10rpx; border-radius: 6rpx; color: #8b62f2; font-size: 22rpx; background: #f3edff; }
+.reserve-btn { margin-left: auto; height: 54rpx; line-height: 54rpx; padding: 0 24rpx; border-radius: 27rpx; color: #fff; font-size: 25rpx; font-weight: 800; background: #8b62f2; }

@@ -1,3 +1,115 @@
-<view class="container">
-  <text>{{title}}开发中...</text>
+<view class="page">
+  <view class="top-row">
+    <view class="campus" catch:tap="onCampusTap">
+      <van-icon name="location" size="42rpx" color="#111" />
+      <text>{{ campusName }}</text>
+      <van-icon name="arrow-down" size="28rpx" color="#111" />
+    </view>
+    <view class="search-box" catch:tap="onSearchTap">
+      <van-icon name="search" size="36rpx" color="#7a7e83" />
+      <text>搜索商家 / 服务 / 活动</text>
+    </view>
+    <view class="scan-btn" catch:tap="onScanTap">
+      <van-icon name="scan" size="42rpx" color="#111" />
+    </view>
+  </view>
+
+  <view class="notice-bar">
+    <van-icon name="volume-o" size="34rpx" color="#0fa958" />
+    <text>迎新季惊喜福利上线！领券下单更优惠～</text>
+    <view class="notice-link">
+      <text>查看详情</text>
+      <van-icon name="arrow" size="26rpx" color="#197a43" />
+    </view>
+  </view>
+
+  <view class="service-grid">
+    <view
+      wx:for="{{ serviceCards }}"
+      wx:key="key"
+      class="service-card service-card--{{ item.theme }}"
+      data-key="{{ item.key }}"
+      data-title="{{ item.title }}"
+      catch:tap="onServiceTap"
+    >
+      <view class="service-copy">
+        <text class="service-title">{{ item.title }}</text>
+        <text class="service-desc">{{ item.desc }}</text>
+      </view>
+      <view class="service-visual">
+        <van-icon name="{{ item.icon }}" size="92rpx" color="#ffffff" />
+      </view>
+    </view>
+  </view>
+
+  <view class="section-head">
+    <view class="section-title">
+      <van-icon name="fire" size="34rpx" color="#11b74f" />
+      <text>热门推荐</text>
+    </view>
+    <view class="more" data-name="热门推荐" catch:tap="onMoreTap">更多 <van-icon name="arrow" size="24rpx" color="#666" /></view>
+  </view>
+
+  <scroll-view class="recommend-scroll" scroll-x enhanced show-scrollbar="{{ false }}">
+    <view class="recommend-list">
+      <view wx:for="{{ recommendations }}" wx:key="id" class="recommend-card" data-name="{{ item.name }}" catch:tap="onProductTap">
+        <image class="recommend-img" src="{{ item.image }}" mode="aspectFill" />
+        <view class="recommend-body">
+          <text class="recommend-name">{{ item.name }}</text>
+          <view class="recommend-meta">
+            <text class="coupon">{{ item.badge }}</text>
+            <text>{{ item.eta }}</text>
+          </view>
+          <view class="price-row">
+            <text class="price">¥{{ item.price }}</text>
+            <text class="start-price">起送 ¥0</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="section-head">
+    <view class="section-title">
+      <van-icon name="location" size="34rpx" color="#11b74f" />
+      <text>附近商家</text>
+    </view>
+    <view class="more" data-name="附近商家" catch:tap="onMoreTap">更多 <van-icon name="arrow" size="24rpx" color="#666" /></view>
+  </view>
+
+  <view class="merchant-card" catch:tap="onMerchantTap">
+    <image class="merchant-img" src="{{ nearbyMerchant.image }}" mode="aspectFill" />
+    <view class="merchant-main">
+      <view class="merchant-top">
+        <text class="merchant-name">{{ nearbyMerchant.name }}</text>
+        <text class="merchant-tag">{{ nearbyMerchant.tag }}</text>
+        <text class="distance">{{ nearbyMerchant.distance }}</text>
+      </view>
+      <view class="coupon-row">
+        <text wx:for="{{ nearbyMerchant.coupons }}" wx:key="*this" class="small-coupon">{{ item }}</text>
+      </view>
+      <text class="merchant-sub">{{ nearbyMerchant.sales }} ｜ {{ nearbyMerchant.eta }}</text>
+    </view>
+    <view class="merchant-side">
+      <text class="rating">★ {{ nearbyMerchant.rating }}</text>
+      <text class="enter-btn">进店</text>
+    </view>
+  </view>
+
+  <view class="section-head">
+    <view class="section-title">
+      <van-icon name="volume-o" size="34rpx" color="#2f7df6" />
+      <text>校园公告</text>
+    </view>
+    <view class="more" data-name="校园公告" catch:tap="onMoreTap">更多 <van-icon name="arrow" size="24rpx" color="#666" /></view>
+  </view>
+
+  <view class="announcement-card">
+    <view wx:for="{{ announcements }}" wx:key="title" class="announcement-row" data-title="{{ item.title }}" catch:tap="onAnnouncementTap">
+      <text class="announcement-type announcement-type--{{ index }}">{{ item.type }}</text>
+      <text class="announcement-title">{{ item.title }}</text>
+      <text class="announcement-date">{{ item.date }}</text>
+      <view class="red-dot"></view>
+    </view>
+  </view>
 </view>

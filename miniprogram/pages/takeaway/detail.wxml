@@ -1,0 +1,64 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">外卖点单</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view class="merchant-card">
+    <image class="merchant-img" src="/images/default-goods-image.png" mode="aspectFill" />
+    <view class="merchant-main">
+      <text class="merchant-name">{{ merchant.name }}</text>
+      <text class="merchant-meta">★ {{ merchant.rating }} · {{ merchant.tag }} · {{ merchant.eta }}</text>
+      <view class="tag-row">
+        <text wx:for="{{ merchant.coupons }}" wx:key="*this" class="tag">{{ item }}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="shop-body">
+    <scroll-view class="category-list" scroll-y enhanced show-scrollbar="{{ false }}">
+      <view
+        wx:for="{{ categories }}"
+        wx:key="*this"
+        class="category-item {{ activeCategory === item ? 'category-item--active' : '' }}"
+        data-category="{{ item }}"
+        catch:tap="onCategoryTap"
+      >
+        {{ item }}
+      </view>
+    </scroll-view>
+
+    <scroll-view class="product-list" scroll-y enhanced show-scrollbar="{{ false }}">
+      <view wx:for="{{ visibleProducts }}" wx:key="id" class="product-card">
+        <image class="product-img" src="{{ item.image }}" mode="aspectFill" />
+        <view class="product-main">
+          <text class="product-name">{{ item.name }}</text>
+          <text class="product-desc">{{ item.desc }}</text>
+          <text class="product-sales">{{ item.sales }}</text>
+          <view class="product-bottom">
+            <text class="product-price">¥{{ item.price / 100 }}</text>
+            <view class="stepper">
+              <view wx:if="{{ cart[item.id] }}" class="step-btn" data-id="{{ item.id }}" catch:tap="onMinus">
+                <van-icon name="minus" size="26rpx" color="#f08a1f" />
+              </view>
+              <text wx:if="{{ cart[item.id] }}" class="step-count">{{ cart[item.id] }}</text>
+              <view class="step-btn step-btn--add" data-id="{{ item.id }}" catch:tap="onAdd">
+                <van-icon name="plus" size="26rpx" color="#fff" />
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="cart-bar">
+    <view class="cart-icon"><van-icon name="cart-o" size="42rpx" color="#fff" /><text wx:if="{{ cartCount }}" class="cart-count">{{ cartCount }}</text></view>
+    <view class="cart-main">
+      <text class="cart-price">¥{{ (cartAmount + merchant.deliveryFee) / 100 }}</text>
+      <text class="cart-tip">含配送费 ¥{{ merchant.deliveryFee / 100 }}</text>
+    </view>
+    <view class="checkout-btn {{ cartCount ? '' : 'checkout-btn--disabled' }}" catch:tap="onCheckout">去结算</view>
+  </view>
+</view>

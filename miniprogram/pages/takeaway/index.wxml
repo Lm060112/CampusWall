@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <view class="header-main">
+      <text class="title">校外外卖</text>
+      <text class="subtitle">周边美食送到校门 / 宿舍区</text>
+    </view>
+  </view>
+
+  <view class="notice">
+    <van-icon name="logistics" size="40rpx" color="#f08a1f" />
+    <text>当前为模拟流程，后期可接真实商家、配送员和支付。</text>
+  </view>
+
+  <view class="merchant-list">
+    <view wx:for="{{ merchants }}" wx:key="id" class="merchant-card" data-id="{{ item.id }}" catch:tap="onMerchantTap">
+      <image class="merchant-img" src="/images/default-goods-image.png" mode="aspectFill" />
+      <view class="merchant-main">
+        <view class="merchant-head">
+          <text class="merchant-name">{{ item.name }}</text>
+          <text class="rating">★ {{ item.rating }}</text>
+        </view>
+        <text class="merchant-meta">{{ item.tag }} · {{ item.eta }}</text>
+        <text class="merchant-address">{{ item.address }}</text>
+        <view class="tag-row">
+          <text wx:for="{{ item.coupons }}" wx:key="*this" class="tag">{{ item }}</text>
+        </view>
+        <view class="bottom-row">
+          <text class="package">起送 ¥{{ item.minPrice }} · 配送费 ¥{{ item.deliveryFee }}</text>
+          <view class="order-btn">进店</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,43 +1,54 @@
 const db = wx.cloud.database();
-const _ = db.command;
 
-const HOT_TOPICS = [
-  { id: 1, title: "期末复习攻略来了", tag: "热", tagType: "hot" },
-  { id: 2, title: "食堂新窗口排队实况", tag: "新", tagType: "new" },
-  { id: 3, title: "社团招新火热进行中", tag: "荐", tagType: "rec" },
-  { id: 4, title: "图书馆占座大战", tag: "", tagType: "" },
-  { id: 5, title: "校园二手市集开张", tag: "热", tagType: "hot" },
-  { id: 6, title: "羽毛球馆预约攻略", tag: "", tagType: "" },
-  { id: 7, title: "校运会报名通道", tag: "新", tagType: "new" },
-  { id: 8, title: "失物招领集中帖", tag: "", tagType: "" },
-  { id: 9, title: "考研自习室推荐", tag: "荐", tagType: "rec" },
-  { id: 10, title: "宿舍断电通知汇总", tag: "热", tagType: "hot" },
-  { id: 11, title: "校园摄影大赛投稿", tag: "", tagType: "" },
-  { id: 12, title: "兼职信息互助墙", tag: "新", tagType: "new" },
-];
+const TABS = ["推荐", "最新", "闲置", "求助", "拼车"];
+const CATEGORY_OPTIONS = ["闲置", "求助", "拼车", "活动"];
+const TAG_CLASS = {
+  闲置: "idle",
+  求助: "help",
+  拼车: "carpool",
+  活动: "activity",
+  最新: "latest",
+  推荐: "recommend",
+};
 
 Page({
   data: {
-    content: "",
-    fileList: [],
-    nickname: "",
-    posts: [],
-    loading: true,
-    publishing: false,
-    hotLeft: [],
-    hotRight: [],
-    hotAll: HOT_TOPICS,
-    filterKeyword: "",
+    tabs: TABS,
+    categoryOptions: CATEGORY_OPTIONS,
+    activeTab: "推荐",
+    feedList: [],
     allPosts: [],
+    loading: true,
     openid: "",
-    commentInput: "",
+    nickname: "校园用户",
+
+    showComposer: false,
+    draftContent: "",
+    draftCategory: "闲置",
+    draftLocation: "崇明校区",
+    draftImages: [],
+    publishing: false,
+
     activePostId: "",
+    commentInput: "",
   },
 
   onLoad() {
-    this.initHotTopics();
-    this.fetchPosts();
+    this.initNickname();
     this.getOpenId();
+    this.fetchPosts();
+  },
+
+  onShow() {
+    this.initNickname();
+  },
+
+  initNickname() {
+    const app = getApp();
+    const userInfo = app.globalData.userInfo || wx.getStorageSync("userInfo");
+    this.setData({
+      nickname: userInfo && userInfo.nickName ? userInfo.nickName : "校园用户",
+    });
   },
 
   getOpenId() {
@@ -47,496 +58,341 @@ Page({
         data: { type: "getOpenId" },
       })
       .then((res) => {
-        if (res.result && res.result.openid) {
-          this.setData({ openid: res.result.openid });
-          // 获取到 openid 后重新格式化一次帖子列表，以显示点赞状态
-          this.refreshPostsLikeStatus();
+        const openid = res.result && res.result.openid;
+        if (openid) {
+          this.setData({ openid });
+          this.refreshLikeAndDeleteState();
         }
-      });
+      })
+      .catch(() => {});
   },
 
-  refreshPostsLikeStatus() {
-    const { allPosts, openid } = this.data;
-    if (!openid || !allPosts.length) return;
-
-    const newAllPosts = allPosts.map((p) => ({
-      ...p,
-      isLiked: p.likedUsers && p.likedUsers.includes(openid),
-    }));
-    const posts = this.filterPostsByKeyword(newAllPosts, this.data.filterKeyword);
-    this.setData({ allPosts: newAllPosts, posts });
+  refreshLikeAndDeleteState() {
+    const allPosts = (this.data.allPosts || []).map((post) => this.decoratePostState(post));
+    this.setData({ allPosts }, () => this.applyFilter());
   },
 
-  onShow() {
-    this.initNickname();
-  },
-
-  initNickname() {
-    // 优先从全局数据或缓存读取登录用户信息
-    const app = getApp();
-    const userInfo = app.globalData.userInfo || wx.getStorageSync("userInfo");
-    if (userInfo && userInfo.nickName) {
-      this.setData({
-        nickname: userInfo.nickName,
-        avatarUrl: userInfo.avatarUrl || "",
-      });
-    } else {
-      this.setData({
-        nickname: "未登录用户",
-        avatarUrl: "",
-      });
-    }
+  decoratePostState(post) {
+    const openid = this.data.openid;
+    return {
+      ...post,
+      isLiked: !!(openid && post.likedUsers && post.likedUsers.includes(openid)),
+      canDelete: !!(openid && post._openid === openid),
+      comments: (post.comments || []).map((comment) => ({
+        ...comment,
+        canDelete: !!(openid && comment._openid === openid),
+      })),
+    };
   },
 
   formatTime(ts) {
-    if (ts == null) return "";
-    const d = typeof ts === "number" ? new Date(ts) : new Date(ts);
-    if (Number.isNaN(d.getTime())) return "";
-    const pad = (n) => (n < 10 ? "0" + n : "" + n);
-    return (
-      d.getFullYear() +
-      "-" +
-      pad(d.getMonth() + 1) +
-      "-" +
-      pad(d.getDate()) +
-      " " +
-      pad(d.getHours()) +
-      ":" +
-      pad(d.getMinutes())
-    );
+    const time = Number(ts || Date.now());
+    const diff = Date.now() - time;
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+    if (diff < minute) return "刚刚";
+    if (diff < hour) return `${Math.floor(diff / minute)}分钟前`;
+    if (diff < day) return `${Math.floor(diff / hour)}小时前`;
+    return `${Math.floor(diff / day)}天前`;
   },
 
-  initHotTopics() {
-    const list = HOT_TOPICS.slice();
-    const hotLeft = [];
-    const hotRight = [];
-    list.forEach((item, index) => {
-      if (index % 2 === 0) hotLeft.push(item);
-      else hotRight.push(item);
-    });
-    this.setData({ hotLeft, hotRight });
-  },
-
-  filterPostsByKeyword(allPosts, keyword) {
-    if (!keyword) return allPosts;
-    const core = keyword.length > 4 ? keyword.slice(0, 4) : keyword;
-    return allPosts.filter((p) => {
-      const text = p.content || "";
-      return text.indexOf(keyword) >= 0 || text.indexOf(core) >= 0;
-    });
-  },
-
-  applyPostFilter(keyword) {
-    const allPosts = this.data.allPosts || [];
-    const posts = this.filterPostsByKeyword(allPosts, keyword);
-    this.setData({ filterKeyword: keyword, posts });
-  },
-
-  onHotTap(e) {
-    const title = e.currentTarget.dataset.title;
-    if (!title) return;
-    const next = this.data.filterKeyword === title ? "" : title;
-    this.applyPostFilter(next);
-    if (next) {
-      wx.showToast({ title: "已筛选相关帖子", icon: "none" });
-    }
-  },
-
-  onClearFilter() {
-    this.applyPostFilter("");
-  },
-
-  onHotBriefTap() {
-    wx.showToast({ title: "热搜简报开发中", icon: "none" });
-  },
-
-  onHotMoreTap() {
-    const names = this.data.hotAll.map((item) => item.title).join("\n");
-    wx.showModal({
-      title: "更多校园热搜",
-      content: names,
-      showCancel: false,
-      confirmText: "知道了",
-    });
-  },
-
-  onContentInput(e) {
-    this.setData({ content: e.detail.value || "" });
-  },
-
-  onChooseImage() {
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ["image"],
-      sourceType: ["album", "camera"],
-      success: (res) => {
-        const f = res.tempFiles && res.tempFiles[0];
-        if (!f || !f.tempFilePath) return;
-        this.setData({
-          fileList: [{ url: f.tempFilePath, type: "image" }],
-        });
-      },
-    });
-  },
-
-  onRemoveImage() {
-    this.setData({ fileList: [] });
-  },
-
-  normalizePost(doc) {
-    let ts = doc.timestamp;
-    if (ts == null && doc.createdAt != null) {
-      const c = doc.createdAt;
-      if (typeof c === "number") ts = c;
-      else if (c instanceof Date) ts = c.getTime();
-      else if (typeof c === "object" && c.constructor && c.constructor.name === "Date") ts = new Date(c).getTime();
-    }
-    const nickname = doc.nickname || "校园用户";
-    const likes = typeof doc.likes === "number" && !Number.isNaN(doc.likes) ? doc.likes : 0;
-    const imageUrl = typeof doc.imageUrl === "string" && doc.imageUrl ? doc.imageUrl : "";
-    const isLiked = doc.likedUsers && this.data.openid ? doc.likedUsers.includes(this.data.openid) : false;
-    return {
+  normalizePost(doc, comments) {
+    const category = doc.category || doc.tag || "最新";
+    const images = Array.isArray(doc.images) && doc.images.length
+      ? doc.images
+      : doc.imageUrl
+        ? [doc.imageUrl]
+        : [];
+    const postComments = comments || [];
+    const normalized = {
       ...doc,
-      displayName: nickname,
-      avatarUrl: "",
-      likes,
-      imageUrl,
-      isLiked,
-      timeText: this.formatTime(ts),
+      id: doc._id,
+      author: doc.nickname || doc.displayName || "校园用户",
+      avatar: doc.avatarUrl || "/images/avatar.png",
+      time: this.formatTime(doc.timestamp || doc.createdAt),
+      topic: doc.topic || "校园生活",
+      tag: category,
+      tagClass: TAG_CLASS[category] || "latest",
+      content: doc.content || "",
+      priceText: doc.priceText || "",
+      location: doc.location || "崇明校区",
+      images,
+      imageClass: images.length >= 3 ? "3" : images.length === 2 ? "2" : "1",
+      likes: typeof doc.likes === "number" ? doc.likes : 0,
+      commentCount: typeof doc.commentCount === "number" ? doc.commentCount : postComments.length,
+      likedUsers: doc.likedUsers || [],
+      comments: postComments.map((comment) => ({
+        ...comment,
+        time: this.formatTime(comment.timestamp || comment.createdAt),
+      })),
     };
+    return this.decoratePostState(normalized);
   },
 
   fetchPosts() {
     this.setData({ loading: true });
     db.collection("posts")
       .orderBy("timestamp", "desc")
-      .limit(20)
+      .limit(30)
       .get()
       .then((res) => {
-        const allPosts = (res.data || []).map((doc) => this.normalizePost(doc));
-        if (allPosts.length === 0) {
-          this.setData({ allPosts: [], posts: [], loading: false });
+        const docs = res.data || [];
+        if (!docs.length) {
+          this.setData({ allPosts: [], feedList: [], loading: false });
           return;
         }
 
-        // 批量获取这些帖子的评论
-        const postIds = allPosts.map((p) => p._id);
+        const ids = docs.map((item) => item._id);
         db.collection("comments")
-          .where({
-            postId: db.command.in(postIds),
-          })
+          .where({ postId: db.command.in(ids) })
           .orderBy("timestamp", "asc")
           .get()
-          .then((commentsRes) => {
-            const allComments = commentsRes.data || [];
-
-            // 将评论分配到各个帖子中
-            const postsWithComments = allPosts.map((post) => {
-              const postComments = allComments
-                .filter((c) => c.postId === post._id)
-                .map((c) => ({
-                  ...c,
-                  timeText: this.formatTime(c.timestamp),
-                  isLiked: c.likedUsers && this.data.openid ? c.likedUsers.includes(this.data.openid) : false,
-                }));
-              return { ...post, comments: postComments };
+          .then((commentRes) => {
+            const comments = commentRes.data || [];
+            const posts = docs.map((doc) => {
+              const postComments = comments.filter((item) => item.postId === doc._id);
+              return this.normalizePost(doc, postComments);
             });
-
-            const posts = this.filterPostsByKeyword(postsWithComments, this.data.filterKeyword);
-            this.setData({ allPosts: postsWithComments, posts, loading: false });
+            this.setData({ allPosts: posts, loading: false }, () => this.applyFilter());
           })
-          .catch((err) => {
-            // 如果是集合不存在的错误，给出明确提示
-            if (err.errMsg && err.errMsg.includes("collection not exists")) {
-              console.error("【架构师提示】请前往云开发控制台手动创建名为 comments 的数据库集合，并设置权限为'所有用户可读'");
-            } else {
-              console.error("加载评论发生其他错误:", err);
-            }
-            // 即使评论加载失败，也要保证帖子列表能显示出来
-            const posts = this.filterPostsByKeyword(allPosts, this.data.filterKeyword);
-            this.setData({ allPosts, posts, loading: false });
+          .catch(() => {
+            const posts = docs.map((doc) => this.normalizePost(doc, []));
+            this.setData({ allPosts: posts, loading: false }, () => this.applyFilter());
           });
       })
       .catch((err) => {
         console.error(err);
         this.setData({ loading: false });
-        wx.showToast({ title: "加载失败", icon: "none" });
+        wx.showToast({ title: "加载失败，请检查云数据库", icon: "none" });
       });
   },
 
-  onCommentInput(e) {
-    this.setData({ commentInput: e.detail.value });
+  applyFilter() {
+    const activeTab = this.data.activeTab;
+    let feedList = this.data.allPosts || [];
+    if (activeTab !== "推荐" && activeTab !== "最新") {
+      feedList = feedList.filter((post) => post.tag === activeTab);
+    }
+    this.setData({ feedList });
+  },
+
+  onTabTap(e) {
+    this.setData({ activeTab: e.currentTarget.dataset.tab }, () => this.applyFilter());
+  },
+
+  onSearchTap() {
+    wx.showToast({ title: "搜索帖子待接入", icon: "none" });
+  },
+
+  onScanTap() {
+    wx.showToast({ title: "扫码入口待接入", icon: "none" });
+  },
+
+  onPublishTap() {
+    this.setData({ showComposer: true });
+  },
+
+  onCloseComposer() {
+    if (this.data.publishing) return;
+    this.setData({ showComposer: false });
+  },
+
+  onDraftInput(e) {
+    this.setData({ draftContent: e.detail.value || "" });
+  },
+
+  onLocationInput(e) {
+    this.setData({ draftLocation: e.detail.value || "" });
+  },
+
+  onCategoryTap(e) {
+    this.setData({ draftCategory: e.currentTarget.dataset.category });
+  },
+
+  onChooseImage() {
+    wx.chooseMedia({
+      count: Math.max(1, 3 - this.data.draftImages.length),
+      mediaType: ["image"],
+      sourceType: ["album", "camera"],
+      success: (res) => {
+        const picked = (res.tempFiles || [])
+          .map((item) => item.tempFilePath)
+          .filter(Boolean)
+          .map((url) => ({ url }));
+        this.setData({
+          draftImages: this.data.draftImages.concat(picked).slice(0, 3),
+        });
+      },
+    });
+  },
+
+  onRemoveDraftImage(e) {
+    const index = e.currentTarget.dataset.index;
+    const draftImages = this.data.draftImages.filter((_, i) => i !== index);
+    this.setData({ draftImages });
+  },
+
+  buildCloudPath(localPath) {
+    const extMatch = typeof localPath === "string" ? localPath.match(/\.[a-zA-Z0-9]+$/) : null;
+    const ext = extMatch ? extMatch[0] : ".jpg";
+    return `posts/${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`;
+  },
+
+  uploadDraftImages() {
+    const files = this.data.draftImages || [];
+    return files.reduce((promise, file) => {
+      return promise.then((list) => {
+        return wx.cloud
+          .uploadFile({
+            cloudPath: this.buildCloudPath(file.url),
+            filePath: file.url,
+          })
+          .then((res) => list.concat(res.fileID));
+      });
+    }, Promise.resolve([]));
+  },
+
+  onSubmitPost() {
+    const content = (this.data.draftContent || "").trim();
+    if (!content) {
+      wx.showToast({ title: "请输入发布内容", icon: "none" });
+      return;
+    }
+    if (this.data.publishing) return;
+
+    this.setData({ publishing: true });
+    wx.showLoading({ title: "发布中" });
+    this.uploadDraftImages()
+      .then((images) => {
+        return db.collection("posts").add({
+          data: {
+            content,
+            category: this.data.draftCategory,
+            location: this.data.draftLocation || "崇明校区",
+            images,
+            imageUrl: images[0] || "",
+            nickname: this.data.nickname || "校园用户",
+            topic: "校园生活",
+            timestamp: Date.now(),
+            likes: 0,
+            likedUsers: [],
+            commentCount: 0,
+          },
+        });
+      })
+      .then(() => {
+        wx.hideLoading();
+        wx.showToast({ title: "发布成功" });
+        this.setData({
+          showComposer: false,
+          draftContent: "",
+          draftLocation: "崇明校区",
+          draftCategory: "闲置",
+          draftImages: [],
+          publishing: false,
+          activeTab: "最新",
+        });
+        this.fetchPosts();
+      })
+      .catch((err) => {
+        wx.hideLoading();
+        console.error(err);
+        this.setData({ publishing: false });
+        wx.showToast({ title: "发布失败", icon: "none" });
+      });
+  },
+
+  onLikeTap(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.cloud
+      .callFunction({
+        name: "quickstartFunctions",
+        data: { type: "likePost", id },
+      })
+      .then((res) => {
+        if (res.result && res.result.success) this.fetchPosts();
+        else wx.showToast({ title: "操作失败", icon: "none" });
+      })
+      .catch(() => wx.showToast({ title: "操作失败", icon: "none" }));
   },
 
   onShowCommentInput(e) {
-    const id = e.currentTarget.dataset.id;
-    console.log("显示评论输入框，帖子ID:", id);
-    if (!id) {
-      console.error("未获取到帖子ID");
-      return;
-    }
-    this.setData({ activePostId: id, commentInput: "" });
+    this.setData({
+      activePostId: e.currentTarget.dataset.id,
+      commentInput: "",
+    });
   },
 
   onHideCommentInput() {
-    console.log("隐藏评论输入框");
     this.setData({ activePostId: "", commentInput: "" });
   },
 
-  stopBubble() {
-    // 仅用于阻止冒泡
+  stopBubble() {},
+
+  onCommentInput(e) {
+    this.setData({ commentInput: e.detail.value || "" });
   },
 
-  onPublishComment() {
-    const content = this.data.commentInput.trim();
-    const postId = this.data.activePostId;
-    if (!content) return;
-
-    const nickname = this.data.nickname;
-    if (!nickname || nickname === "未登录用户") {
-      wx.showToast({ title: "请先登录", icon: "none" });
-      wx.switchTab({ url: "/pages/mine/index" });
-      return;
-    }
-
-    wx.showLoading({ title: "发布中" });
+  onSubmitComment() {
+    const content = (this.data.commentInput || "").trim();
+    if (!content || !this.data.activePostId) return;
     wx.cloud
       .callFunction({
         name: "quickstartFunctions",
         data: {
           type: "addComment",
-          postId,
+          postId: this.data.activePostId,
           content,
-          nickname,
+          nickname: this.data.nickname || "校园用户",
         },
       })
       .then((res) => {
-        wx.hideLoading();
         if (res.result && res.result.success) {
-          wx.showToast({ title: "评论成功" });
           this.setData({ activePostId: "", commentInput: "" });
           this.fetchPosts();
-        }
-      })
-      .catch((err) => {
-        wx.hideLoading();
-        console.error(err);
-      });
-  },
-
-  onLikeCommentTap(e) {
-    const id = e.currentTarget.dataset.id;
-    if (!id) return;
-
-    wx.cloud
-      .callFunction({
-        name: "quickstartFunctions",
-        data: {
-          type: "likeComment",
-          id: id,
-        },
-      })
-      .then((res) => {
-        if (res.result && res.result.success) {
-          this.fetchPosts();
-        }
-      });
-  },
-
-  onDeleteCommentTap(e) {
-    const id = e.currentTarget.dataset.id;
-    if (!id) return;
-
-    wx.showModal({
-      title: "提示",
-      content: "确定要删除这条评论吗？",
-      success: (res) => {
-        if (res.confirm) {
-          wx.cloud
-            .callFunction({
-              name: "quickstartFunctions",
-              data: {
-                type: "deleteComment",
-                id: id,
-              },
-            })
-            .then((res) => {
-              if (res.result && res.result.success) {
-                wx.showToast({ title: "已删除" });
-                this.fetchPosts();
-              } else {
-                wx.showToast({ title: res.result.errMsg || "删除失败", icon: "none" });
-              }
-            });
-        }
-      },
-    });
-  },
-
-  onPreviewImage(e) {
-    const url = e.currentTarget.dataset.url;
-    if (!url) return;
-    wx.previewImage({
-      current: url,
-      urls: [url],
-    });
-  },
-
-  onLikeTap(e) {
-    const id = e.currentTarget.dataset.id;
-    console.log("点击点赞/取消点赞，ID:", id);
-    if (!id) return;
-
-    wx.cloud
-      .callFunction({
-        name: "quickstartFunctions",
-        data: {
-          type: "likePost",
-          id: id,
-        },
-      })
-      .then((res) => {
-        console.log("点赞返回:", res);
-        if (res.result && res.result.success) {
-          // 静默刷新，不再弹出提示
-          this.fetchPosts();
         } else {
-          const msg = res.result ? res.result.errMsg : "操作失败";
-          wx.showModal({
-            title: "提示",
-            content: msg,
-            showCancel: false,
-          });
+          wx.showToast({ title: "评论失败", icon: "none" });
         }
       })
-      .catch((err) => {
-        console.error("点赞请求异常:", err);
-      });
+      .catch(() => wx.showToast({ title: "评论失败", icon: "none" }));
   },
 
-  onDeleteTap(e) {
+  onDeletePost(e) {
     const id = e.currentTarget.dataset.id;
-    console.log("点击删除，ID:", id);
-    if (!id) return;
     wx.showModal({
-      title: "提示",
-      content: "确定要删除这条帖子吗？",
+      title: "删除帖子",
+      content: "确定删除这条帖子吗？",
       success: (res) => {
         if (!res.confirm) return;
         wx.cloud
           .callFunction({
             name: "quickstartFunctions",
-            data: {
-              type: "deletePost",
-              id: id,
-            },
+            data: { type: "deletePost", id },
           })
-          .then((res) => {
-            console.log("删除返回:", res);
-            if (res.result && res.result.success) {
-              wx.showToast({ title: "已删除", icon: "success" });
+          .then((result) => {
+            if (result.result && result.result.success) {
+              wx.showToast({ title: "已删除" });
               this.fetchPosts();
             } else {
-              const msg = res.result ? res.result.errMsg : "删除失败";
-              wx.showModal({
-                title: "提示",
-                content: msg,
-                showCancel: false,
-              });
+              wx.showToast({ title: result.result.errMsg || "删除失败", icon: "none" });
             }
-          })
-          .catch((err) => {
-            console.error("删除请求异常:", err);
-            wx.showModal({
-              title: "错误",
-              content: "云函数调用失败",
-              showCancel: false,
-            });
           });
       },
     });
   },
 
-  buildCloudPath(localPath) {
-    const m = typeof localPath === "string" ? localPath.match(/\.[a-zA-Z0-9]+$/) : null;
-    const ext = m && m[0] ? m[0] : ".jpg";
-    const rand = Math.random().toString(36).slice(2, 10);
-    return `square/${Date.now()}_${rand}${ext}`;
-  },
-
-  addPostDoc(text, nickname, imageUrl) {
-    const data = {
-      content: text,
-      timestamp: Date.now(),
-      nickname,
-      likes: 0,
-    };
-    if (imageUrl) {
-      data.imageUrl = imageUrl;
-    }
-    return db.collection("posts").add({ data });
-  },
-
-  onPublish() {
-    console.log("准备发布，当前内容:", this.data.content);
-    if (this.data.publishing) return;
-    const text = (this.data.content || "").trim();
-    if (!text) {
-      console.error("发布失败：内容为空");
-      wx.showToast({ title: "请先输入内容", icon: "none" });
-      return;
-    }
-    const nickname = this.data.nickname;
-    if (!nickname || nickname === "未登录用户") {
-      wx.showToast({ title: "请先登录", icon: "none" });
-      wx.switchTab({ url: "/pages/mine/index" });
-      return;
-    }
-    const fileList = this.data.fileList || [];
-    const first = fileList[0];
-    const localPath = first && (first.url || first.tempFilePath || first.path);
-    const hasImage = !!localPath;
-
-    this.setData({ publishing: true });
-
-    const done = () => {
-      wx.showToast({ title: "发布成功", icon: "success" });
-      this.setData({
-        content: "",
-        fileList: [],
-        publishing: false,
-        filterKeyword: "",
+  onDeleteComment(e) {
+    const id = e.currentTarget.dataset.id;
+    wx.cloud
+      .callFunction({
+        name: "quickstartFunctions",
+        data: { type: "deleteComment", id },
+      })
+      .then((res) => {
+        if (res.result && res.result.success) this.fetchPosts();
+        else wx.showToast({ title: "删除失败", icon: "none" });
       });
-      this.fetchPosts();
-    };
-
-    const fail = (err) => {
-      console.error("发布流程出错:", err);
-      this.setData({ publishing: false });
-      wx.showModal({
-        title: "发布失败",
-        content: err.message || "请检查网络或数据库权限",
-        showCancel: false,
-      });
-    };
-
-    if (hasImage) {
-      const cloudPath = this.buildCloudPath(localPath);
-      wx.cloud
-        .uploadFile({
-          cloudPath,
-          filePath: localPath,
-        })
-        .then((up) => {
-          console.log("图片上传成功:", up.fileID);
-          return this.addPostDoc(text, nickname, up.fileID);
-        })
-        .then(done)
-        .catch(fail);
-    } else {
-      this.addPostDoc(text, nickname, "")
-        .then(done)
-        .catch(fail);
-    }
   },
 });

@@ -1,14 +1,89 @@
-<view class="container">
-  <view class="user-info" wx:if="{{hasUserInfo}}">
-    <view class="avatar">
-      <text class="avatar-text">{{userInfo.nickName[0]}}</text>
+<view class="page">
+  <view class="top-actions">
+    <view></view>
+    <view class="action-icons">
+      <van-icon name="bell" size="42rpx" color="#111" catch:tap="onNotifyTap" />
+      <van-icon name="setting-o" size="42rpx" color="#111" catch:tap="onSettingsTap" />
     </view>
-    <text class="nickname">{{userInfo.nickName}}</text>
-    <button class="logout-btn" bindtap="onLogout">退出登录</button>
   </view>
-  
-  <view class="login-guide" wx:else>
-    <text class="guide-text">你还没有登录</text>
-    <button class="login-btn" bindtap="onLogin">模拟登录</button>
+
+  <view class="profile-card">
+    <view class="profile-row">
+      <image class="avatar" src="{{ hasUserInfo && userInfo.avatarUrl ? userInfo.avatarUrl : '/images/avatar.png' }}" mode="aspectFill" />
+      <view class="profile-main">
+        <text class="nickname">{{ hasUserInfo ? userInfo.nickName : '敏同学' }}</text>
+        <text class="slogan">校园生活更轻松 ✦</text>
+        <view class="campus-pill">
+          <van-icon name="location" size="24rpx" color="#148844" />
+          <text>崇明校区</text>
+        </view>
+      </view>
+      <view class="profile-link" catch:tap="onProfileTap">
+        <text>个人主页</text>
+        <van-icon name="arrow" size="24rpx" color="#148844" />
+      </view>
+    </view>
+
+    <view class="stat-row">
+      <view wx:for="{{ stats }}" wx:key="key" class="stat-item" data-key="{{ item.key }}" data-title="{{ item.label }}" catch:tap="onStatTap">
+        <text class="stat-value">{{ item.value }}</text>
+        <text class="stat-label">{{ item.label }}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="coupon-card" catch:tap="onCouponTap">
+    <view class="coupon-left">
+      <view class="coupon-icon">
+        <van-icon name="coupon-o" size="46rpx" color="#fff" />
+      </view>
+      <view>
+        <text class="coupon-title">领券中心</text>
+        <text class="coupon-desc">天天领券，优惠多多</text>
+      </view>
+    </view>
+    <view class="coupon-btn">
+      <text>去领取</text>
+      <van-icon name="arrow" size="24rpx" color="#d66a00" />
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="panel-head">
+      <text catch:tap="onOrderListTap">我的订单</text>
+      <view class="panel-more" data-key="allOrders" data-title="全部订单" catch:tap="onFeatureTap">
+        <text>全部订单</text>
+        <van-icon name="arrow" size="24rpx" color="#777" />
+      </view>
+    </view>
+    <view class="order-grid">
+      <view wx:for="{{ orderItems }}" wx:key="key" class="order-item" data-key="{{ item.key }}" data-title="{{ item.title }}" catch:tap="onFeatureTap">
+        <van-icon name="{{ item.icon }}" size="48rpx" color="#111" />
+        <text>{{ item.title }}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="panel-head">
+      <text>我的发布</text>
+      <view data-title="全部发布" catch:tap="onFeatureTap">全部发布 <van-icon name="arrow" size="24rpx" color="#777" /></view>
+    </view>
+    <view class="publish-grid">
+      <view wx:for="{{ publishItems }}" wx:key="key" class="publish-item" data-title="{{ item.title }}" catch:tap="onFeatureTap">
+        <van-icon name="{{ item.icon }}" size="52rpx" color="{{ item.color }}" />
+        <text>{{ item.title }}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="menu-panel">
+    <view wx:for="{{ menuItems }}" wx:key="key" class="menu-row" data-key="{{ item.key }}" data-title="{{ item.title }}" catch:tap="onFeatureTap">
+      <view class="menu-left">
+        <van-icon name="{{ item.icon }}" size="40rpx" color="{{ item.color }}" />
+        <text>{{ item.title }}</text>
+      </view>
+      <van-icon name="arrow" size="28rpx" color="#999" />
+    </view>
   </view>
 </view>

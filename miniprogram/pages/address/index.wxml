@@ -1,0 +1,46 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <text class="header-title">收货地址</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view class="tip-card">
+    <van-icon name="location-o" size="44rpx" color="#18a957" />
+    <view>
+      <text class="tip-title">默认校园地址</text>
+      <text class="tip-desc">用于校外外卖和跑腿代取，后期可扩展多个地址。</text>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="field">
+      <text class="label">联系人</text>
+      <input value="{{ address.name }}" data-field="name" bindinput="onInput" placeholder="姓名或昵称" />
+    </view>
+    <view class="field">
+      <text class="label">手机号</text>
+      <input value="{{ address.phone }}" data-field="phone" bindinput="onInput" type="number" placeholder="联系手机号" />
+    </view>
+    <view class="field">
+      <text class="label">校区</text>
+      <input value="{{ address.campus }}" data-field="campus" bindinput="onInput" placeholder="如：崇明校区" />
+    </view>
+    <view class="field">
+      <text class="label">楼栋</text>
+      <input value="{{ address.building }}" data-field="building" bindinput="onInput" placeholder="如：6号宿舍楼 / 图书馆" />
+    </view>
+    <view class="field">
+      <text class="label">房间</text>
+      <input value="{{ address.room }}" data-field="room" bindinput="onInput" placeholder="如：602 / 一楼大厅" />
+    </view>
+    <view class="field field--textarea">
+      <text class="label">详细</text>
+      <textarea value="{{ address.detail }}" data-field="detail" bindinput="onInput" maxlength="80" placeholder="补充取餐点、门口、备注位置" />
+    </view>
+  </view>
+
+  <view class="save-btn" catch:tap="onSave">保存默认地址</view>
+</view>

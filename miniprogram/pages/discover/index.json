@@ -1,5 +1,6 @@
 {
-  "navigationBarTitleText": "校园广场",
+  "navigationBarTitleText": "发现",
+  "navigationStyle": "custom",
   "disableScroll": true,
   "usingComponents": {
     "van-icon": "@vant/weapp/icon/index"

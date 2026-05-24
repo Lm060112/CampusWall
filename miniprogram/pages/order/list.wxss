@@ -1,0 +1,184 @@
+.page {
+  min-height: 100vh;
+  padding: 28rpx 28rpx 48rpx;
+  box-sizing: border-box;
+  background: #fbfbfb;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.back-btn,
+.clear-btn {
+  width: 72rpx;
+  height: 68rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  color: #111;
+  font-size: 38rpx;
+  font-weight: 800;
+}
+
+.clear-btn {
+  color: #737b85;
+  font-size: 25rpx;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.filter-item {
+  height: 60rpx;
+  line-height: 60rpx;
+  padding: 0 28rpx;
+  border-radius: 30rpx;
+  color: #606873;
+  font-size: 26rpx;
+  background: #f1f3f5;
+}
+
+.filter-item--active {
+  color: #0b8f47;
+  font-weight: 700;
+  background: #e4f7ea;
+}
+
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 24rpx;
+}
+
+.order-card {
+  padding: 24rpx;
+  border: 1rpx solid #edf0f2;
+  border-radius: 8rpx;
+  background: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(38, 47, 56, 0.05);
+}
+
+.order-head,
+.order-bottom {
+  display: flex;
+  align-items: center;
+}
+
+.order-head {
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.merchant-name {
+  display: block;
+  color: #111;
+  font-size: 31rpx;
+  font-weight: 800;
+}
+
+.order-time {
+  display: block;
+  margin-top: 8rpx;
+  color: #8a9099;
+  font-size: 23rpx;
+}
+
+.status {
+  flex: 0 0 auto;
+  padding: 7rpx 14rpx;
+  border-radius: 8rpx;
+  font-size: 23rpx;
+  font-weight: 700;
+}
+
+.status--doing {
+  color: #0b9b4b;
+  background: #e5f8ec;
+}
+
+.status--done {
+  color: #737b85;
+  background: #edf0f2;
+}
+
+.order-body {
+  margin-top: 22rpx;
+}
+
+.preview,
+.pickup,
+.remark {
+  display: block;
+  color: #4f5964;
+  font-size: 25rpx;
+  line-height: 1.45;
+}
+
+.pickup,
+.remark {
+  margin-top: 8rpx;
+  color: #7a828c;
+}
+
+.order-bottom {
+  justify-content: flex-end;
+  gap: 18rpx;
+  margin-top: 22rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0f2f4;
+}
+
+.summary {
+  margin-right: auto;
+  color: #8a9099;
+  font-size: 24rpx;
+}
+
+.amount {
+  color: #f0442e;
+  font-size: 31rpx;
+  font-weight: 900;
+}
+
+.complete-btn {
+  height: 56rpx;
+  line-height: 56rpx;
+  padding: 0 22rpx;
+  border-radius: 28rpx;
+  color: #fff;
+  font-size: 25rpx;
+  font-weight: 800;
+  background: #12b85b;
+}
+
+.empty {
+  min-height: 520rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14rpx;
+  color: #8a9099;
+}
+
+.empty-title {
+  color: #4f5964;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.empty-desc {
+  font-size: 25rpx;
+}

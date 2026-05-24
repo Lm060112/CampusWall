@@ -1,0 +1,112 @@
+.page {
+  min-height: 100vh;
+  padding: 28rpx;
+  box-sizing: border-box;
+  background: #fbfbfb;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.back-btn,
+.header-placeholder {
+  width: 68rpx;
+  height: 68rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  color: #111;
+  font-size: 38rpx;
+  font-weight: 900;
+}
+
+.tip-card {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin-top: 24rpx;
+  padding: 24rpx;
+  border-radius: 8rpx;
+  background: #eaf8ef;
+}
+
+.tip-title {
+  display: block;
+  color: #111;
+  font-size: 30rpx;
+  font-weight: 900;
+}
+
+.tip-desc {
+  display: block;
+  margin-top: 8rpx;
+  color: #5f6872;
+  font-size: 24rpx;
+  line-height: 1.4;
+}
+
+.form-card {
+  margin-top: 24rpx;
+  padding: 8rpx 24rpx;
+  border: 1rpx solid #edf0f2;
+  border-radius: 8rpx;
+  background: #fff;
+}
+
+.field {
+  min-height: 92rpx;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  border-bottom: 1rpx solid #f0f2f4;
+}
+
+.field:last-child {
+  border-bottom: none;
+}
+
+.field--textarea {
+  align-items: flex-start;
+  padding: 24rpx 0;
+}
+
+.label {
+  width: 84rpx;
+  flex: 0 0 auto;
+  color: #111;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+input,
+textarea {
+  flex: 1;
+  min-width: 0;
+  color: #222;
+  font-size: 27rpx;
+}
+
+textarea {
+  height: 140rpx;
+  line-height: 1.45;
+}
+
+.save-btn {
+  height: 82rpx;
+  line-height: 82rpx;
+  margin-top: 28rpx;
+  text-align: center;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 900;
+  border-radius: 41rpx;
+  background: #12b85b;
+}

@@ -1,0 +1,84 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <text class="header-title">{{ viewMeta.title }}</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view class="pickup-card">
+    <view class="pickup-top">
+      <view>
+        <text class="pickup-type">{{ viewMeta.typeTitle }}</text>
+        <text class="pickup-tip">{{ viewMeta.tip }}</text>
+      </view>
+      <van-icon name="{{ viewMeta.icon }}" size="52rpx" color="{{ viewMeta.color }}" />
+    </view>
+    <view class="info-row">
+      <text class="info-label">{{ viewMeta.merchantLabel }}</text>
+      <text class="info-value">{{ draft.merchant.name }}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">{{ viewMeta.addressLabel }}</text>
+      <text class="info-value">{{ draft.merchant.address }}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">{{ viewMeta.timeLabel }}</text>
+      <text class="info-value">{{ draft.merchant.eta }}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{ viewMeta.needsAddress }}" class="address-card" catch:tap="onAddressTap">
+    <view class="address-head">
+      <text>联系人信息</text>
+      <van-icon name="arrow" size="26rpx" color="#999" />
+    </view>
+    <text class="contact-text">{{ contactText }}</text>
+    <text class="address-text">{{ addressText }}</text>
+  </view>
+
+  <view class="order-card">
+    <view class="card-title">
+      <text>{{ draft.merchant.name }}</text>
+      <text class="merchant-tag">{{ draft.merchant.tag }}</text>
+    </view>
+    <view wx:for="{{ draft.items }}" wx:key="id" class="item-row">
+      <image class="item-img" src="{{ item.image }}" mode="aspectFill" />
+      <view class="item-main">
+        <text class="item-name">{{ item.name }}</text>
+        <text class="item-count">x{{ item.count }}</text>
+      </view>
+      <text class="item-price">¥{{ item.price * item.count / 100 }}</text>
+    </view>
+    <view class="amount-row">
+      <text>{{ viewMeta.amountLabel }}</text>
+      <text>¥{{ draft.totalAmount / 100 }}</text>
+    </view>
+    <view class="amount-row">
+      <text>{{ viewMeta.feeLabel }}</text>
+      <text>{{ viewMeta.feeText }}</text>
+    </view>
+  </view>
+
+  <view class="remark-card">
+    <view class="remark-title">{{ viewMeta.remarkTitle }}</view>
+    <textarea
+      class="remark-input"
+      value="{{ remark }}"
+      maxlength="80"
+      placeholder="{{ viewMeta.remarkPlaceholder }}"
+      bindinput="onRemarkInput"
+    />
+  </view>
+
+  <view class="submit-bar">
+    <view class="submit-total">
+      <text class="total-label">合计</text>
+      <text class="total-price">¥{{ draft.totalAmount / 100 }}</text>
+    </view>
+    <view class="submit-btn {{ submitting ? 'submit-btn--disabled' : '' }}" catch:tap="onSubmit">
+      {{ submitting ? '提交中' : viewMeta.submitText }}
+    </view>
+  </view>
+</view>

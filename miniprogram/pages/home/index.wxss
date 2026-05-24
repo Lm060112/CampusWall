@@ -1,7 +1,390 @@
-.container {
+.page {
+  min-height: 100vh;
+  padding: 28rpx 28rpx 44rpx;
+  box-sizing: border-box;
+  background: #fbfbfb;
+}
+
+.top-row {
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  color: #999;
+  gap: 18rpx;
+}
+
+.campus {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  color: #111;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.search-box {
+  flex: 1;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 0 22rpx;
+  box-sizing: border-box;
+  border: 1rpx solid #e1e5ea;
+  border-radius: 8rpx;
+  color: #8a8f98;
+  font-size: 28rpx;
+  background: #fff;
+}
+
+.scan-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notice-bar {
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 24rpx;
+  padding: 0 22rpx;
+  border-radius: 32rpx;
+  color: #197a43;
+  font-size: 25rpx;
+  background: #edf9f0;
+}
+
+.notice-bar > text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notice-link {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+  margin-top: 26rpx;
+}
+
+.service-card {
+  position: relative;
+  min-height: 186rpx;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  padding: 28rpx 22rpx;
+  box-sizing: border-box;
+  border-radius: 8rpx;
+}
+
+.service-card--green {
+  background: linear-gradient(135deg, #eff9ed, #dff3dc);
+}
+
+.service-card--orange {
+  background: linear-gradient(135deg, #fff4e8, #ffe5c7);
+}
+
+.service-card--blue {
+  background: linear-gradient(135deg, #eef7ff, #dfeeff);
+}
+
+.service-card--purple {
+  background: linear-gradient(135deg, #f7f0ff, #eee2ff);
+}
+
+.service-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.service-title {
+  display: block;
+  color: #111;
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.service-desc {
+  display: block;
+  margin-top: 16rpx;
+  color: #4e5560;
+  font-size: 26rpx;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.service-visual {
+  position: absolute;
+  right: 18rpx;
+  bottom: 18rpx;
+  width: 112rpx;
+  height: 112rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 56rpx;
+  background: rgba(20, 170, 83, 0.22);
+}
+
+.service-card--orange .service-visual {
+  background: rgba(245, 147, 36, 0.24);
+}
+
+.service-card--blue .service-visual {
+  background: rgba(44, 135, 245, 0.23);
+}
+
+.service-card--purple .service-visual {
+  background: rgba(125, 86, 224, 0.23);
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 34rpx 4rpx 18rpx;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  color: #111;
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.more {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  color: #666;
+  font-size: 26rpx;
+}
+
+.recommend-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.recommend-list {
+  display: flex;
+  gap: 20rpx;
+  padding: 0 4rpx 4rpx;
+}
+
+.recommend-card {
+  flex: 0 0 220rpx;
+  overflow: hidden;
+  border: 1rpx solid #edf0f3;
+  border-radius: 8rpx;
+  background: #fff;
+}
+
+.recommend-img {
+  width: 220rpx;
+  height: 126rpx;
+  display: block;
+}
+
+.recommend-body {
+  padding: 14rpx 16rpx 16rpx;
+}
+
+.recommend-name {
+  display: block;
+  color: #111;
+  font-size: 25rpx;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recommend-meta {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 10rpx;
+  color: #777;
+  font-size: 22rpx;
+}
+
+.coupon {
+  padding: 4rpx 8rpx;
+  color: #15954d;
+  border-radius: 6rpx;
+  background: #edf9f0;
+}
+
+.price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12rpx;
+  margin-top: 14rpx;
+}
+
+.price {
+  color: #f0442e;
+  font-size: 30rpx;
+}
+
+.start-price {
+  color: #777;
+  font-size: 22rpx;
+}
+
+.merchant-card {
+  display: flex;
+  gap: 18rpx;
+  padding: 16rpx;
+  border: 1rpx solid #edf0f3;
+  border-radius: 8rpx;
+  background: #fff;
+}
+
+.merchant-img {
+  width: 150rpx;
+  height: 110rpx;
+  border-radius: 6rpx;
+  background: #f2f3f5;
+}
+
+.merchant-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.merchant-top {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.merchant-name {
+  max-width: 260rpx;
+  color: #111;
+  font-size: 28rpx;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchant-tag {
+  padding: 4rpx 8rpx;
+  color: #15954d;
+  font-size: 20rpx;
+  border-radius: 5rpx;
+  background: #edf9f0;
+}
+
+.distance {
+  color: #777;
+  font-size: 22rpx;
+}
+
+.coupon-row {
+  display: flex;
+  gap: 8rpx;
+  margin-top: 18rpx;
+}
+
+.small-coupon {
+  padding: 5rpx 8rpx;
+  color: #f0562f;
+  font-size: 21rpx;
+  border-radius: 5rpx;
+  background: #fff1e9;
+}
+
+.merchant-sub {
+  display: block;
+  margin-top: 16rpx;
+  color: #777;
+  font-size: 23rpx;
+}
+
+.merchant-side {
+  width: 96rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.rating {
+  color: #11964a;
+  font-size: 24rpx;
+}
+
+.enter-btn {
+  width: 86rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  color: #128b46;
+  font-size: 24rpx;
+  border-radius: 8rpx;
+  background: #e7f7ec;
+}
+
+.announcement-card {
+  padding: 14rpx 18rpx;
+  border: 1rpx solid #edf0f3;
+  border-radius: 8rpx;
+  background: #fff;
+}
+
+.announcement-row {
+  min-height: 56rpx;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.announcement-type {
+  padding: 6rpx 12rpx;
+  color: #148a42;
+  font-size: 23rpx;
+  border-radius: 6rpx;
+  background: #e7f7ec;
+}
+
+.announcement-type--1 {
+  color: #256fdd;
+  background: #eaf2ff;
+}
+
+.announcement-title {
+  flex: 1;
+  color: #222;
+  font-size: 25rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.announcement-date {
+  color: #666;
+  font-size: 22rpx;
+}
+
+.red-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 6rpx;
+  background: #f04438;
 }

@@ -1,3 +1,68 @@
-<view class="container">
-  <text>{{title}}开发中...</text>
+<view class="page">
+  <view class="top-row">
+    <text class="page-title">消息</text>
+    <view class="top-action" catch:tap="onSearchTap">
+      <van-icon name="search" size="40rpx" color="#111" />
+      <text>搜索</text>
+    </view>
+    <view class="top-action" catch:tap="onSettingTap">
+      <van-icon name="setting-o" size="40rpx" color="#111" />
+      <text>设置</text>
+    </view>
+  </view>
+
+  <view class="summary-row">
+    <view
+      wx:for="{{ summaryCards }}"
+      wx:key="key"
+      class="summary-card summary-card--{{ item.theme }} {{ activeType === item.key ? 'summary-card--active' : '' }}"
+      data-key="{{ item.key }}"
+      data-title="{{ item.title }}"
+      catch:tap="onCardTap"
+    >
+      <view wx:if="{{ item.count }}" class="count-badge">{{ item.count }}</view>
+      <view class="summary-icon">
+        <van-icon name="{{ item.icon }}" size="46rpx" color="#fff" />
+      </view>
+      <view>
+        <text class="summary-title">{{ item.title }}</text>
+        <text class="summary-desc">{{ item.desc }}</text>
+      </view>
+    </view>
+  </view>
+
+  <text class="section-title">最新消息</text>
+
+  <view class="message-list">
+    <view
+      wx:for="{{ messages }}"
+      wx:key="id"
+      class="message-item"
+      data-id="{{ item.id }}"
+      data-type="{{ item.type }}"
+      data-order-id="{{ item.orderId }}"
+      catch:tap="onMessageTap"
+    >
+      <view class="message-avatar-wrap">
+        <image class="message-avatar" src="{{ item.icon }}" mode="aspectFill" />
+        <view wx:if="{{ item.badgeIcon === 'like' }}" class="mini-badge mini-badge--like">
+          <van-icon name="like" size="24rpx" color="#fff" />
+        </view>
+        <view wx:if="{{ item.badgeIcon === 'comment' }}" class="mini-badge mini-badge--comment">
+          <van-icon name="chat" size="24rpx" color="#fff" />
+        </view>
+      </view>
+      <view class="message-main">
+        <view class="message-title-row">
+          <text class="message-title">{{ item.title }}</text>
+          <text class="message-time">{{ item.time }}</text>
+        </view>
+        <view class="message-content-row">
+          <text class="message-content">{{ item.content }}</text>
+          <text wx:if="{{ item.status }}" class="status-pill status-pill--{{ item.statusClass }}">{{ item.status }}</text>
+        </view>
+      </view>
+      <view wx:if="{{ item.unread }}" class="unread-dot"></view>
+    </view>
+  </view>
 </view>

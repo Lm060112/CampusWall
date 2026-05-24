@@ -1,0 +1,44 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <view class="header-main">
+      <text class="title">跑腿代取</text>
+      <text class="subtitle">快递、代买、代送、打印取件</text>
+    </view>
+  </view>
+
+  <view class="type-grid">
+    <view
+      wx:for="{{ types }}"
+      wx:key="key"
+      class="type-card {{ activeType === item.key ? 'type-card--active' : '' }}"
+      data-key="{{ item.key }}"
+      catch:tap="onTypeTap"
+    >
+      <van-icon name="{{ item.icon }}" size="42rpx" color="{{ activeType === item.key ? '#fff' : '#178dff' }}" />
+      <text>{{ item.title }}</text>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="field">
+      <text class="label">起点</text>
+      <input value="{{ fromText }}" data-field="fromText" bindinput="onInput" placeholder="从哪里取/买/送" />
+    </view>
+    <view class="field">
+      <text class="label">送达</text>
+      <input value="{{ toText }}" data-field="toText" bindinput="onInput" placeholder="送到哪里" />
+    </view>
+    <view class="field field--textarea">
+      <text class="label">需求</text>
+      <textarea value="{{ detail }}" data-field="detail" bindinput="onInput" maxlength="100" placeholder="例如：取3号柜快递，尾号1234；或代买矿泉水两瓶" />
+    </view>
+    <view class="field">
+      <text class="label">赏金</text>
+      <input value="{{ reward }}" data-field="reward" bindinput="onInput" type="number" placeholder="建议 3-10 元" />
+      <text class="unit">元</text>
+    </view>
+  </view>
+
+  <view class="submit-btn" catch:tap="onSubmit">提交需求</view>
+</view>

@@ -1,0 +1,89 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <text class="header-title">订单详情</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <block wx:if="{{ order }}">
+    <view class="status-card">
+      <text class="status-title">{{ order.status }}</text>
+      <text class="status-desc">{{ order.statusText || '订单处理中' }}</text>
+      <view class="step-row">
+        <view class="step-item {{ order.statusStep >= 1 ? 'step-item--active' : '' }}">
+          <view class="step-dot"></view>
+          <text>{{ order.statusLabels[0] }}</text>
+        </view>
+        <view class="step-line {{ order.statusStep >= 2 ? 'step-line--active' : '' }}"></view>
+        <view class="step-item {{ order.statusStep >= 2 ? 'step-item--active' : '' }}">
+          <view class="step-dot"></view>
+          <text>{{ order.statusLabels[1] }}</text>
+        </view>
+        <view class="step-line {{ order.statusStep >= 3 ? 'step-line--active' : '' }}"></view>
+        <view class="step-item {{ order.statusStep >= 3 ? 'step-item--active' : '' }}">
+          <view class="step-dot"></view>
+          <text>{{ order.statusLabels[2] }}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="pickup-card">
+      <view class="pickup-no">
+        <text>取餐号</text>
+        <text class="pickup-code">{{ order.pickupNo }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">服务点</text>
+        <text class="info-value">{{ order.merchant.name }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">取餐点</text>
+        <text class="info-value">{{ order.merchant.address }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">预计时间</text>
+        <text class="info-value">{{ order.merchant.eta }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">下单时间</text>
+        <text class="info-value">{{ order.timeText }}</text>
+      </view>
+      <view wx:if="{{ order.contact }}" class="info-row">
+        <text class="info-label">联系人</text>
+        <text class="info-value">{{ order.contact.name }} {{ order.contact.phone }}</text>
+      </view>
+      <view wx:if="{{ order.contact }}" class="info-row">
+        <text class="info-label">送达信息</text>
+        <text class="info-value">{{ order.contact.campus }} {{ order.contact.building }} {{ order.contact.room }} · {{ order.contact.detail }}</text>
+      </view>
+    </view>
+
+    <view class="order-card">
+      <view class="card-title">{{ order.merchant.name }}</view>
+      <view wx:for="{{ order.items }}" wx:key="id" class="item-row">
+        <image class="item-img" src="{{ item.image }}" mode="aspectFill" />
+        <view class="item-main">
+          <text class="item-name">{{ item.name }}</text>
+          <text class="item-count">x{{ item.count }}</text>
+        </view>
+        <text class="item-price">¥{{ item.price * item.count / 100 }}</text>
+      </view>
+      <view wx:if="{{ order.remark }}" class="remark-row">备注：{{ order.remark }}</view>
+      <view class="amount-row">
+        <text>共 {{ order.itemCount }} 件</text>
+        <text class="amount">¥{{ order.totalAmount / 100 }}</text>
+      </view>
+    </view>
+
+    <view class="action-bar">
+      <view class="primary-btn" catch:tap="onReadyTap">{{ order.primaryAction.text }}</view>
+    </view>
+  </block>
+
+  <view wx:else class="empty">
+    <van-icon name="warning-o" size="92rpx" color="#b7c0ca" />
+    <text>订单不存在</text>
+  </view>
+</view>

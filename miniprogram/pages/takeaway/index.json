@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "校外外卖",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

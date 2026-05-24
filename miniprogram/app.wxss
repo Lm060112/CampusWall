@@ -1,14 +1,4 @@
 /**app.wxss**/
-/* Vant 图标字体走本地，避免 at.alicdn.com 在开发者工具中报 ERR_CACHE_MISS */
-@font-face {
-  font-family: vant-icon;
-  font-style: normal;
-  font-weight: 400;
-  font-display: auto;
-  src: url("/assets/fonts/vant-icon.woff2") format("woff2"),
-    url("/assets/fonts/vant-icon.woff") format("woff");
-}
-
 .container {
   display: flex;
   flex-direction: column;

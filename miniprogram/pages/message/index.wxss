@@ -1,7 +1,235 @@
-.container {
+.page {
+  min-height: 100vh;
+  padding: 30rpx 28rpx 40rpx;
+  box-sizing: border-box;
+  background: #fbfbfb;
+}
+
+.top-row {
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  color: #999;
+  gap: 24rpx;
+}
+
+.page-title {
+  flex: 1;
+  color: #111;
+  font-size: 46rpx;
+  font-weight: 900;
+}
+
+.top-action {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: #111;
+  font-size: 28rpx;
+}
+
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+  margin-top: 38rpx;
+}
+
+.summary-card {
+  position: relative;
+  min-height: 136rpx;
+  padding: 24rpx 18rpx;
+  box-sizing: border-box;
+  border: 2rpx solid transparent;
+  border-radius: 8rpx;
+}
+
+.summary-card--active {
+  border-color: rgba(18, 184, 91, 0.45);
+}
+
+.summary-card--green {
+  background: linear-gradient(135deg, #eff9ed, #e7f7ec);
+}
+
+.summary-card--blue {
+  background: linear-gradient(135deg, #eef7ff, #e8f1ff);
+}
+
+.summary-card--purple {
+  background: linear-gradient(135deg, #f6efff, #eee8ff);
+}
+
+.summary-icon {
+  width: 58rpx;
+  height: 58rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16rpx;
+  border-radius: 8rpx;
+  background: #1fc75d;
+}
+
+.summary-card--blue .summary-icon {
+  background: #4a9df7;
+}
+
+.summary-card--purple .summary-icon {
+  background: #8b62f2;
+}
+
+.summary-title {
+  display: block;
+  color: #111;
+  font-size: 27rpx;
+  font-weight: 800;
+}
+
+.summary-desc {
+  display: block;
+  margin-top: 8rpx;
+  color: #666;
+  font-size: 22rpx;
+  white-space: nowrap;
+}
+
+.count-badge {
+  position: absolute;
+  right: 18rpx;
+  top: 18rpx;
+  width: 38rpx;
+  height: 38rpx;
+  line-height: 38rpx;
+  text-align: center;
+  color: #fff;
+  font-size: 22rpx;
+  font-weight: 800;
+  border-radius: 19rpx;
+  background: #ff4d4f;
+}
+
+.section-title {
+  display: block;
+  margin: 36rpx 0 18rpx 6rpx;
+  color: #111;
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.message-list {
+  background: #fff;
+}
+
+.message-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  min-height: 128rpx;
+  padding: 18rpx 6rpx;
+  border-bottom: 1rpx solid #edf0f3;
+}
+
+.message-item:last-child {
+  border-bottom: none;
+}
+
+.message-avatar-wrap {
+  position: relative;
+  width: 86rpx;
+  height: 86rpx;
+  flex: 0 0 86rpx;
+}
+
+.message-avatar {
+  width: 86rpx;
+  height: 86rpx;
+  border-radius: 43rpx;
+  background: #f0f2f5;
+}
+
+.mini-badge {
+  position: absolute;
+  right: -2rpx;
+  bottom: -2rpx;
+  width: 34rpx;
+  height: 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4rpx solid #fff;
+  border-radius: 21rpx;
+}
+
+.mini-badge--like {
+  background: #ff5b75;
+}
+
+.mini-badge--comment {
+  background: #378bff;
+}
+
+.message-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.message-title {
+  color: #111;
+  font-size: 29rpx;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-time {
+  flex: 0 0 auto;
+  color: #777;
+  font-size: 24rpx;
+}
+
+.message-content-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 12rpx;
+}
+
+.message-content {
+  max-width: 430rpx;
+  color: #666;
+  font-size: 25rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-pill {
+  flex: 0 0 auto;
+  padding: 6rpx 12rpx;
+  color: #14914a;
+  font-size: 22rpx;
+  border-radius: 6rpx;
+  background: #e7f7ec;
+}
+
+.status-pill--done,
+.status-pill--refunded {
+  color: #6b7280;
+  background: #eef1f5;
+}
+
+.unread-dot {
+  width: 14rpx;
+  height: 14rpx;
+  margin-left: 6rpx;
+  border-radius: 7rpx;
+  background: #ff3b30;
 }
