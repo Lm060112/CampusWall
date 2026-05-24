@@ -31,50 +31,18 @@ const getMiniProgramCode = async () => {
 };
 
 // 创建集合
-const createCollection = async () => {
+const createCollection = async (event) => {
   try {
-    // 创建集合
-    await db.createCollection("sales");
-    await db.collection("sales").add({
-      // data 字段表示需新增的 JSON 数据
-      data: {
-        region: "华东",
-        city: "上海",
-        sales: 11,
-      },
-    });
-    await db.collection("sales").add({
-      // data 字段表示需新增的 JSON 数据
-      data: {
-        region: "华东",
-        city: "南京",
-        sales: 11,
-      },
-    });
-    await db.collection("sales").add({
-      // data 字段表示需新增的 JSON 数据
-      data: {
-        region: "华南",
-        city: "广州",
-        sales: 22,
-      },
-    });
-    await db.collection("sales").add({
-      // data 字段表示需新增的 JSON 数据
-      data: {
-        region: "华南",
-        city: "深圳",
-        sales: 22,
-      },
-    });
-    return {
-      success: true,
-    };
-  } catch (e) {
-    // 这里catch到的是该collection已经存在，从业务逻辑上来说是运行成功的，所以catch返回success给前端，避免工具在前端抛出异常
+    const { collection } = event;
+    await db.createCollection(collection);
     return {
       success: true,
       data: "create collection success",
+    };
+  } catch (e) {
+    return {
+      success: true,
+      data: "collection already exists or created",
     };
   }
 };
@@ -233,7 +201,7 @@ exports.main = async (event, context) => {
     case "getMiniProgramCode":
       return await getMiniProgramCode();
     case "createCollection":
-      return await createCollection();
+      return await createCollection(event);
     case "selectRecord":
       return await selectRecord();
     case "updateRecord":
@@ -245,16 +213,43 @@ exports.main = async (event, context) => {
     case "likePost":
       try {
         const { id } = event;
+        const wxContext = cloud.getWXContext();
+        const openid = wxContext.OPENID;
         if (!id) return { success: false, errMsg: "帖子ID缺失" };
-        await db
-          .collection("posts")
-          .doc(id)
-          .update({
-            data: {
-              likes: db.command.inc(1),
-            },
-          });
-        return { success: true };
+
+        const _ = db.command;
+        // 先查询帖子，判断用户是否已点赞
+        const post = await db.collection("posts").doc(id).get().catch(() => null);
+        if (!post) return { success: false, errMsg: "帖子不存在" };
+
+        const likedUsers = post.data.likedUsers || [];
+        const isLiked = likedUsers.includes(openid);
+
+        if (isLiked) {
+          // 如果已点赞，则取消点赞：减少计数值，并从数组中移除 openid
+          await db
+            .collection("posts")
+            .doc(id)
+            .update({
+              data: {
+                likes: _.inc(-1),
+                likedUsers: _.pull(openid),
+              },
+            });
+          return { success: true, action: "unliked" };
+        } else {
+          // 如果未点赞，则点赞：增加计数值，并向数组中添加 openid
+          await db
+            .collection("posts")
+            .doc(id)
+            .update({
+              data: {
+                likes: _.inc(1),
+                likedUsers: _.addToSet(openid),
+              },
+            });
+          return { success: true, action: "liked" };
+        }
       } catch (e) {
         return { success: false, errMsg: e.message };
       }
@@ -278,6 +273,90 @@ exports.main = async (event, context) => {
         }
 
         await db.collection("posts").doc(id).remove();
+        // 同步删除该帖子下的所有评论
+        await db
+          .collection("comments")
+          .where({
+            postId: id,
+          })
+          .remove();
+
+        return { success: true };
+      } catch (e) {
+        return { success: false, errMsg: e.message };
+      }
+    case "addComment":
+      try {
+        const { postId, content, nickname } = event;
+        const wxContext = cloud.getWXContext();
+        const openid = wxContext.OPENID;
+
+        await db.collection("comments").add({
+          data: {
+            postId,
+            content,
+            nickname,
+            _openid: openid,
+            timestamp: Date.now(),
+            likes: 0,
+            likedUsers: [],
+          },
+        });
+        return { success: true };
+      } catch (e) {
+        return { success: false, errMsg: e.message };
+      }
+    case "likeComment":
+      try {
+        const { id } = event;
+        const wxContext = cloud.getWXContext();
+        const openid = wxContext.OPENID;
+
+        const _ = db.command;
+        const comment = await db.collection("comments").doc(id).get().catch(() => null);
+        if (!comment) return { success: false, errMsg: "评论不存在" };
+
+        const isLiked = (comment.data.likedUsers || []).includes(openid);
+
+        if (isLiked) {
+          await db
+            .collection("comments")
+            .doc(id)
+            .update({
+              data: {
+                likes: _.inc(-1),
+                likedUsers: _.pull(openid),
+              },
+            });
+        } else {
+          await db
+            .collection("comments")
+            .doc(id)
+            .update({
+              data: {
+                likes: _.inc(1),
+                likedUsers: _.addToSet(openid),
+              },
+            });
+        }
+        return { success: true };
+      } catch (e) {
+        return { success: false, errMsg: e.message };
+      }
+    case "deleteComment":
+      try {
+        const { id } = event;
+        const wxContext = cloud.getWXContext();
+        const openid = wxContext.OPENID;
+
+        const comment = await db.collection("comments").doc(id).get().catch(() => null);
+        if (!comment) return { success: false, errMsg: "评论不存在" };
+
+        if (comment.data._openid !== openid) {
+          return { success: false, errMsg: "无权删除他人评论" };
+        }
+
+        await db.collection("comments").doc(id).remove();
         return { success: true };
       } catch (e) {
         return { success: false, errMsg: e.message };
