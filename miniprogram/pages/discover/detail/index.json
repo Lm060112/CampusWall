@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "帖子详情",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

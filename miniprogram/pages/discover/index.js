@@ -119,7 +119,10 @@ Page({
   loadPosts() {
     const saved = wx.getStorageSync(STORAGE_KEY);
     const customPosts = Array.isArray(saved) ? saved : [];
-    const allPosts = customPosts.concat(MOCK_POSTS).map((post) => this.decoratePost(post));
+    const savedIds = customPosts.map((post) => post.id);
+    const allPosts = customPosts
+      .concat(MOCK_POSTS.filter((post) => !savedIds.includes(post.id)))
+      .map((post) => this.decoratePost(post));
     this.setData({ allPosts }, () => this.applyFilter());
   },
 
@@ -173,7 +176,7 @@ Page({
 
   updatePost(id, updater) {
     const allPosts = this.data.allPosts.map((post) => (post.id === id ? this.decoratePost(updater(post)) : post));
-    const customPosts = allPosts.filter((post) => post.isCustom);
+    const customPosts = allPosts.filter((post) => post.isCustom || post.liked || post.collected || (post.comments && post.comments.length));
     this.saveCustomPosts(customPosts);
     this.setData({ allPosts }, () => this.applyFilter());
   },
@@ -192,6 +195,12 @@ Page({
 
   onScanTap() {
     wx.showToast({ title: "扫码入口待接入", icon: "none" });
+  },
+
+  onPostTap(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/discover/detail/index?id=${id}` });
   },
 
   onPublishTap() {

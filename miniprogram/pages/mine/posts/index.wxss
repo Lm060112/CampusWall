@@ -1,0 +1,125 @@
+.page {
+  min-height: 100vh;
+  padding: 28rpx;
+  box-sizing: border-box;
+  background: #fbfbfb;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.back-btn,
+.header-placeholder {
+  width: 68rpx;
+  height: 68rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  color: #111;
+  font-size: 34rpx;
+  font-weight: 900;
+}
+
+.empty {
+  height: 520rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18rpx;
+  color: #8a8f98;
+  font-size: 28rpx;
+}
+
+.post-list {
+  margin-top: 20rpx;
+}
+
+.post-card {
+  position: relative;
+  display: flex;
+  gap: 18rpx;
+  margin-bottom: 18rpx;
+  padding: 20rpx;
+  border: 1rpx solid #edf0f3;
+  border-radius: 8rpx;
+  background: #fff;
+}
+
+.cover {
+  width: 132rpx;
+  height: 132rpx;
+  flex: 0 0 132rpx;
+  border-radius: 8rpx;
+  background: #f0f2f5;
+}
+
+.post-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-head {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.tag {
+  padding: 5rpx 10rpx;
+  color: #148844;
+  font-size: 22rpx;
+  border-radius: 6rpx;
+  background: #e7f7ec;
+}
+
+.time {
+  color: #8a8f98;
+  font-size: 23rpx;
+}
+
+.content {
+  display: -webkit-box;
+  margin-top: 12rpx;
+  color: #111;
+  font-size: 28rpx;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-top: 12rpx;
+  color: #777;
+  font-size: 23rpx;
+}
+
+.post-meta text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-btn {
+  position: absolute;
+  right: 18rpx;
+  top: 18rpx;
+  padding: 8rpx 12rpx;
+  color: #777;
+  font-size: 23rpx;
+}

@@ -17,7 +17,6 @@
       wx:key="key"
       class="summary-card summary-card--{{ item.theme }} {{ activeType === item.key ? 'summary-card--active' : '' }}"
       data-key="{{ item.key }}"
-      data-title="{{ item.title }}"
       catch:tap="onCardTap"
     >
       <view wx:if="{{ item.count }}" class="count-badge">{{ item.count }}</view>

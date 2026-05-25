@@ -1,0 +1,83 @@
+<view class="page" wx:if="{{ post }}">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <text class="header-title">帖子详情</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view class="post-card">
+    <view class="author-row">
+      <image class="avatar" src="{{ post.avatar }}" mode="aspectFill" />
+      <view class="author-main">
+        <text class="author-name">{{ post.author }}</text>
+        <text class="meta">{{ post.timeText }} · {{ post.topic }}</text>
+      </view>
+      <text class="tag">{{ post.tag }}</text>
+    </view>
+
+    <text class="content">{{ post.content }}</text>
+    <text wx:if="{{ post.priceText }}" class="price">{{ post.priceText }}</text>
+
+    <view wx:if="{{ post.images.length }}" class="image-grid">
+      <image
+        wx:for="{{ post.images }}"
+        wx:key="*this"
+        class="post-image"
+        src="{{ item }}"
+        mode="aspectFill"
+        data-src="{{ item }}"
+        catch:tap="onPreviewImage"
+      />
+    </view>
+
+    <view wx:if="{{ post.eventTitle }}" class="event-card">
+      <van-icon name="calendar-o" size="46rpx" color="#14a957" />
+      <view>
+        <text class="event-title">{{ post.eventTitle }}</text>
+        <text class="event-time">{{ post.eventTime || post.location }}</text>
+      </view>
+    </view>
+
+    <view class="location">
+      <van-icon name="location" size="30rpx" color="#18b957" />
+      <text>{{ post.location }}</text>
+    </view>
+
+    <view class="action-row">
+      <view class="action {{ post.liked ? 'action--active' : '' }}" catch:tap="onLikeTap">
+        <van-icon name="{{ post.liked ? 'like' : 'like-o' }}" size="42rpx" color="{{ post.liked ? '#12b85b' : '#333' }}" />
+        <text>{{ post.likes }}</text>
+      </view>
+      <view class="action {{ post.collected ? 'action--active' : '' }}" catch:tap="onCollectTap">
+        <van-icon name="{{ post.collected ? 'star' : 'star-o' }}" size="42rpx" color="{{ post.collected ? '#12b85b' : '#333' }}" />
+        <text>{{ post.collected ? '已收藏' : '收藏' }}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="comment-panel">
+    <text class="section-title">评论 {{ post.commentCount }}</text>
+    <view wx:if="{{ !post.comments.length }}" class="empty">还没有评论，来做第一个回应的人</view>
+    <view wx:for="{{ post.comments }}" wx:key="id" class="comment-row">
+      <image class="comment-avatar" src="/images/avatar.png" mode="aspectFill" />
+      <view class="comment-main">
+        <text class="comment-author">{{ item.nickname }}</text>
+        <text class="comment-content">{{ item.content }}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="comment-bar">
+    <input
+      class="comment-input"
+      placeholder="写下你的评论..."
+      value="{{ commentInput }}"
+      bindinput="onCommentInput"
+      confirm-type="send"
+      bindconfirm="onSubmitComment"
+    />
+    <view class="send-btn" catch:tap="onSubmitComment">发送</view>
+  </view>
+</view>

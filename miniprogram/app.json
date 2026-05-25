@@ -12,8 +12,11 @@
     "pages/order/detail",
     "pages/address/index",
     "pages/discover/index",
+    "pages/discover/detail/index",
     "pages/message/index",
+    "pages/message/detail/index",
     "pages/mine/index",
+    "pages/mine/posts/index",
     "pages/square/index",
     "pages/index/index",
     "pages/example/index"

@@ -1,0 +1,34 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <text class="header-title">{{ title }}</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view wx:if="{{ !list.length }}" class="empty">
+    <van-icon name="{{ mode === 'favorites' ? 'star-o' : 'notes-o' }}" size="62rpx" color="#aeb6c2" />
+    <text>{{ emptyText }}</text>
+  </view>
+
+  <view class="post-list">
+    <view wx:for="{{ list }}" wx:key="id" class="post-card" data-id="{{ item.id }}" catch:tap="onPostTap">
+      <image class="cover" src="{{ item.cover }}" mode="aspectFill" />
+      <view class="post-main">
+        <view class="post-head">
+          <text class="tag">{{ item.tag }}</text>
+          <text class="time">{{ item.timeText }}</text>
+        </view>
+        <text class="content">{{ item.content }}</text>
+        <view class="post-meta">
+          <text>{{ item.location }}</text>
+          <text>{{ item.likes || 0 }} 赞 · {{ item.comments ? item.comments.length : 0 }} 评论</text>
+        </view>
+      </view>
+      <view class="remove-btn" data-id="{{ item.id }}" catch:tap="onRemoveTap">
+        {{ mode === 'favorites' ? '取消' : '删除' }}
+      </view>
+    </view>
+  </view>
+</view>

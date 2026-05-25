@@ -1,0 +1,103 @@
+.page {
+  min-height: 100vh;
+  padding: 28rpx;
+  box-sizing: border-box;
+  background: #fbfbfb;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.back-btn,
+.header-placeholder {
+  width: 68rpx;
+  height: 68rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  color: #111;
+  font-size: 34rpx;
+  font-weight: 900;
+}
+
+.detail-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 28rpx;
+  padding: 44rpx 32rpx;
+  border: 1rpx solid #edf0f3;
+  border-radius: 8rpx;
+  background: #fff;
+}
+
+.message-icon {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 56rpx;
+  background: #f0f2f5;
+}
+
+.message-title {
+  display: block;
+  margin-top: 26rpx;
+  color: #111;
+  font-size: 36rpx;
+  font-weight: 900;
+  text-align: center;
+}
+
+.message-time {
+  display: block;
+  margin-top: 12rpx;
+  color: #8a8f98;
+  font-size: 24rpx;
+}
+
+.content-box {
+  width: 100%;
+  margin-top: 34rpx;
+  padding: 26rpx;
+  box-sizing: border-box;
+  color: #444;
+  font-size: 29rpx;
+  line-height: 1.7;
+  border-radius: 8rpx;
+  background: #f7f8fa;
+}
+
+.status-pill {
+  margin-top: 24rpx;
+  padding: 8rpx 16rpx;
+  color: #14914a;
+  font-size: 24rpx;
+  border-radius: 6rpx;
+  background: #e7f7ec;
+}
+
+.status-pill--done,
+.status-pill--refunded {
+  color: #6b7280;
+  background: #eef1f5;
+}
+
+.action-btn {
+  width: 100%;
+  height: 82rpx;
+  line-height: 82rpx;
+  margin-top: 38rpx;
+  text-align: center;
+  color: #fff;
+  font-size: 29rpx;
+  font-weight: 900;
+  border-radius: 8rpx;
+  background: #12b85b;
+}

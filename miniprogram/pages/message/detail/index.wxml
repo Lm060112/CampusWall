@@ -1,0 +1,20 @@
+<view class="page" wx:if="{{ message }}">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <text class="header-title">消息详情</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view class="detail-card">
+    <image class="message-icon" src="{{ message.icon }}" mode="aspectFill" />
+    <text class="message-title">{{ message.title }}</text>
+    <text class="message-time">{{ message.time }}</text>
+    <view class="content-box">
+      <text>{{ message.content }}</text>
+    </view>
+    <text wx:if="{{ message.status }}" class="status-pill status-pill--{{ message.statusClass }}">{{ message.status }}</text>
+    <view class="action-btn" catch:tap="onActionTap">{{ message.actionText || '知道了' }}</view>
+  </view>
+</view>

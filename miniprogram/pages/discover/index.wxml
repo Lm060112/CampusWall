@@ -32,7 +32,7 @@
     <view class="feed-list">
       <view wx:if="{{ feedList.length === 0 }}" class="empty-state">{{ emptyText }}</view>
 
-      <view wx:for="{{ feedList }}" wx:key="id" class="feed-card">
+      <view wx:for="{{ feedList }}" wx:key="id" class="feed-card" data-id="{{ item.id }}" catch:tap="onPostTap">
         <view class="feed-header">
           <image class="avatar" src="{{ item.avatar }}" mode="aspectFill" />
           <view class="author-main">
