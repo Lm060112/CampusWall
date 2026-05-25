@@ -9,7 +9,7 @@
 .top-row {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: 18rpx;
 }
 
 .page-title {
@@ -23,14 +23,20 @@
   height: 70rpx;
   display: flex;
   align-items: center;
-  gap: 14rpx;
-  padding: 0 20rpx;
+  gap: 12rpx;
+  padding: 0 18rpx;
   box-sizing: border-box;
   border: 1rpx solid #e1e5ea;
   border-radius: 8rpx;
-  color: #8a8f98;
-  font-size: 28rpx;
   background: #fff;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  height: 68rpx;
+  color: #111;
+  font-size: 27rpx;
 }
 
 .scan-btn {
@@ -46,7 +52,7 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 34rpx;
-  padding: 0 8rpx;
+  padding: 0 4rpx;
   border-bottom: 1rpx solid #edf0f3;
 }
 
@@ -54,7 +60,7 @@
   position: relative;
   padding-bottom: 20rpx;
   color: #777;
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 500;
 }
 
@@ -79,11 +85,11 @@
 }
 
 .feed-list {
-  padding: 18rpx 0 150rpx;
+  padding: 18rpx 0 160rpx;
 }
 
 .empty-state {
-  padding: 90rpx 0;
+  padding: 100rpx 0;
   color: #8a8f98;
   font-size: 28rpx;
   text-align: center;
@@ -178,6 +184,7 @@
 
 .price-inline {
   color: #f0442e;
+  font-weight: 800;
 }
 
 .image-grid {
@@ -187,7 +194,7 @@
 }
 
 .image-grid--1 {
-  grid-template-columns: 240rpx;
+  grid-template-columns: 260rpx;
 }
 
 .image-grid--2 {
@@ -206,7 +213,7 @@
 }
 
 .image-grid--1 .feed-image {
-  height: 150rpx;
+  height: 180rpx;
 }
 
 .event-card {
@@ -279,7 +286,7 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 34rpx;
+  gap: 26rpx;
 }
 
 .action {
@@ -319,11 +326,6 @@
   min-width: 0;
 }
 
-.comment-delete {
-  padding-left: 16rpx;
-  color: #999;
-}
-
 .publish-fab {
   position: fixed;
   right: 36rpx;
@@ -356,6 +358,7 @@
 
 .composer {
   width: 100%;
+  max-height: 86vh;
   padding: 28rpx;
   box-sizing: border-box;
   border-radius: 18rpx 18rpx 0 0;
@@ -390,18 +393,7 @@
   background: #e7f7ec;
 }
 
-.composer-textarea {
-  width: 100%;
-  height: 180rpx;
-  margin-top: 22rpx;
-  padding: 18rpx;
-  box-sizing: border-box;
-  color: #111;
-  font-size: 28rpx;
-  border-radius: 8rpx;
-  background: #f7f8fa;
-}
-
+.title-input,
 .location-input {
   height: 76rpx;
   margin-top: 18rpx;
@@ -409,6 +401,18 @@
   box-sizing: border-box;
   color: #111;
   font-size: 26rpx;
+  border-radius: 8rpx;
+  background: #f7f8fa;
+}
+
+.composer-textarea {
+  width: 100%;
+  height: 180rpx;
+  margin-top: 18rpx;
+  padding: 18rpx;
+  box-sizing: border-box;
+  color: #111;
+  font-size: 28rpx;
   border-radius: 8rpx;
   background: #f7f8fa;
 }
@@ -428,9 +432,13 @@
   background: #f1f3f5;
 }
 
-.draft-image {
+.draft-image,
+.image-picker {
   width: 130rpx;
   height: 130rpx;
+}
+
+.draft-image {
   border-radius: 8rpx;
 }
 

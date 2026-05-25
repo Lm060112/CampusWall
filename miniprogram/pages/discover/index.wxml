@@ -1,9 +1,15 @@
 <view class="page">
   <view class="top-row">
     <text class="page-title">发现</text>
-    <view class="search-box" catch:tap="onSearchTap">
-      <van-icon name="search" size="36rpx" color="#7a7e83" />
-      <text>搜索帖子 / 用户 / 话题</text>
+    <view class="search-box">
+      <van-icon name="search" size="34rpx" color="#7a7e83" />
+      <input
+        class="search-input"
+        value="{{ searchKeyword }}"
+        placeholder="搜索帖子 / 用户 / 话题"
+        bindinput="onSearchInput"
+      />
+      <van-icon wx:if="{{ searchKeyword }}" name="cross" size="28rpx" color="#999" catch:tap="onClearSearch" />
     </view>
     <view class="scan-btn" catch:tap="onScanTap">
       <van-icon name="scan" size="42rpx" color="#111" />
@@ -24,8 +30,7 @@
 
   <scroll-view class="feed-scroll" scroll-y enhanced show-scrollbar="{{ false }}">
     <view class="feed-list">
-      <view wx:if="{{ loading }}" class="empty-state">加载中...</view>
-      <view wx:if="{{ !loading && feedList.length === 0 }}" class="empty-state">暂无内容，来发布第一条吧</view>
+      <view wx:if="{{ feedList.length === 0 }}" class="empty-state">{{ emptyText }}</view>
 
       <view wx:for="{{ feedList }}" wx:key="id" class="feed-card">
         <view class="feed-header">
@@ -35,14 +40,14 @@
               <text class="author-name">{{ item.author }}</text>
               <text class="tag tag--{{ item.tagClass }}">{{ item.tag }}</text>
             </view>
-            <text class="feed-meta">{{ item.time }} · {{ item.topic }}</text>
+            <text class="feed-meta">{{ item.timeText }} · {{ item.topic }}</text>
           </view>
-          <view wx:if="{{ item.canDelete }}" class="delete-link" data-id="{{ item.id }}" catch:tap="onDeletePost">删除</view>
+          <view wx:if="{{ item.isCustom }}" class="delete-link" data-id="{{ item.id }}" catch:tap="onDeletePost">删除</view>
         </view>
 
         <view class="feed-content">
           <text>{{ item.content }}</text>
-          <text wx:if="{{ item.priceText }}" class="price-inline">{{ item.priceText }}</text>
+          <text wx:if="{{ item.priceText }}" class="price-inline"> {{ item.priceText }}</text>
         </view>
 
         <view wx:if="{{ item.images && item.images.length }}" class="image-grid image-grid--{{ item.imageClass }}">
@@ -53,7 +58,19 @@
             class="feed-image"
             src="{{ img }}"
             mode="aspectFill"
+            data-id="{{ item.id }}"
+            data-src="{{ img }}"
+            catch:tap="onPreviewImage"
           />
+        </view>
+
+        <view wx:if="{{ item.eventTitle }}" class="event-card">
+          <van-icon name="calendar-o" size="46rpx" color="#14a957" />
+          <view class="event-main">
+            <text class="event-title">{{ item.eventTitle }}</text>
+            <text class="event-time">{{ item.eventTime || item.location }}</text>
+          </view>
+          <view class="event-btn">查看</view>
         </view>
 
         <view class="feed-footer">
@@ -62,22 +79,24 @@
             <text>{{ item.location }}</text>
           </view>
           <view class="actions">
-            <view class="action {{ item.isLiked ? 'action--liked' : '' }}" data-id="{{ item.id }}" catch:tap="onLikeTap">
-              <van-icon name="{{ item.isLiked ? 'like' : 'like-o' }}" size="40rpx" color="{{ item.isLiked ? '#12b85b' : '#333' }}" />
+            <view class="action {{ item.liked ? 'action--liked' : '' }}" data-id="{{ item.id }}" catch:tap="onLikeTap">
+              <van-icon name="{{ item.liked ? 'like' : 'like-o' }}" size="39rpx" color="{{ item.liked ? '#12b85b' : '#333' }}" />
               <text>{{ item.likes }}</text>
             </view>
+            <view class="action {{ item.collected ? 'action--liked' : '' }}" data-id="{{ item.id }}" catch:tap="onCollectTap">
+              <van-icon name="{{ item.collected ? 'star' : 'star-o' }}" size="39rpx" color="{{ item.collected ? '#12b85b' : '#333' }}" />
+            </view>
             <view class="action" data-id="{{ item.id }}" catch:tap="onShowCommentInput">
-              <van-icon name="comment-o" size="40rpx" color="#333" />
+              <van-icon name="comment-o" size="39rpx" color="#333" />
               <text>{{ item.commentCount }}</text>
             </view>
           </view>
         </view>
 
         <view wx:if="{{ item.comments && item.comments.length }}" class="comment-list">
-          <view wx:for="{{ item.comments }}" wx:for-item="comment" wx:key="_id" class="comment-row">
+          <view wx:for="{{ item.comments }}" wx:for-item="comment" wx:key="id" class="comment-row">
             <text class="comment-author">{{ comment.nickname }}：</text>
             <text class="comment-content">{{ comment.content }}</text>
-            <text wx:if="{{ comment.canDelete }}" class="comment-delete" data-id="{{ comment._id }}" catch:tap="onDeleteComment">删除</text>
           </view>
         </view>
       </view>
@@ -95,6 +114,7 @@
         <text>发布动态</text>
         <van-icon name="cross" size="34rpx" color="#777" catch:tap="onCloseComposer" />
       </view>
+
       <view class="category-row">
         <view
           wx:for="{{ categoryOptions }}"
@@ -106,19 +126,43 @@
           {{ item }}
         </view>
       </view>
+
+      <input
+        class="title-input"
+        value="{{ draftTitle }}"
+        maxlength="30"
+        placeholder="标题 / 话题，可不填"
+        bindinput="onDraftTitleInput"
+      />
       <textarea
         class="composer-textarea"
         value="{{ draftContent }}"
         maxlength="300"
-        placeholder="分享校园新鲜事..."
+        placeholder="分享校园新鲜事，或写清楚你的需求"
         bindinput="onDraftInput"
+      />
+      <input
+        wx:if="{{ draftCategory === '闲置' }}"
+        class="location-input"
+        value="{{ draftPrice }}"
+        type="digit"
+        placeholder="价格，例如 80"
+        bindinput="onPriceInput"
+      />
+      <input
+        wx:if="{{ draftCategory === '活动' }}"
+        class="location-input"
+        value="{{ draftEventTime }}"
+        placeholder="活动时间，例如 周六 14:00-17:00"
+        bindinput="onEventTimeInput"
       />
       <input
         class="location-input"
         value="{{ draftLocation }}"
-        placeholder="地点，如 崇明校区 · 一食堂"
+        placeholder="地点，例如 崇明校区 · 一食堂"
         bindinput="onLocationInput"
       />
+
       <view class="draft-images">
         <view wx:for="{{ draftImages }}" wx:key="url" class="draft-image-wrap">
           <image class="draft-image" src="{{ item.url }}" mode="aspectFill" />
@@ -131,6 +175,7 @@
           <text>图片</text>
         </view>
       </view>
+
       <button class="submit-btn" loading="{{ publishing }}" bindtap="onSubmitPost">发布</button>
     </view>
   </view>
