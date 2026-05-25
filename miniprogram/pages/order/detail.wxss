@@ -180,6 +180,16 @@
   font-size: 24rpx;
 }
 
+.item-spec {
+  display: block;
+  margin-top: 8rpx;
+  color: #8a9099;
+  font-size: 23rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .item-price {
   color: #111;
   font-size: 27rpx;

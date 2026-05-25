@@ -47,6 +47,7 @@
       <image class="item-img" src="{{ item.image }}" mode="aspectFill" />
       <view class="item-main">
         <text class="item-name">{{ item.name }}</text>
+        <text wx:if="{{ item.specText }}" class="item-spec">{{ item.specText }}</text>
         <text class="item-count">x{{ item.count }}</text>
       </view>
       <text class="item-price">¥{{ item.price * item.count / 100 }}</text>

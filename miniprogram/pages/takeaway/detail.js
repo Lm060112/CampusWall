@@ -61,6 +61,21 @@ const STORES = {
   },
 };
 
+const SPEC_GROUPS = {
+  drink: [
+    { key: "temperature", title: "温度", options: ["正常冰", "少冰", "去冰", "热饮"] },
+    { key: "sugar", title: "糖度", options: ["正常糖", "少糖", "半糖", "无糖"] },
+    { key: "addon", title: "小料", options: ["不加料", "珍珠", "椰果", "芋圆"] },
+  ],
+  food: [
+    { key: "taste", title: "口味", options: ["正常", "少辣", "微辣", "不辣"] },
+    { key: "pack", title: "打包", options: ["正常打包", "多餐具", "不要餐具"] },
+  ],
+  default: [
+    { key: "remark", title: "偏好", options: ["默认", "少辣", "打包", "不要餐具"] },
+  ],
+};
+
 Page({
   data: {
     merchant: {},
@@ -69,8 +84,15 @@ Page({
     products: [],
     visibleProducts: [],
     cart: {},
+    cartItems: [],
+    productCountMap: {},
     cartCount: 0,
     cartAmount: 0,
+    cartOpen: false,
+    specVisible: false,
+    currentProduct: null,
+    specGroups: [],
+    selectedSpecs: {},
   },
 
   onLoad(options = {}) {
@@ -97,32 +119,136 @@ Page({
     return this.data.products.find((item) => item.id === id);
   },
 
+  getSpecGroups(product) {
+    const text = `${this.data.merchant.tag || ""}${product.category || ""}${product.name || ""}`;
+    if (/奶茶|果茶|咖啡|饮品|酸梅汤|冰粉/.test(text)) return SPEC_GROUPS.drink;
+    if (/烧烤|主食|轻食|甜品|贝果|沙拉|套餐|炒|串/.test(text)) return SPEC_GROUPS.food;
+    return SPEC_GROUPS.default;
+  },
+
+  getDefaultSpecs(groups) {
+    return groups.reduce((acc, group) => {
+      acc[group.key] = group.options[0];
+      return acc;
+    }, {});
+  },
+
+  getCartKey(product, specs) {
+    const specPart = Object.keys(specs)
+      .sort()
+      .map((key) => `${key}:${specs[key]}`)
+      .join("|");
+    return `${product.id}__${specPart}`;
+  },
+
+  getSpecText(specs) {
+    return Object.keys(specs).map((key) => specs[key]).join(" / ");
+  },
+
   recalcCart(cart) {
     let cartCount = 0;
     let cartAmount = 0;
-    Object.keys(cart).forEach((id) => {
-      const product = this.getProductById(id);
-      const count = cart[id] || 0;
-      if (!product || !count) return;
-      cartCount += count;
-      cartAmount += product.price * count;
+    const productCountMap = {};
+    const cartItems = Object.keys(cart).map((key) => {
+      const item = cart[key];
+      if (!item || !item.count) return null;
+      cartCount += item.count;
+      cartAmount += item.price * item.count;
+      productCountMap[item.productId] = (productCountMap[item.productId] || 0) + item.count;
+      return item;
+    }).filter(Boolean);
+    this.setData({
+      cart,
+      cartItems,
+      productCountMap,
+      cartCount,
+      cartAmount,
+      cartOpen: cartCount ? this.data.cartOpen : false,
     });
-    this.setData({ cart, cartCount, cartAmount });
   },
 
   onAdd(e) {
     const id = e.currentTarget.dataset.id;
+    const product = this.getProductById(id);
+    if (!product) return;
+    const specGroups = this.getSpecGroups(product);
+    this.setData({
+      currentProduct: product,
+      specGroups,
+      selectedSpecs: this.getDefaultSpecs(specGroups),
+      specVisible: true,
+    });
+  },
+
+  onSpecTap(e) {
+    const { key, value } = e.currentTarget.dataset;
+    this.setData({ [`selectedSpecs.${key}`]: value });
+  },
+
+  onSpecClose() {
+    this.setData({ specVisible: false, currentProduct: null });
+  },
+
+  onSpecConfirm() {
+    const product = this.data.currentProduct;
+    if (!product) return;
+    const specs = { ...this.data.selectedSpecs };
+    const key = this.getCartKey(product, specs);
     const cart = { ...this.data.cart };
-    cart[id] = (cart[id] || 0) + 1;
+    const existed = cart[key];
+    cart[key] = {
+      key,
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      specs,
+      specText: this.getSpecText(specs),
+      count: existed ? existed.count + 1 : 1,
+    };
     this.recalcCart(cart);
+    this.onSpecClose();
   },
 
   onMinus(e) {
-    const id = e.currentTarget.dataset.id;
+    const key = e.currentTarget.dataset.key;
+    if (!key) return;
     const cart = { ...this.data.cart };
-    cart[id] = Math.max((cart[id] || 0) - 1, 0);
-    if (!cart[id]) delete cart[id];
+    if (!cart[key]) return;
+    cart[key] = { ...cart[key], count: Math.max(cart[key].count - 1, 0) };
+    if (!cart[key].count) delete cart[key];
     this.recalcCart(cart);
+  },
+
+  onProductMinus(e) {
+    const id = e.currentTarget.dataset.id;
+    const target = this.data.cartItems.find((item) => item.productId === id);
+    if (!target) return;
+    const cart = { ...this.data.cart };
+    cart[target.key] = { ...cart[target.key], count: Math.max(cart[target.key].count - 1, 0) };
+    if (!cart[target.key].count) delete cart[target.key];
+    this.recalcCart(cart);
+  },
+
+  onCartItemAdd(e) {
+    const key = e.currentTarget.dataset.key;
+    const cart = { ...this.data.cart };
+    if (!cart[key]) return;
+    cart[key] = { ...cart[key], count: cart[key].count + 1 };
+    this.recalcCart(cart);
+  },
+
+  onCartToggle() {
+    if (!this.data.cartCount) return;
+    this.setData({ cartOpen: !this.data.cartOpen });
+  },
+
+  onCartClose() {
+    this.setData({ cartOpen: false });
+  },
+
+  onCartClear() {
+    this.recalcCart({});
   },
 
   onCheckout() {
@@ -130,16 +256,16 @@ Page({
       wx.showToast({ title: "请先选择商品", icon: "none" });
       return;
     }
-    const items = Object.keys(this.data.cart).map((id) => {
-      const product = this.getProductById(id);
-      return {
-        id,
-        name: product.name,
-        price: product.price,
-        count: this.data.cart[id],
-        image: product.image,
-      };
-    });
+    const items = this.data.cartItems.map((item) => ({
+      id: item.key,
+      productId: item.productId,
+      name: item.name,
+      specs: item.specs,
+      specText: item.specText,
+      price: item.price,
+      count: item.count,
+      image: item.image,
+    }));
     const draft = {
       merchant: {
         name: this.data.merchant.name,

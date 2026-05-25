@@ -39,10 +39,10 @@
           <view class="product-bottom">
             <text class="product-price">¥{{ item.price / 100 }}</text>
             <view class="stepper">
-              <view wx:if="{{ cart[item.id] }}" class="step-btn" data-id="{{ item.id }}" catch:tap="onMinus">
+              <view wx:if="{{ productCountMap[item.id] }}" class="step-btn" data-id="{{ item.id }}" catch:tap="onProductMinus">
                 <van-icon name="minus" size="26rpx" color="#f08a1f" />
               </view>
-              <text wx:if="{{ cart[item.id] }}" class="step-count">{{ cart[item.id] }}</text>
+              <text wx:if="{{ productCountMap[item.id] }}" class="step-count">{{ productCountMap[item.id] }}</text>
               <view class="step-btn step-btn--add" data-id="{{ item.id }}" catch:tap="onAdd">
                 <van-icon name="plus" size="26rpx" color="#fff" />
               </view>
@@ -53,12 +53,69 @@
     </scroll-view>
   </view>
 
+  <view wx:if="{{ cartOpen }}" class="cart-mask" catch:tap="onCartClose"></view>
+  <view wx:if="{{ cartOpen }}" class="cart-panel">
+    <view class="cart-panel-head">
+      <text>已选商品</text>
+      <view class="clear-cart" catch:tap="onCartClear">清空</view>
+    </view>
+    <scroll-view class="cart-items" scroll-y enhanced show-scrollbar="{{ false }}">
+      <view wx:for="{{ cartItems }}" wx:key="key" class="cart-item-row">
+        <view class="cart-item-main">
+          <text class="cart-item-name">{{ item.name }}</text>
+          <text class="cart-item-spec">{{ item.specText }}</text>
+        </view>
+        <text class="cart-item-price">¥{{ item.price * item.count / 100 }}</text>
+        <view class="stepper">
+          <view class="step-btn" data-key="{{ item.key }}" catch:tap="onMinus">
+            <van-icon name="minus" size="26rpx" color="#f08a1f" />
+          </view>
+          <text class="step-count">{{ item.count }}</text>
+          <view class="step-btn step-btn--add" data-key="{{ item.key }}" catch:tap="onCartItemAdd">
+            <van-icon name="plus" size="26rpx" color="#fff" />
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
   <view class="cart-bar">
-    <view class="cart-icon"><van-icon name="cart-o" size="42rpx" color="#fff" /><text wx:if="{{ cartCount }}" class="cart-count">{{ cartCount }}</text></view>
-    <view class="cart-main">
+    <view class="cart-icon" catch:tap="onCartToggle"><van-icon name="cart-o" size="42rpx" color="#fff" /><text wx:if="{{ cartCount }}" class="cart-count">{{ cartCount }}</text></view>
+    <view class="cart-main" catch:tap="onCartToggle">
       <text class="cart-price">¥{{ (cartAmount + merchant.deliveryFee) / 100 }}</text>
       <text class="cart-tip">含配送费 ¥{{ merchant.deliveryFee / 100 }}</text>
     </view>
     <view class="checkout-btn {{ cartCount ? '' : 'checkout-btn--disabled' }}" catch:tap="onCheckout">去结算</view>
+  </view>
+
+  <view wx:if="{{ specVisible }}" class="spec-mask" catch:tap="onSpecClose"></view>
+  <view wx:if="{{ specVisible }}" class="spec-panel">
+    <view class="spec-head">
+      <image class="spec-img" src="{{ currentProduct.image }}" mode="aspectFill" />
+      <view class="spec-main">
+        <text class="spec-name">{{ currentProduct.name }}</text>
+        <text class="spec-price">¥{{ currentProduct.price / 100 }}</text>
+      </view>
+      <view class="spec-close" catch:tap="onSpecClose">
+        <van-icon name="cross" size="30rpx" color="#777" />
+      </view>
+    </view>
+    <view wx:for="{{ specGroups }}" wx:for-item="group" wx:key="key" class="spec-group">
+      <text class="spec-title">{{ group.title }}</text>
+      <view class="spec-options">
+        <view
+          wx:for="{{ group.options }}"
+          wx:for-item="option"
+          wx:key="*this"
+          class="spec-option {{ selectedSpecs[group.key] === option ? 'spec-option--active' : '' }}"
+          data-key="{{ group.key }}"
+          data-value="{{ option }}"
+          catch:tap="onSpecTap"
+        >
+          {{ option }}
+        </view>
+      </view>
+    </view>
+    <view class="spec-confirm" catch:tap="onSpecConfirm">加入购物车</view>
   </view>
 </view>
