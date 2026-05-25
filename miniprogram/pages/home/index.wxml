@@ -105,11 +105,11 @@
   </view>
 
   <view class="announcement-card">
-    <view wx:for="{{ announcements }}" wx:key="title" class="announcement-row" data-title="{{ item.title }}" catch:tap="onAnnouncementTap">
+    <navigator wx:for="{{ announcements }}" wx:key="title" class="announcement-row" url="/pages/announcement/detail/index?index={{ index }}" hover-class="none">
       <text class="announcement-type announcement-type--{{ index }}">{{ item.type }}</text>
       <text class="announcement-title">{{ item.title }}</text>
       <text class="announcement-date">{{ item.date }}</text>
       <view class="red-dot"></view>
-    </view>
+    </navigator>
   </view>
 </view>

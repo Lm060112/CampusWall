@@ -8,6 +8,7 @@ const ACTIVITIES = [
     price: 600,
     rating: "4.9",
     desc: "新手友好，现场组队，适合周末放松。",
+    notice: "请提前 10 分钟到场，自备运动鞋和水杯。",
   },
   {
     id: "a2",
@@ -18,6 +19,7 @@ const ACTIVITIES = [
     price: 1800,
     rating: "4.8",
     desc: "狼人杀、阿瓦隆、UNO，满 6 人开局。",
+    notice: "适合新手，现场有主持人带局。",
   },
   {
     id: "a3",
@@ -28,21 +30,22 @@ const ACTIVITIES = [
     price: 900,
     rating: "4.7",
     desc: "咖啡、甜品和拍照点路线，新生适合。",
+    notice: "费用为路线组织服务费，餐饮自理。",
   },
 ];
 
 Page({
   data: {
-    activities: ACTIVITIES,
+    activity: null,
   },
 
-  onActivityTap(e) {
-    wx.navigateTo({ url: `/pages/activity/detail/index?id=${e.currentTarget.dataset.id}` });
+  onLoad(options = {}) {
+    const activity = ACTIVITIES.find((item) => item.id === options.id) || ACTIVITIES[0];
+    this.setData({ activity });
   },
 
-  onReserveTap(e) {
-    const activity = ACTIVITIES.find((item) => item.id === e.currentTarget.dataset.id);
-    if (!activity) return;
+  onReserveTap() {
+    const activity = this.data.activity;
     const draft = {
       merchant: {
         name: activity.name,
@@ -50,15 +53,13 @@ Page({
         address: activity.location,
         eta: activity.time,
       },
-      items: [
-        {
-          id: activity.id,
-          name: "活动预约名额",
-          price: activity.price,
-          count: 1,
-          image: "/images/default-goods-image.png",
-        },
-      ],
+      items: [{
+        id: activity.id,
+        name: "活动预约名额",
+        price: activity.price,
+        count: 1,
+        image: "/images/default-goods-image.png",
+      }],
       totalAmount: activity.price,
       pickupType: "活动预约",
       sourceType: "nearby",

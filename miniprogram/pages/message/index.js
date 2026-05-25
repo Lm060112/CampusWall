@@ -97,11 +97,11 @@ Page({
   },
 
   onSearchTap() {
-    wx.showToast({ title: "消息搜索后续接入", icon: "none" });
+    wx.navigateTo({ url: "/pages/search/index?keyword=消息" });
   },
 
   onSettingTap() {
-    wx.showToast({ title: "消息设置后续接入", icon: "none" });
+    wx.navigateTo({ url: "/pages/message/settings/index" });
   },
 
   onCardTap(e) {

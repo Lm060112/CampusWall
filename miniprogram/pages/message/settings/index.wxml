@@ -1,0 +1,25 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">消息设置</text>
+    <view class="header-placeholder"></view>
+  </view>
+  <view class="panel">
+    <view class="setting-row">
+      <view><text class="title">互动消息</text><text class="desc">点赞、评论、收藏提醒</text></view>
+      <switch checked="{{ settings.interaction }}" data-key="interaction" bindchange="onSwitchChange" color="#12b85b" />
+    </view>
+    <view class="setting-row">
+      <view><text class="title">订单消息</text><text class="desc">接单、配送、完成提醒</text></view>
+      <switch checked="{{ settings.order }}" data-key="order" bindchange="onSwitchChange" color="#12b85b" />
+    </view>
+    <view class="setting-row">
+      <view><text class="title">系统通知</text><text class="desc">公告、活动、服务通知</text></view>
+      <switch checked="{{ settings.system }}" data-key="system" bindchange="onSwitchChange" color="#12b85b" />
+    </view>
+    <view class="setting-row">
+      <view><text class="title">免打扰模式</text><text class="desc">仅做前端状态模拟</text></view>
+      <switch checked="{{ settings.quiet }}" data-key="quiet" bindchange="onSwitchChange" color="#12b85b" />
+    </view>
+  </view>
+</view>

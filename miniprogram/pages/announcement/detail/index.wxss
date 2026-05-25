@@ -1,0 +1,9 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn,.header-placeholder { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
+.detail-card { margin-top: 24rpx; padding: 30rpx; border-radius: 8rpx; border: 1rpx solid #edf0f2; background: #fff; }
+.type { display: inline-block; padding: 6rpx 12rpx; color: #148844; font-size: 23rpx; border-radius: 6rpx; background: #e7f7ec; }
+.title { display: block; margin-top: 20rpx; color: #111; font-size: 38rpx; font-weight: 900; line-height: 1.35; }
+.date { display: block; margin-top: 12rpx; color: #8a8f98; font-size: 24rpx; }
+.content { display: block; margin-top: 30rpx; color: #444; font-size: 29rpx; line-height: 1.75; }

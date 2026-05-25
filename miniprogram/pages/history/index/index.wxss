@@ -1,0 +1,11 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn,.clear-btn { width: 72rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
+.clear-btn { color: #777; font-size: 25rpx; }
+.history-card { display: flex; align-items: center; gap: 18rpx; margin-top: 18rpx; padding: 22rpx; border-radius: 8rpx; border: 1rpx solid #edf0f2; background: #fff; }
+.type { padding: 6rpx 10rpx; color: #148844; font-size: 22rpx; border-radius: 6rpx; background: #e7f7ec; }
+.main { flex: 1; min-width: 0; }
+.title { display: block; color: #111; font-size: 29rpx; font-weight: 900; }
+.desc { display: block; margin-top: 8rpx; color: #777; font-size: 24rpx; }
+.empty { padding: 120rpx 0; text-align: center; color: #8a8f98; font-size: 28rpx; }

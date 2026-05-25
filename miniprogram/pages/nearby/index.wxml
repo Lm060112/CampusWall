@@ -16,7 +16,7 @@
   </view>
 
   <view class="activity-list">
-    <view wx:for="{{ activities }}" wx:key="id" class="activity-card">
+    <view wx:for="{{ activities }}" wx:key="id" class="activity-card" data-id="{{ item.id }}" catch:tap="onActivityTap">
       <image class="activity-img" src="/images/default-goods-image.png" mode="aspectFill" />
       <view class="activity-main">
         <view class="activity-head">

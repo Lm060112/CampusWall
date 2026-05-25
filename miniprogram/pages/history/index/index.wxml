@@ -1,0 +1,16 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">浏览记录</text>
+    <view class="clear-btn" catch:tap="onClearTap">清空</view>
+  </view>
+  <view wx:if="{{ !list.length }}" class="empty">暂无浏览记录</view>
+  <view wx:for="{{ list }}" wx:key="id" class="history-card" data-id="{{ item.id }}" catch:tap="onItemTap">
+    <text class="type">{{ item.type }}</text>
+    <view class="main">
+      <text class="title">{{ item.title }}</text>
+      <text class="desc">{{ item.desc }}</text>
+    </view>
+    <van-icon name="arrow" size="26rpx" color="#999" />
+  </view>
+</view>

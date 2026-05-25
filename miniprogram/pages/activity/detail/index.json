@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "活动详情",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

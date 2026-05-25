@@ -1,0 +1,24 @@
+<view class="page" wx:if="{{ activity }}">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">活动详情</text>
+    <view class="header-placeholder"></view>
+  </view>
+  <image class="cover" src="/images/default-goods-image.png" mode="aspectFill" />
+  <view class="detail-card">
+    <text class="tag">{{ activity.tag }}</text>
+    <text class="title">{{ activity.name }}</text>
+    <text class="desc">{{ activity.desc }}</text>
+    <view class="info-row"><van-icon name="location-o" size="28rpx" color="#8b62f2" /><text>{{ activity.location }}</text></view>
+    <view class="info-row"><van-icon name="clock-o" size="28rpx" color="#8b62f2" /><text>{{ activity.time }}</text></view>
+    <view class="info-row"><van-icon name="star-o" size="28rpx" color="#8b62f2" /><text>评分 {{ activity.rating }}</text></view>
+  </view>
+  <view class="detail-card">
+    <text class="section-title">报名须知</text>
+    <text class="desc">{{ activity.notice }}</text>
+  </view>
+  <view class="bottom-bar">
+    <text class="price">¥{{ activity.price / 100 }}</text>
+    <view class="reserve-btn" catch:tap="onReserveTap">立即预约</view>
+  </view>
+</view>

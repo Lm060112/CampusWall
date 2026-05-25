@@ -122,6 +122,10 @@ Page({
       this.openMinePosts("favorites");
       return;
     }
+    if (key === "history") {
+      wx.navigateTo({ url: "/pages/history/index/index" });
+      return;
+    }
     if (key === "address") {
       wx.navigateTo({ url: "/pages/address/index" });
       return;

@@ -1,0 +1,13 @@
+<view class="page" wx:if="{{ item }}">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">公告详情</text>
+    <view class="header-placeholder"></view>
+  </view>
+  <view class="detail-card">
+    <text class="type">{{ item.type }}</text>
+    <text class="title">{{ item.title }}</text>
+    <text class="date">{{ item.date }}</text>
+    <text class="content">{{ item.content }}</text>
+  </view>
+</view>
