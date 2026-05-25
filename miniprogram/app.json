@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/home/index",
+    "pages/search/index",
     "pages/campus-order/index",
     "pages/takeaway/index",
     "pages/takeaway/detail",
@@ -11,6 +12,8 @@
     "pages/order/list",
     "pages/order/detail",
     "pages/order/review/index",
+    "pages/order/pay/index",
+    "pages/order/refund/index",
     "pages/address/index",
     "pages/discover/index",
     "pages/discover/detail/index",
@@ -18,7 +21,10 @@
     "pages/message/detail/index",
     "pages/mine/index",
     "pages/mine/posts/index",
+    "pages/profile/index",
+    "pages/coupon/index",
     "pages/settings/index",
+    "pages/legal/index",
     "pages/square/index",
     "pages/index/index",
     "pages/example/index"

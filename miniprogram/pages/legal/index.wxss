@@ -1,0 +1,7 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn,.header-placeholder { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
+.content-card { margin-top: 24rpx; padding: 28rpx; border-radius: 8rpx; border: 1rpx solid #edf0f2; background: #fff; }
+.title { display: block; color: #111; font-size: 34rpx; font-weight: 900; }
+.paragraph { display: block; margin-top: 20rpx; color: #444; font-size: 28rpx; line-height: 1.75; }

@@ -1,0 +1,28 @@
+<view class="page" wx:if="{{ user }}">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">个人主页</text>
+    <view class="header-placeholder"></view>
+  </view>
+  <view class="profile-card">
+    <image class="avatar" src="{{ user.avatarUrl || '/images/avatar.png' }}" mode="aspectFill" />
+    <view class="profile-main">
+      <text class="nickname">{{ user.nickName || '校园用户' }}</text>
+      <text class="slogan">校园生活更轻松</text>
+      <text class="campus">崇明校区</text>
+    </view>
+  </view>
+  <view class="stats">
+    <view wx:for="{{ stats }}" wx:key="label" class="stat">
+      <text class="stat-value">{{ item.value }}</text>
+      <text class="stat-label">{{ item.label }}</text>
+    </view>
+  </view>
+  <view class="section-head">TA 的发布</view>
+  <view wx:if="{{ !posts.length }}" class="empty">还没有发布内容</view>
+  <view wx:for="{{ posts }}" wx:key="id" class="post-card" data-id="{{ item.id }}" catch:tap="onPostTap">
+    <text class="tag">{{ item.tag }}</text>
+    <text class="post-content">{{ item.content }}</text>
+    <text class="post-meta">{{ item.location }}</text>
+  </view>
+</view>

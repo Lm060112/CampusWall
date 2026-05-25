@@ -135,6 +135,14 @@ Page({
     this.updateOrderStatus(action.nextStatus, action.nextText);
   },
 
+  onPayTap() {
+    wx.navigateTo({ url: `/pages/order/pay/index?id=${this.data.order.id}` });
+  },
+
+  onRefundTap() {
+    wx.navigateTo({ url: `/pages/order/refund/index?id=${this.data.order.id}` });
+  },
+
   onAgainTap() {
     wx.navigateTo({ url: "/pages/campus-order/index" });
   },

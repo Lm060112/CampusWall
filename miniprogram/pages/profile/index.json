@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "个人主页",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

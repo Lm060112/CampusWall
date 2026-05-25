@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="search-row">
+    <van-icon name="arrow-left" size="36rpx" color="#111" catch:tap="onBack" />
+    <view class="search-box">
+      <van-icon name="search" size="32rpx" color="#7a7e83" />
+      <input value="{{ keyword }}" placeholder="搜索服务 / 帖子 / 功能" focus bindinput="onInput" />
+    </view>
+  </view>
+  <view class="tabs">
+    <view wx:for="{{ tabs }}" wx:key="key" class="tab {{ activeType === item.key ? 'tab--active' : '' }}" data-key="{{ item.key }}" catch:tap="onTabTap">{{ item.title }}</view>
+  </view>
+  <view wx:if="{{ !keyword }}" class="hot-panel">
+    <text class="section-title">热门搜索</text>
+    <view class="hot-row">
+      <text wx:for="{{ hotWords }}" wx:key="*this" class="hot-word" data-word="{{ item }}" catch:tap="onHotTap">{{ item }}</text>
+    </view>
+  </view>
+  <view class="result-list">
+    <view wx:if="{{ !results.length }}" class="empty">没有找到相关内容</view>
+    <view wx:for="{{ results }}" wx:key="id" class="result-card" data-id="{{ item.id }}" catch:tap="onResultTap">
+      <text class="result-type">{{ item.type }}</text>
+      <view class="result-main">
+        <text class="result-title">{{ item.title }}</text>
+        <text class="result-desc">{{ item.desc }}</text>
+      </view>
+      <van-icon name="arrow" size="26rpx" color="#999" />
+    </view>
+  </view>
+</view>

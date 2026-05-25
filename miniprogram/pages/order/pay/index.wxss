@@ -1,0 +1,15 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn,.header-placeholder { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
+.pay-card { margin-top: 24rpx; padding: 36rpx 26rpx; text-align: center; border-radius: 8rpx; background: #fff; border: 1rpx solid #edf0f2; }
+.merchant { display: block; color: #111; font-size: 30rpx; font-weight: 900; }
+.amount { display: block; margin-top: 18rpx; color: #f0442e; font-size: 58rpx; font-weight: 900; }
+.tip { display: block; margin-top: 14rpx; color: #8a8f98; font-size: 24rpx; }
+.method-panel { margin-top: 22rpx; border-radius: 8rpx; background: #fff; border: 1rpx solid #edf0f2; }
+.method-row { min-height: 112rpx; display: flex; align-items: center; justify-content: space-between; padding: 0 24rpx; border-bottom: 1rpx solid #edf0f2; }
+.method-row:last-child { border-bottom: none; }
+.method-row--active { background: #f2fbf5; }
+.method-title { display: block; color: #111; font-size: 29rpx; font-weight: 800; }
+.method-desc { display: block; margin-top: 8rpx; color: #777; font-size: 24rpx; }
+.pay-btn { position: fixed; left: 28rpx; right: 28rpx; bottom: 34rpx; height: 84rpx; line-height: 84rpx; text-align: center; color: #fff; font-size: 30rpx; font-weight: 900; border-radius: 42rpx; background: #12b85b; }

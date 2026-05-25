@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">申请售后</text>
+    <view class="header-placeholder"></view>
+  </view>
+  <view wx:if="{{ order }}" class="order-card">
+    <text class="merchant">{{ order.merchant.name }}</text>
+    <text class="amount">订单金额 ¥{{ order.totalAmount / 100 }}</text>
+  </view>
+  <view class="panel">
+    <text class="panel-title">退款原因</text>
+    <view class="reason-list">
+      <view wx:for="{{ reasons }}" wx:key="*this" class="reason {{ selectedReason === item ? 'reason--active' : '' }}" data-reason="{{ item }}" catch:tap="onReasonTap">{{ item }}</view>
+    </view>
+    <textarea class="textarea" value="{{ desc }}" maxlength="120" placeholder="补充说明，可不填" bindinput="onDescInput" />
+  </view>
+  <view class="submit-btn" catch:tap="onSubmit">提交申请</view>
+</view>

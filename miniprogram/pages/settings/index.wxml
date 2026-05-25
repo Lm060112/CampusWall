@@ -31,5 +31,20 @@
     </view>
   </view>
 
+  <view class="panel">
+    <view class="menu-row" data-type="about" catch:tap="onLegalTap">
+      <text class="menu-title">关于小程序</text>
+      <van-icon name="arrow" size="28rpx" color="#999" />
+    </view>
+    <view class="menu-row" data-type="terms" catch:tap="onLegalTap">
+      <text class="menu-title">用户协议</text>
+      <van-icon name="arrow" size="28rpx" color="#999" />
+    </view>
+    <view class="menu-row" data-type="privacy" catch:tap="onLegalTap">
+      <text class="menu-title">隐私政策</text>
+      <van-icon name="arrow" size="28rpx" color="#999" />
+    </view>
+  </view>
+
   <view class="logout-btn" catch:tap="onLogout">退出登录</view>
 </view>

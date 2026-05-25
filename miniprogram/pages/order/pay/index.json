@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "确认支付",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

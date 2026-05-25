@@ -1,0 +1,22 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">确认支付</text>
+    <view class="header-placeholder"></view>
+  </view>
+  <view wx:if="{{ order }}" class="pay-card">
+    <text class="merchant">{{ order.merchant.name }}</text>
+    <text class="amount">¥{{ order.totalAmount / 100 }}</text>
+    <text class="tip">当前为前端模拟支付，不会产生真实扣款</text>
+  </view>
+  <view class="method-panel">
+    <view wx:for="{{ methods }}" wx:key="key" class="method-row {{ selectedMethod === item.key ? 'method-row--active' : '' }}" data-key="{{ item.key }}" catch:tap="onMethodTap">
+      <view>
+        <text class="method-title">{{ item.title }}</text>
+        <text class="method-desc">{{ item.desc }}</text>
+      </view>
+      <van-icon name="{{ selectedMethod === item.key ? 'checked' : 'circle' }}" size="34rpx" color="{{ selectedMethod === item.key ? '#12b85b' : '#999' }}" />
+    </view>
+  </view>
+  <view class="pay-btn" catch:tap="onPayTap">{{ paying ? '支付中...' : '确认支付' }}</view>
+</view>

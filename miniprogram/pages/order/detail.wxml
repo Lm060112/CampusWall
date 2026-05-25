@@ -87,6 +87,8 @@
     </view>
 
     <view class="action-bar">
+      <view wx:if="{{ !order.paid && !order.done }}" class="secondary-btn" catch:tap="onPayTap">去支付</view>
+      <view wx:if="{{ !order.refund }}" class="secondary-btn" catch:tap="onRefundTap">售后</view>
       <view class="primary-btn" catch:tap="onReadyTap">{{ order.primaryAction.text }}</view>
     </view>
   </block>

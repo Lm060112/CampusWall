@@ -75,11 +75,11 @@ Page({
   },
 
   onProfileTap() {
-    wx.showToast({ title: "个人主页后续接入", icon: "none" });
+    wx.navigateTo({ url: "/pages/profile/index" });
   },
 
   onCouponTap() {
-    wx.showToast({ title: "领券中心后续接入", icon: "none" });
+    wx.navigateTo({ url: "/pages/coupon/index" });
   },
 
   onOrderListTap() {

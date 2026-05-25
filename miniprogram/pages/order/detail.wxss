@@ -244,12 +244,13 @@
   height: 118rpx;
   padding: 16rpx 28rpx 24rpx;
   box-sizing: border-box;
+  gap: 14rpx;
   border-top: 1rpx solid #edf0f2;
   background: #fff;
 }
 
 .primary-btn {
-  width: 100%;
+  flex: 1;
   height: 72rpx;
   line-height: 72rpx;
   text-align: center;
@@ -258,6 +259,19 @@
   font-weight: 800;
   border-radius: 36rpx;
   background: #12b85b;
+}
+
+.secondary-btn {
+  width: 128rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  color: #148844;
+  font-size: 27rpx;
+  font-weight: 800;
+  border: 1rpx solid #bfe8cf;
+  border-radius: 36rpx;
+  background: #f2fbf5;
 }
 
 .empty {

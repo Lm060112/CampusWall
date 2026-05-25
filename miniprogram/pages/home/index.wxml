@@ -5,10 +5,10 @@
       <text>{{ campusName }}</text>
       <van-icon name="arrow-down" size="28rpx" color="#111" />
     </view>
-    <view class="search-box" catch:tap="onSearchTap">
+    <navigator class="search-box" url="/pages/search/index" hover-class="none">
       <van-icon name="search" size="36rpx" color="#7a7e83" />
       <text>搜索商家 / 服务 / 活动</text>
-    </view>
+    </navigator>
     <view class="scan-btn" catch:tap="onScanTap">
       <van-icon name="scan" size="42rpx" color="#111" />
     </view>

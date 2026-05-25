@@ -1,0 +1,16 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn,.header-placeholder { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
+.tabs { display: flex; gap: 14rpx; margin-top: 24rpx; }
+.tab { height: 58rpx; line-height: 58rpx; padding: 0 22rpx; border-radius: 29rpx; color: #606873; font-size: 25rpx; background: #f1f3f5; }
+.tab--active { color: #d66a00; font-weight: 800; background: #fff0de; }
+.coupon-card { display: flex; align-items: center; gap: 18rpx; margin-top: 18rpx; padding: 24rpx; border-radius: 8rpx; background: linear-gradient(135deg,#fff7ec,#fff); border: 1rpx solid #f3dfc2; }
+.coupon-card--used { opacity: .58; }
+.amount { width: 110rpx; color: #f0442e; font-size: 40rpx; font-weight: 900; }
+.coupon-main { flex: 1; min-width: 0; }
+.coupon-title { display: block; color: #111; font-size: 29rpx; font-weight: 900; }
+.coupon-desc { display: block; margin-top: 8rpx; color: #777; font-size: 24rpx; }
+.claim-btn { width: 92rpx; height: 54rpx; line-height: 54rpx; text-align: center; color: #fff; font-size: 25rpx; border-radius: 27rpx; background: #f08a1f; }
+.status-text { color: #999; font-size: 25rpx; }
+.empty { padding: 120rpx 0; text-align: center; color: #8a8f98; font-size: 28rpx; }

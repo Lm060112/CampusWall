@@ -45,4 +45,8 @@ Page({
   onContactTap() {
     wx.showToast({ title: "客服入口后续接入", icon: "none" });
   },
+
+  onLegalTap(e) {
+    wx.navigateTo({ url: `/pages/legal/index?type=${e.currentTarget.dataset.type}` });
+  },
 });
