@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx;
+  padding: 28rpx 28rpx 140rpx;
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -53,8 +53,117 @@
   line-height: 1.4;
 }
 
+.address-list {
+  margin-top: 22rpx;
+}
+
+.address-card {
+  margin-bottom: 18rpx;
+  padding: 24rpx;
+  border: 1rpx solid #edf0f2;
+  border-radius: 8rpx;
+  background: #fff;
+}
+
+.person-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.person-name {
+  color: #111;
+  font-size: 31rpx;
+  font-weight: 900;
+}
+
+.phone {
+  color: #666;
+  font-size: 25rpx;
+}
+
+.default-tag {
+  padding: 5rpx 10rpx;
+  color: #148844;
+  font-size: 22rpx;
+  border-radius: 6rpx;
+  background: #e7f7ec;
+}
+
+.address-text,
+.address-detail {
+  display: block;
+  margin-top: 12rpx;
+  color: #333;
+  font-size: 27rpx;
+}
+
+.address-detail {
+  color: #777;
+  font-size: 24rpx;
+}
+
+.address-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 28rpx;
+  margin-top: 20rpx;
+  padding-top: 18rpx;
+  color: #148844;
+  font-size: 25rpx;
+  border-top: 1rpx solid #edf0f2;
+}
+
+.add-btn {
+  position: fixed;
+  left: 28rpx;
+  right: 28rpx;
+  bottom: 34rpx;
+  height: 86rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 900;
+  border-radius: 43rpx;
+  background: #12b85b;
+}
+
+.overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.editor {
+  width: 100%;
+  max-height: 88vh;
+  padding: 28rpx;
+  box-sizing: border-box;
+  border-radius: 18rpx 18rpx 0 0;
+  background: #fff;
+}
+
+.editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #111;
+  font-size: 32rpx;
+  font-weight: 900;
+}
+
 .form-card {
-  margin-top: 24rpx;
+  margin-top: 22rpx;
   padding: 8rpx 24rpx;
   border: 1rpx solid #edf0f2;
   border-radius: 8rpx;
@@ -95,14 +204,22 @@ textarea {
 }
 
 textarea {
-  height: 140rpx;
+  height: 120rpx;
   line-height: 1.45;
+}
+
+.default-row {
+  min-height: 76rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  color: #333;
+  font-size: 27rpx;
 }
 
 .save-btn {
   height: 82rpx;
   line-height: 82rpx;
-  margin-top: 28rpx;
   text-align: center;
   color: #fff;
   font-size: 30rpx;

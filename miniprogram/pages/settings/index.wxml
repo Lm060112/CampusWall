@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <text class="header-title">设置</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view class="panel">
+    <view class="menu-row" catch:tap="onContactTap">
+      <view>
+        <text class="menu-title">联系客服</text>
+        <text class="menu-desc">后续可接入微信客服或校园服务群</text>
+      </view>
+      <van-icon name="arrow" size="28rpx" color="#999" />
+    </view>
+    <view class="menu-row" catch:tap="onClearCache">
+      <view>
+        <text class="menu-title">清除本地模拟数据</text>
+        <text class="menu-desc">清空订单、消息、发布、收藏和地址演示数据</text>
+      </view>
+      <van-icon name="delete-o" size="32rpx" color="#999" />
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="about-block">
+      <text class="about-title">校园生活小程序</text>
+      <text class="about-desc">当前为前端模拟版本，用于跑通校园点单、外卖、跑腿、周边玩乐、校园墙和消息订单流程。</text>
+    </view>
+  </view>
+
+  <view class="logout-btn" catch:tap="onLogout">退出登录</view>
+</view>

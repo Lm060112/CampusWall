@@ -10,37 +10,72 @@
   <view class="tip-card">
     <van-icon name="location-o" size="44rpx" color="#18a957" />
     <view>
-      <text class="tip-title">默认校园地址</text>
-      <text class="tip-desc">用于校外外卖和跑腿代取，后期可扩展多个地址。</text>
+      <text class="tip-title">校园地址管理</text>
+      <text class="tip-desc">用于校外外卖、跑腿代取等服务，默认地址会自动带入订单确认页。</text>
     </view>
   </view>
 
-  <view class="form-card">
-    <view class="field">
-      <text class="label">联系人</text>
-      <input value="{{ address.name }}" data-field="name" bindinput="onInput" placeholder="姓名或昵称" />
-    </view>
-    <view class="field">
-      <text class="label">手机号</text>
-      <input value="{{ address.phone }}" data-field="phone" bindinput="onInput" type="number" placeholder="联系手机号" />
-    </view>
-    <view class="field">
-      <text class="label">校区</text>
-      <input value="{{ address.campus }}" data-field="campus" bindinput="onInput" placeholder="如：崇明校区" />
-    </view>
-    <view class="field">
-      <text class="label">楼栋</text>
-      <input value="{{ address.building }}" data-field="building" bindinput="onInput" placeholder="如：6号宿舍楼 / 图书馆" />
-    </view>
-    <view class="field">
-      <text class="label">房间</text>
-      <input value="{{ address.room }}" data-field="room" bindinput="onInput" placeholder="如：602 / 一楼大厅" />
-    </view>
-    <view class="field field--textarea">
-      <text class="label">详细</text>
-      <textarea value="{{ address.detail }}" data-field="detail" bindinput="onInput" maxlength="80" placeholder="补充取餐点、门口、备注位置" />
+  <view class="address-list">
+    <view wx:for="{{ addresses }}" wx:key="id" class="address-card">
+      <view class="address-main">
+        <view class="person-row">
+          <text class="person-name">{{ item.name }}</text>
+          <text class="phone">{{ item.phone }}</text>
+          <text wx:if="{{ item.isDefault }}" class="default-tag">默认</text>
+        </view>
+        <text class="address-text">{{ item.campus }} {{ item.building }} {{ item.room }}</text>
+        <text wx:if="{{ item.detail }}" class="address-detail">{{ item.detail }}</text>
+      </view>
+      <view class="address-actions">
+        <text wx:if="{{ !item.isDefault }}" data-id="{{ item.id }}" catch:tap="onSetDefault">设默认</text>
+        <text data-id="{{ item.id }}" catch:tap="onEditTap">编辑</text>
+        <text data-id="{{ item.id }}" catch:tap="onDeleteTap">删除</text>
+      </view>
     </view>
   </view>
 
-  <view class="save-btn" catch:tap="onSave">保存默认地址</view>
+  <view class="add-btn" catch:tap="onAddTap">
+    <van-icon name="plus" size="30rpx" color="#fff" />
+    <text>新增地址</text>
+  </view>
+
+  <view wx:if="{{ showEditor }}" class="overlay" catch:tap="onCloseEditor">
+    <view class="editor" catch:tap="stopBubble">
+      <view class="editor-head">
+        <text>{{ editingId ? '编辑地址' : '新增地址' }}</text>
+        <van-icon name="cross" size="34rpx" color="#777" catch:tap="onCloseEditor" />
+      </view>
+      <view class="form-card">
+        <view class="field">
+          <text class="label">联系人</text>
+          <input value="{{ form.name }}" data-field="name" bindinput="onInput" placeholder="姓名或昵称" />
+        </view>
+        <view class="field">
+          <text class="label">手机号</text>
+          <input value="{{ form.phone }}" data-field="phone" bindinput="onInput" type="number" maxlength="11" placeholder="联系手机号" />
+        </view>
+        <view class="field">
+          <text class="label">校区</text>
+          <input value="{{ form.campus }}" data-field="campus" bindinput="onInput" placeholder="例如：崇明校区" />
+        </view>
+        <view class="field">
+          <text class="label">楼栋</text>
+          <input value="{{ form.building }}" data-field="building" bindinput="onInput" placeholder="例如：6号宿舍楼 / 图书馆" />
+        </view>
+        <view class="field">
+          <text class="label">房间</text>
+          <input value="{{ form.room }}" data-field="room" bindinput="onInput" placeholder="例如：602 / 一楼大厅" />
+        </view>
+        <view class="field field--textarea">
+          <text class="label">详细</text>
+          <textarea value="{{ form.detail }}" data-field="detail" bindinput="onInput" maxlength="80" placeholder="补充取餐点、门口、备注位置" />
+        </view>
+      </view>
+      <label class="default-row">
+        <checkbox checked="{{ form.isDefault }}" bindchange="onDefaultChange" color="#12b85b" />
+        <text>设为默认地址</text>
+      </label>
+      <view class="save-btn" catch:tap="onSave">保存地址</view>
+    </view>
+  </view>
 </view>

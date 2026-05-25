@@ -26,7 +26,7 @@
           <text class="merchant-name">{{ item.merchant.name }}</text>
           <text class="order-time">{{ item.timeText }} · 取餐号 {{ item.pickupNo }}</text>
         </view>
-        <text class="status {{ item.status === '已完成' ? 'status--done' : 'status--doing' }}">{{ item.status }}</text>
+        <text class="status {{ item.done ? 'status--done' : 'status--doing' }}">{{ item.displayStatus }}</text>
       </view>
 
       <view class="order-body">
@@ -39,12 +39,20 @@
         <text class="summary">共 {{ item.itemCount }} 件</text>
         <text class="amount">¥{{ item.totalAmount / 100 }}</text>
         <view
-          wx:if="{{ item.status !== '已完成' }}"
+          wx:if="{{ !item.done }}"
           class="complete-btn"
           data-id="{{ item.id }}"
           catchtap="onCompleteTap"
         >
-          确认取餐
+          确认完成
+        </view>
+        <view
+          wx:if="{{ item.done && !item.review }}"
+          class="complete-btn"
+          data-id="{{ item.id }}"
+          catchtap="onReviewTap"
+        >
+          去评价
         </view>
       </view>
     </view>
@@ -53,6 +61,6 @@
   <view wx:else class="empty">
     <van-icon name="orders-o" size="96rpx" color="#b7c0ca" />
     <text class="empty-title">暂无订单</text>
-    <text class="empty-desc">从校内点单提交订单后，会显示在这里。</text>
+    <text class="empty-desc">从校内点单、校外外卖、跑腿或周边玩乐提交后会显示在这里。</text>
   </view>
 </view>

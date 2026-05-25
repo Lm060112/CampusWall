@@ -71,7 +71,7 @@ Page({
   },
 
   onSettingsTap() {
-    wx.showToast({ title: "设置页后续接入", icon: "none" });
+    wx.navigateTo({ url: "/pages/settings/index" });
   },
 
   onProfileTap() {
@@ -124,6 +124,10 @@ Page({
     }
     if (key === "address") {
       wx.navigateTo({ url: "/pages/address/index" });
+      return;
+    }
+    if (key === "settings") {
+      wx.navigateTo({ url: "/pages/settings/index" });
       return;
     }
     wx.showToast({ title: `${e.currentTarget.dataset.title}后续接入`, icon: "none" });

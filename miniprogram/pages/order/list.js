@@ -13,8 +13,7 @@ Page({
   },
 
   onLoad(options = {}) {
-    const activeFilter = this.normalizeFilter(options.filter);
-    this.setData({ activeFilter });
+    this.setData({ activeFilter: this.normalizeFilter(options.filter) });
   },
 
   onShow() {
@@ -27,13 +26,19 @@ Page({
     return "allOrders";
   },
 
+  isDone(order) {
+    return order.status === "已完成" || order.statusText === "订单已完成" || !!order.review;
+  },
+
   loadOrders() {
     const orders = (wx.getStorageSync("mockOrders") || []).map((order) => ({
       ...order,
+      displayStatus: this.isDone(order) ? "已完成" : order.status || "进行中",
       pickupNo: order.pickupNo || `A${String(order.submittedAt || order.createdAt || Date.now()).slice(-3)}`,
       itemCount: (order.items || []).reduce((sum, item) => sum + item.count, 0),
       previewText: (order.items || []).map((item) => `${item.name}x${item.count}`).join("、"),
       timeText: this.formatTime(order.submittedAt || order.createdAt),
+      done: this.isDone(order),
     }));
     this.setData({ orders }, () => this.applyFilter());
   },
@@ -49,9 +54,7 @@ Page({
     const { activeFilter, orders } = this.data;
     const visibleOrders = activeFilter === "allOrders"
       ? orders
-      : orders.filter((order) => (
-        activeFilter === "done" ? order.status === "已完成" : order.status !== "已完成"
-      ));
+      : orders.filter((order) => (activeFilter === "done" ? order.done : !order.done));
     this.setData({ visibleOrders });
   },
 
@@ -59,42 +62,22 @@ Page({
     this.setData({ activeFilter: e.currentTarget.dataset.key }, () => this.applyFilter());
   },
 
-  onCompleteTap(e) {
-    const id = e.currentTarget.dataset.id;
-    let updatedOrder = null;
-    const orders = this.data.orders.map((order) => (
-      order.id === id
-        ? (updatedOrder = { ...order, status: "已完成", statusText: "订单已完成" })
-        : order
+  updateOrder(id, patch) {
+    const orders = (wx.getStorageSync("mockOrders") || []).map((order) => (
+      order.id === id ? { ...order, ...patch } : order
     ));
     wx.setStorageSync("mockOrders", orders);
-    if (updatedOrder) {
-      this.addOrderMessage(
-        updatedOrder,
-        "订单已完成",
-        `你在 ${updatedOrder.merchant.name} 的订单已完成`,
-        "已完成"
-      );
-    }
-    this.setData({ orders }, () => this.applyFilter());
+    this.loadOrders();
+  },
+
+  onCompleteTap(e) {
+    const id = e.currentTarget.dataset.id;
+    this.updateOrder(id, { status: "已完成", statusText: "订单已完成" });
     wx.showToast({ title: "已完成" });
   },
 
-  addOrderMessage(order, title, content, status) {
-    const messages = wx.getStorageSync("mockMessages") || [];
-    const message = {
-      id: `MSG${Date.now()}`,
-      type: "order",
-      orderId: order.id,
-      title,
-      content,
-      status,
-      statusClass: status === "已完成" ? "done" : "processing",
-      icon: "/images/default-goods-image.png",
-      unread: true,
-      createdAt: Date.now(),
-    };
-    wx.setStorageSync("mockMessages", [message, ...messages]);
+  onReviewTap(e) {
+    wx.navigateTo({ url: `/pages/order/review/index?id=${e.currentTarget.dataset.id}` });
   },
 
   onOrderTap(e) {

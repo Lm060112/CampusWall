@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "订单评价",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

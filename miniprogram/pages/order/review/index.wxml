@@ -1,0 +1,53 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack">
+      <van-icon name="arrow-left" size="38rpx" color="#111" />
+    </view>
+    <text class="header-title">订单评价</text>
+    <view class="header-placeholder"></view>
+  </view>
+
+  <view wx:if="{{ order }}" class="review-card">
+    <text class="merchant-name">{{ order.merchant.name }}</text>
+    <text class="order-desc">{{ order.items[0].name }} 等 {{ order.items.length }} 项</text>
+
+    <view class="star-row">
+      <van-icon
+        wx:for="{{ [1,2,3,4,5] }}"
+        wx:key="*this"
+        name="star"
+        size="56rpx"
+        color="{{ item <= rating ? '#ffb13b' : '#d6dbe0' }}"
+        data-value="{{ item }}"
+        catch:tap="onStarTap"
+      />
+    </view>
+
+    <view class="tag-row">
+      <view
+        wx:for="{{ tags }}"
+        wx:key="*this"
+        class="tag {{ selectedTagMap[item] ? 'tag--active' : '' }}"
+        data-tag="{{ item }}"
+        catch:tap="onTagTap"
+      >
+        {{ item }}
+      </view>
+    </view>
+
+    <textarea
+      class="textarea"
+      value="{{ content }}"
+      maxlength="160"
+      placeholder="写下这次服务体验，也可以留空使用默认评价"
+      bindinput="onContentInput"
+    />
+
+    <view class="submit-btn" catch:tap="onSubmit">提交评价</view>
+  </view>
+
+  <view wx:else class="empty">
+    <van-icon name="warning-o" size="92rpx" color="#b7c0ca" />
+    <text>订单不存在</text>
+  </view>
+</view>

@@ -10,6 +10,7 @@
     "pages/order/confirm",
     "pages/order/list",
     "pages/order/detail",
+    "pages/order/review/index",
     "pages/address/index",
     "pages/discover/index",
     "pages/discover/detail/index",
@@ -17,6 +18,7 @@
     "pages/message/detail/index",
     "pages/mine/index",
     "pages/mine/posts/index",
+    "pages/settings/index",
     "pages/square/index",
     "pages/index/index",
     "pages/example/index"
