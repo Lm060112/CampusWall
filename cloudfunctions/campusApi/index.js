@@ -67,6 +67,15 @@ async function getOpenId() {
   return ok(getContext());
 }
 
+async function getCurrentUserInfo() {
+  const context = requireOpenId();
+  const user = await getCurrentUser(context.openid);
+  return ok({
+    ...context,
+    user,
+  });
+}
+
 async function upsertUser(event) {
   const { openid } = requireOpenId();
   const profile = event.profile || {};
@@ -341,6 +350,7 @@ async function updateOrderStatus(event) {
 const handlers = {
   createCollections,
   getOpenId,
+  getCurrentUser: getCurrentUserInfo,
   upsertUser,
   listPosts,
   createPost,
