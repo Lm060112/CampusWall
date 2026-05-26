@@ -57,7 +57,7 @@ const CONFIRM_META = {
     feeLabel: "服务方式",
     feeText: "同学帮取",
     remarkTitle: "补充说明",
-    remarkPlaceholder: "例如：取件码、购买品牌、送达后放门口、联系手机号",
+    remarkPlaceholder: "例如：取件码、购买品牌、送达后放门口、联系电话",
     submitText: "发布跑腿需求",
     initialStatus: "待接单",
     initialStatusText: "等待同学接单",
@@ -122,12 +122,12 @@ Page({
     }
   },
 
-  onRemarkInput(e) {
-    this.setData({ remark: e.detail.value });
-  },
-
   onShow() {
     this.loadAddress();
+  },
+
+  onRemarkInput(e) {
+    this.setData({ remark: e.detail.value });
   },
 
   loadAddress() {
@@ -161,20 +161,16 @@ Page({
       remark: this.data.remark,
       status: this.data.viewMeta.initialStatus,
       statusText: this.data.viewMeta.initialStatusText,
+      paid: false,
       submittedAt: now,
     };
     const orders = wx.getStorageSync("mockOrders") || [];
     wx.setStorageSync("mockOrders", [order, ...orders]);
-    this.addOrderMessage(
-      order,
-      this.data.viewMeta.messageTitle,
-      this.data.viewMeta.messageContent(order),
-      order.status
-    );
-    wx.showToast({ title: this.data.viewMeta.initialStatusText, icon: "success" });
+    this.addOrderMessage(order, this.data.viewMeta.messageTitle, this.data.viewMeta.messageContent(order), order.status);
+    wx.showToast({ title: "订单已生成", icon: "success" });
     setTimeout(() => {
-      wx.navigateBack({ delta: 2 });
-    }, 900);
+      wx.redirectTo({ url: `/pages/order/pay/index?id=${order.id}` });
+    }, 600);
   },
 
   onBack() {

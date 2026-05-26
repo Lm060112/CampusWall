@@ -49,4 +49,8 @@ Page({
   onLegalTap(e) {
     wx.navigateTo({ url: `/pages/legal/index?type=${e.currentTarget.dataset.type}` });
   },
+
+  onDemoTap() {
+    wx.navigateTo({ url: "/pages/demo/index/index" });
+  },
 });

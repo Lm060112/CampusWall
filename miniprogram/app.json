@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/home/index",
+    "pages/login/index",
     "pages/search/index",
     "pages/campus-order/index",
     "pages/takeaway/index",
@@ -15,6 +16,7 @@
     "pages/order/review/index",
     "pages/order/pay/index",
     "pages/order/refund/index",
+    "pages/scan/result/index",
     "pages/address/index",
     "pages/announcement/detail/index",
     "pages/discover/index",
@@ -24,10 +26,12 @@
     "pages/message/settings/index",
     "pages/mine/index",
     "pages/mine/posts/index",
+    "pages/mine/trades/index",
     "pages/profile/index",
     "pages/coupon/index",
     "pages/history/index/index",
     "pages/settings/index",
+    "pages/demo/index/index",
     "pages/legal/index",
     "pages/square/index",
     "pages/index/index",

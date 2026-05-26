@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "登录授权",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

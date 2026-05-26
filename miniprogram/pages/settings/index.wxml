@@ -22,6 +22,13 @@
       </view>
       <van-icon name="delete-o" size="32rpx" color="#999" />
     </view>
+    <view class="menu-row" catch:tap="onDemoTap">
+      <view>
+        <text class="menu-title">演示模式</text>
+        <text class="menu-desc">一键生成或清空前端演示数据</text>
+      </view>
+      <van-icon name="arrow" size="28rpx" color="#999" />
+    </view>
   </view>
 
   <view class="panel">

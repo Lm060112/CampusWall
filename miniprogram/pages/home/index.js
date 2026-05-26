@@ -192,7 +192,7 @@ Page({
   },
 
   onScanTap() {
-    wx.showToast({ title: "扫码入口待接入", icon: "none" });
+    wx.navigateTo({ url: "/pages/scan/result/index?type=pickup" });
   },
 
   onServiceTap(e) {

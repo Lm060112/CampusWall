@@ -47,23 +47,7 @@ Page({
   },
 
   onLogin() {
-    wx.showModal({
-      title: "模拟登录",
-      editable: true,
-      placeholderText: "请输入你的昵称",
-      success: (res) => {
-        if (res.confirm && res.content) {
-          const userInfo = {
-            nickName: res.content,
-            avatarUrl: "/images/avatar.png",
-          };
-          app.globalData.userInfo = userInfo;
-          wx.setStorageSync("userInfo", userInfo);
-          this.setData({ userInfo, hasUserInfo: true });
-          wx.showToast({ title: "登录成功" });
-        }
-      },
-    });
+    wx.navigateTo({ url: "/pages/login/index" });
   },
 
   onNotifyTap() {
@@ -102,6 +86,14 @@ Page({
     }
     if (key === "favorites") {
       this.openMinePosts("favorites");
+      return;
+    }
+    if (key === "sold") {
+      wx.navigateTo({ url: "/pages/mine/trades/index?mode=sold" });
+      return;
+    }
+    if (key === "bought") {
+      wx.navigateTo({ url: "/pages/mine/trades/index?mode=bought" });
       return;
     }
     wx.showToast({ title: "积分体系后续接入", icon: "none" });

@@ -79,7 +79,7 @@
       <text class="total-price">¥{{ draft.totalAmount / 100 }}</text>
     </view>
     <view class="submit-btn {{ submitting ? 'submit-btn--disabled' : '' }}" catch:tap="onSubmit">
-      {{ submitting ? '提交中' : viewMeta.submitText }}
+      {{ submitting ? '提交中...' : viewMeta.submitText }}
     </view>
   </view>
 </view>

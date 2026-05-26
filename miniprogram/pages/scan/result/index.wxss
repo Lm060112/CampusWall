@@ -1,0 +1,8 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn,.header-placeholder { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
+.result-card { margin-top: 50rpx; padding: 50rpx 30rpx; text-align: center; border: 1rpx solid #edf0f2; border-radius: 8rpx; background: #fff; }
+.title { display: block; margin-top: 24rpx; color: #111; font-size: 34rpx; font-weight: 900; }
+.code { display: block; margin-top: 24rpx; color: #12b85b; font-size: 64rpx; font-weight: 900; letter-spacing: 0; }
+.desc { display: block; margin-top: 20rpx; color: #666; font-size: 27rpx; line-height: 1.6; }

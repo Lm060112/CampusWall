@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "扫码结果",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

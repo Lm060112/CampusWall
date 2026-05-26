@@ -1,0 +1,13 @@
+<view class="page">
+  <view class="header">
+    <view class="back-btn" catch:tap="onBack"><van-icon name="arrow-left" size="38rpx" color="#111" /></view>
+    <text class="header-title">扫码结果</text>
+    <view class="header-placeholder"></view>
+  </view>
+  <view class="result-card">
+    <van-icon name="qr" size="90rpx" color="#12b85b" />
+    <text class="title">{{ title }}</text>
+    <text class="code">{{ code }}</text>
+    <text class="desc">{{ desc }}</text>
+  </view>
+</view>

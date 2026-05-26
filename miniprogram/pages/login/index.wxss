@@ -1,0 +1,10 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.header { display: flex; align-items: center; gap: 16rpx; }
+.back-btn,.header-placeholder { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
+.header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
+.login-card { margin-top: 50rpx; padding: 42rpx 30rpx; border: 1rpx solid #edf0f2; border-radius: 8rpx; background: #fff; text-align: center; }
+.avatar { width: 130rpx; height: 130rpx; border-radius: 65rpx; background: #eef2f5; }
+.title { display: block; margin-top: 24rpx; color: #111; font-size: 38rpx; font-weight: 900; }
+.desc { display: block; margin-top: 14rpx; color: #777; font-size: 26rpx; line-height: 1.6; }
+.input { height: 78rpx; margin-top: 22rpx; padding: 0 20rpx; border-radius: 8rpx; color: #111; font-size: 27rpx; background: #f7f8fa; text-align: left; }
+.login-btn { height: 82rpx; line-height: 82rpx; margin-top: 30rpx; color: #fff; font-size: 30rpx; font-weight: 900; border-radius: 41rpx; background: #12b85b; }
