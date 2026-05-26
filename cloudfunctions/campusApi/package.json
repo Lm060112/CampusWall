@@ -1,0 +1,10 @@
+{
+  "name": "campus-api",
+  "version": "1.0.0",
+  "description": "Campus life mini program cloud API",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}
