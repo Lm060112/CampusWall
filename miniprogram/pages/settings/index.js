@@ -43,7 +43,7 @@ Page({
   },
 
   onContactTap() {
-    wx.showToast({ title: "客服入口后续接入", icon: "none" });
+    wx.navigateTo({ url: "/pages/scan/result/index?type=service" });
   },
 
   onLegalTap(e) {

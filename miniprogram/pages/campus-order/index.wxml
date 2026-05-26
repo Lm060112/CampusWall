@@ -5,7 +5,7 @@
     </view>
     <view class="header-copy">
       <text class="title">校内点单</text>
-      <text class="subtitle">{{ campusName }} · 到店自取</text>
+      <text class="subtitle">{{ campusName }} ｜ 到店自取</text>
     </view>
     <view class="search-btn" catch:tap="onSearchTap">
       <van-icon name="search" size="38rpx" color="#111" />

@@ -4,6 +4,7 @@ Page({
     order: null,
     rating: 5,
     content: "",
+    images: [],
     tags: ["服务及时", "味道不错", "包装完整", "沟通顺畅", "会再来"],
     selectedTags: [],
     selectedTagMap: {},
@@ -19,11 +20,13 @@ Page({
     const order = orders.find((item) => item.id === this.data.orderId);
     this.setData({ order: order || null });
     if (order && order.review) {
+      const tags = order.review.tags || [];
       this.setData({
         rating: order.review.rating || 5,
         content: order.review.content || "",
-        selectedTags: order.review.tags || [],
-        selectedTagMap: this.buildTagMap(order.review.tags || []),
+        images: order.review.images || [],
+        selectedTags: tags,
+        selectedTagMap: this.buildTagMap(tags),
       });
     }
   },
@@ -55,12 +58,35 @@ Page({
     this.setData({ content: e.detail.value || "" });
   },
 
+  onChooseImage() {
+    const remain = 3 - this.data.images.length;
+    if (remain <= 0) {
+      wx.showToast({ title: "最多上传3张图片", icon: "none" });
+      return;
+    }
+    wx.chooseMedia({
+      count: remain,
+      mediaType: ["image"],
+      sourceType: ["album", "camera"],
+      success: (res) => {
+        const picked = (res.tempFiles || []).map((item) => item.tempFilePath);
+        this.setData({ images: this.data.images.concat(picked).slice(0, 3) });
+      },
+    });
+  },
+
+  onRemoveImage(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    this.setData({ images: this.data.images.filter((_, itemIndex) => itemIndex !== index) });
+  },
+
   onSubmit() {
     if (!this.data.order) return;
     const review = {
       rating: this.data.rating,
       tags: this.data.selectedTags,
       content: this.data.content || "整体体验不错",
+      images: this.data.images,
       createdAt: Date.now(),
     };
     const orders = (wx.getStorageSync("mockOrders") || []).map((order) => (

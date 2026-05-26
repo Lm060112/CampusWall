@@ -43,6 +43,19 @@
       bindinput="onContentInput"
     />
 
+    <view class="image-grid">
+      <view wx:for="{{ images }}" wx:key="*this" class="image-item">
+        <image class="review-img" src="{{ item }}" mode="aspectFill" />
+        <view class="remove-img" data-index="{{ index }}" catch:tap="onRemoveImage">
+          <van-icon name="cross" size="24rpx" color="#fff" />
+        </view>
+      </view>
+      <view wx:if="{{ images.length < 3 }}" class="image-picker" catch:tap="onChooseImage">
+        <van-icon name="photograph" size="42rpx" color="#8a9099" />
+        <text>添加图片</text>
+      </view>
+    </view>
+
     <view class="submit-btn" catch:tap="onSubmit">提交评价</view>
   </view>
 

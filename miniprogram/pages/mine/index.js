@@ -15,8 +15,8 @@ Page({
     ],
     publishItems: [
       { key: "published", title: "我发布的", icon: "guide-o", color: "#35c46a" },
-      { key: "favorites", title: "我收藏的", icon: "star-o", color: "#ffc529" },
       { key: "sold", title: "我卖出的", icon: "notes-o", color: "#ff7a45" },
+      { key: "bought", title: "我买到的", icon: "shopping-bag-o", color: "#2f80ed" },
       { key: "history", title: "浏览记录", icon: "bar-chart-o", color: "#8b62f2" },
     ],
     menuItems: [
@@ -88,15 +88,9 @@ Page({
       this.openMinePosts("favorites");
       return;
     }
-    if (key === "sold") {
-      wx.navigateTo({ url: "/pages/mine/trades/index?mode=sold" });
-      return;
+    if (key === "points") {
+      wx.navigateTo({ url: "/pages/coupon/index" });
     }
-    if (key === "bought") {
-      wx.navigateTo({ url: "/pages/mine/trades/index?mode=bought" });
-      return;
-    }
-    wx.showToast({ title: "积分体系后续接入", icon: "none" });
   },
 
   onFeatureTap(e) {
@@ -114,6 +108,14 @@ Page({
       this.openMinePosts("favorites");
       return;
     }
+    if (key === "sold") {
+      wx.navigateTo({ url: "/pages/mine/trades/index?mode=sold" });
+      return;
+    }
+    if (key === "bought") {
+      wx.navigateTo({ url: "/pages/mine/trades/index?mode=bought" });
+      return;
+    }
     if (key === "history") {
       wx.navigateTo({ url: "/pages/history/index/index" });
       return;
@@ -122,10 +124,12 @@ Page({
       wx.navigateTo({ url: "/pages/address/index" });
       return;
     }
-    if (key === "settings") {
-      wx.navigateTo({ url: "/pages/settings/index" });
+    if (key === "service") {
+      wx.navigateTo({ url: "/pages/scan/result/index?type=service" });
       return;
     }
-    wx.showToast({ title: `${e.currentTarget.dataset.title}后续接入`, icon: "none" });
+    if (key === "settings") {
+      wx.navigateTo({ url: "/pages/settings/index" });
+    }
   },
 });

@@ -79,7 +79,7 @@ Page({
   },
 
   onSearchTap() {
-    wx.showToast({ title: "校内服务搜索待接入", icon: "none" });
+    wx.navigateTo({ url: "/pages/search/index?keyword=校内服务" });
   },
 
   onBack() {

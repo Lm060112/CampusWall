@@ -14,14 +14,14 @@
     </view>
   </view>
 
-  <view class="notice-bar">
+  <navigator class="notice-bar" url="/pages/announcement/detail/index?id=a2" hover-class="none">
     <van-icon name="volume-o" size="34rpx" color="#0fa958" />
     <text>迎新季惊喜福利上线！领券下单更优惠～</text>
     <view class="notice-link">
       <text>查看详情</text>
       <van-icon name="arrow" size="26rpx" color="#197a43" />
     </view>
-  </view>
+  </navigator>
 
   <view class="service-grid">
     <view
@@ -29,7 +29,6 @@
       wx:key="key"
       class="service-card service-card--{{ item.theme }}"
       data-key="{{ item.key }}"
-      data-title="{{ item.title }}"
       catch:tap="onServiceTap"
     >
       <view class="service-copy">
@@ -52,7 +51,7 @@
 
   <scroll-view class="recommend-scroll" scroll-x enhanced show-scrollbar="{{ false }}">
     <view class="recommend-list">
-      <view wx:for="{{ recommendations }}" wx:key="id" class="recommend-card" data-name="{{ item.name }}" catch:tap="onProductTap">
+      <view wx:for="{{ recommendations }}" wx:key="id" class="recommend-card" data-id="{{ item.id }}" catch:tap="onProductTap">
         <image class="recommend-img" src="{{ item.image }}" mode="aspectFill" />
         <view class="recommend-body">
           <text class="recommend-name">{{ item.name }}</text>
@@ -105,11 +104,17 @@
   </view>
 
   <view class="announcement-card">
-    <navigator wx:for="{{ announcements }}" wx:key="title" class="announcement-row" url="/pages/announcement/detail/index?index={{ index }}" hover-class="none">
+    <view
+      wx:for="{{ announcements }}"
+      wx:key="id"
+      class="announcement-row"
+      data-id="{{ item.id }}"
+      catch:tap="onAnnouncementTap"
+    >
       <text class="announcement-type announcement-type--{{ index }}">{{ item.type }}</text>
       <text class="announcement-title">{{ item.title }}</text>
       <text class="announcement-date">{{ item.date }}</text>
       <view class="red-dot"></view>
-    </navigator>
+    </view>
   </view>
 </view>

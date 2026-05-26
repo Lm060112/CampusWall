@@ -4,16 +4,42 @@
     <text class="header-title">申请售后</text>
     <view class="header-placeholder"></view>
   </view>
+
   <view wx:if="{{ order }}" class="order-card">
     <text class="merchant">{{ order.merchant.name }}</text>
     <text class="amount">订单金额 ¥{{ order.totalAmount / 100 }}</text>
   </view>
+
   <view class="panel">
     <text class="panel-title">退款原因</text>
     <view class="reason-list">
-      <view wx:for="{{ reasons }}" wx:key="*this" class="reason {{ selectedReason === item ? 'reason--active' : '' }}" data-reason="{{ item }}" catch:tap="onReasonTap">{{ item }}</view>
+      <view
+        wx:for="{{ reasons }}"
+        wx:key="*this"
+        class="reason {{ selectedReason === item ? 'reason--active' : '' }}"
+        data-reason="{{ item }}"
+        catch:tap="onReasonTap"
+      >
+        {{ item }}
+      </view>
     </view>
     <textarea class="textarea" value="{{ desc }}" maxlength="120" placeholder="补充说明，可不填" bindinput="onDescInput" />
+
+    <view class="proof-title">问题凭证</view>
+    <view class="image-grid">
+      <view wx:for="{{ images }}" wx:key="*this" class="image-item">
+        <image class="proof-img" src="{{ item }}" mode="aspectFill" />
+        <view class="remove-img" data-index="{{ index }}" catch:tap="onRemoveImage">
+          <van-icon name="cross" size="24rpx" color="#fff" />
+        </view>
+      </view>
+      <view wx:if="{{ images.length < 3 }}" class="image-picker" catch:tap="onChooseImage">
+        <van-icon name="photograph" size="42rpx" color="#8a9099" />
+        <text>上传凭证</text>
+      </view>
+    </view>
   </view>
-  <view class="submit-btn" catch:tap="onSubmit">提交申请</view>
+
+  <view wx:if="{{ order }}" class="submit-btn" catch:tap="onSubmit">提交申请</view>
+  <view wx:else class="empty">订单不存在</view>
 </view>

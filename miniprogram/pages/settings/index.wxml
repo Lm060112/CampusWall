@@ -11,7 +11,7 @@
     <view class="menu-row" catch:tap="onContactTap">
       <view>
         <text class="menu-title">联系客服</text>
-        <text class="menu-desc">后续可接入微信客服或校园服务群</text>
+        <text class="menu-desc">进入校园服务帮助页，模拟客服与问题处理入口</text>
       </view>
       <van-icon name="arrow" size="28rpx" color="#999" />
     </view>
@@ -34,7 +34,7 @@
   <view class="panel">
     <view class="about-block">
       <text class="about-title">校园生活小程序</text>
-      <text class="about-desc">当前为前端模拟版本，用于跑通校园点单、外卖、跑腿、周边玩乐、校园墙和消息订单流程。</text>
+      <text class="about-desc">当前为前端模拟版本，用于跑通校内点单、外卖、跑腿、周边玩乐、校园墙、消息和订单流程。</text>
     </view>
   </view>
 

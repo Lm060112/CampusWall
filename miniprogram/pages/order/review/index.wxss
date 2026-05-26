@@ -93,6 +93,53 @@
   background: #f7f8fa;
 }
 
+.image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+
+.image-item,
+.image-picker {
+  position: relative;
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.review-img {
+  width: 100%;
+  height: 100%;
+}
+
+.remove-img {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18rpx;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.image-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8rpx;
+  color: #8a9099;
+  font-size: 24rpx;
+  background: #f7f8fa;
+  border: 1rpx dashed #d8dde3;
+  box-sizing: border-box;
+}
+
 .submit-btn {
   height: 82rpx;
   line-height: 82rpx;
