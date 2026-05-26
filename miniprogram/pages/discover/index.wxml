@@ -120,7 +120,7 @@
       <input wx:if="{{ draftCategory === '闲置' }}" class="location-input" value="{{ draftPrice }}" type="digit" placeholder="价格，例如 80" bindinput="onPriceInput" />
       <input wx:if="{{ draftCategory === '活动' }}" class="location-input" value="{{ draftEventTime }}" placeholder="活动时间，例如 周六 14:00-17:00" bindinput="onEventTimeInput" />
       <input wx:if="{{ draftCategory === '拼车' }}" class="location-input" value="{{ draftRoute }}" placeholder="路线，例如 崇明校区 → 人民广场" bindinput="onRouteInput" />
-      <input wx:if="{{ draftCategory === '拼车' }}" class="location-input" value="{{ draftSeats }}" placeholder="余位，例如 还剩2位" bindinput="onSeatsInput" />
+      <input wx:if="{{ draftCategory === '拼车' }}" class="location-input" value="{{ draftSeats }}" type="number" placeholder="余位，例如 2" bindinput="onSeatsInput" />
       <input class="location-input" value="{{ draftLocation }}" placeholder="地点，例如 崇明校区 ｜ 一食堂" bindinput="onLocationInput" />
 
       <view class="draft-images">

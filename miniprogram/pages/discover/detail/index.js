@@ -34,16 +34,26 @@ const FALLBACK_POSTS = [
 
 Page({
   data: {
+    postId: "",
     post: null,
     commentInput: "",
   },
 
   onLoad(options = {}) {
+    this.setData({ postId: options.id || "" });
     this.loadPost(options.id);
   },
 
   onShow() {
-    if (this.data.post && this.data.post.id) this.loadPost(this.data.post.id);
+    if (this.data.postId) this.loadPost(this.data.postId);
+  },
+
+  async callCampusApi(data) {
+    const res = await wx.cloud.callFunction({ name: "campusApi", data });
+    if (!res.result || !res.result.success) {
+      throw new Error((res.result && res.result.errMsg) || "云端请求失败");
+    }
+    return res.result.data;
   },
 
   formatTime(ts) {
@@ -52,10 +62,46 @@ Page({
     return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   },
 
+  normalizeCloudPost(post, comments = []) {
+    const price = Number(post.price || 0);
+    return this.decoratePost({
+      id: post._id,
+      cloud: true,
+      author: post.authorName || "校园用户",
+      avatar: post.authorAvatar || "/images/avatar.png",
+      tag: post.tagText || "求助",
+      topic: post.topic || post.tagText || "校园墙",
+      content: post.content || "",
+      priceText: price > 0 ? `¥${price / 100}` : "",
+      location: post.location || "崇明校区",
+      images: Array.isArray(post.images) ? post.images : [],
+      likes: Number(post.likeCount || 0),
+      routeText: post.routeText || "",
+      departTime: post.departTime || "",
+      seats: post.seats ? `还剩 ${post.seats} 位` : "",
+      eventTitle: post.eventTitle || "",
+      eventTime: post.eventTime || "",
+      comments: comments.map((comment) => ({
+        id: comment._id,
+        nickname: comment.authorName || "校园用户",
+        content: comment.content,
+      })),
+      createdAt: post.createdAt,
+      liked: false,
+      collected: false,
+    });
+  },
+
   decoratePost(post) {
     const images = Array.isArray(post.images) ? post.images : [];
     const comments = Array.isArray(post.comments) ? post.comments : [];
-    return { ...post, images, comments, commentCount: comments.length, timeText: this.formatTime(post.createdAt) };
+    return {
+      ...post,
+      images,
+      comments,
+      commentCount: comments.length || post.commentCount || 0,
+      timeText: this.formatTime(post.createdAt),
+    };
   },
 
   getAllPosts() {
@@ -69,16 +115,24 @@ Page({
     wx.setStorageSync(STORAGE_KEY, posts);
   },
 
-  loadPost(id) {
-    const post = this.getAllPosts().find((item) => item.id === id);
-    if (!post) {
-      wx.showToast({ title: "帖子不存在", icon: "none" });
-      return;
+  async loadPost(id) {
+    if (!id) return;
+    try {
+      const post = await this.callCampusApi({ action: "getPost", id });
+      const comments = await this.callCampusApi({ action: "listComments", postId: id });
+      this.setData({ post: this.normalizeCloudPost(post, comments) });
+    } catch (error) {
+      console.warn("load cloud post fallback", error);
+      const post = this.getAllPosts().find((item) => item.id === id);
+      if (!post) {
+        wx.showToast({ title: "帖子不存在", icon: "none" });
+        return;
+      }
+      this.setData({ post: this.decoratePost(post) });
     }
-    this.setData({ post: this.decoratePost(post) });
   },
 
-  updatePost(updater) {
+  updateLocalPost(updater) {
     const post = this.data.post;
     if (!post) return;
     const nextAllPosts = this.getAllPosts().map((item) => (item.id === post.id ? updater(item) : item));
@@ -95,12 +149,35 @@ Page({
     if (this.data.post && this.data.post.images.length) wx.previewImage({ current: src, urls: this.data.post.images });
   },
 
-  onLikeTap() {
-    this.updatePost((post) => ({ ...post, liked: !post.liked, likes: Math.max(0, (post.likes || 0) + (post.liked ? -1 : 1)) }));
+  async onLikeTap() {
+    const post = this.data.post;
+    if (!post) return;
+    if (post.cloud) {
+      try {
+        await this.callCampusApi({ action: "toggleInteraction", targetType: "post", targetId: post.id, interactionType: "like" });
+        this.loadPost(post.id);
+      } catch (error) {
+        wx.showToast({ title: "点赞失败", icon: "none" });
+      }
+      return;
+    }
+    this.updateLocalPost((item) => ({ ...item, liked: !item.liked, likes: Math.max(0, (item.likes || 0) + (item.liked ? -1 : 1)) }));
   },
 
-  onCollectTap() {
-    this.updatePost((post) => ({ ...post, collected: !post.collected }));
+  async onCollectTap() {
+    const post = this.data.post;
+    if (!post) return;
+    if (post.cloud) {
+      try {
+        await this.callCampusApi({ action: "toggleInteraction", targetType: "post", targetId: post.id, interactionType: "favorite" });
+        wx.showToast({ title: "已更新收藏" });
+        this.loadPost(post.id);
+      } catch (error) {
+        wx.showToast({ title: "收藏失败", icon: "none" });
+      }
+      return;
+    }
+    this.updateLocalPost((item) => ({ ...item, collected: !item.collected }));
     wx.showToast({ title: "已更新收藏" });
   },
 
@@ -108,12 +185,23 @@ Page({
     this.setData({ commentInput: e.detail.value || "" });
   },
 
-  onSubmitComment() {
+  async onSubmitComment() {
+    const post = this.data.post;
     const content = (this.data.commentInput || "").trim();
-    if (!content) return;
-    this.updatePost((post) => ({
-      ...post,
-      comments: (post.comments || []).concat({ id: `comment_${Date.now()}`, nickname: "我", content }),
+    if (!post || !content) return;
+    if (post.cloud) {
+      try {
+        await this.callCampusApi({ action: "addComment", postId: post.id, content });
+        this.setData({ commentInput: "" });
+        this.loadPost(post.id);
+      } catch (error) {
+        wx.showToast({ title: "评论失败", icon: "none" });
+      }
+      return;
+    }
+    this.updateLocalPost((item) => ({
+      ...item,
+      comments: (item.comments || []).concat({ id: `comment_${Date.now()}`, nickname: "我", content }),
     }));
     this.setData({ commentInput: "" });
   },

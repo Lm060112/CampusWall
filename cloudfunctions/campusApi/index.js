@@ -132,6 +132,29 @@ async function listPosts(event) {
   return ok({ list: data, page, pageSize });
 }
 
+async function getPost(event) {
+  requireOpenId();
+  const id = event.id;
+  if (!id) return fail("post id is required");
+
+  const postRes = await db.collection("posts").doc(id).get().catch(() => null);
+  if (!postRes || !postRes.data || postRes.data.status === "deleted") {
+    return fail("post not found");
+  }
+
+  await db.collection("posts").doc(id).update({
+    data: {
+      viewCount: _.inc(1),
+      updatedAt: now(),
+    },
+  }).catch(() => null);
+
+  return ok({
+    ...postRes.data,
+    viewCount: Number(postRes.data.viewCount || 0) + 1,
+  });
+}
+
 async function createPost(event) {
   const { openid } = requireOpenId();
   const user = await getCurrentUser(openid);
@@ -353,6 +376,7 @@ const handlers = {
   getCurrentUser: getCurrentUserInfo,
   upsertUser,
   listPosts,
+  getPost,
   createPost,
   deletePost,
   listComments,

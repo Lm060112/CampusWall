@@ -10,6 +10,12 @@ const TAG_CLASS = {
   最新: "latest",
   推荐: "recommend",
 };
+const TAG_TO_KEY = {
+  闲置: "idle",
+  求助: "help",
+  拼车: "carpool",
+  活动: "activity",
+};
 
 const MOCK_POSTS = [
   {
@@ -89,6 +95,7 @@ Page({
     feedList: [],
     allPosts: [],
     emptyText: "暂无内容，来发布第一条吧",
+    cloudReady: false,
 
     showComposer: false,
     draftTitle: "",
@@ -114,12 +121,41 @@ Page({
     this.loadPosts();
   },
 
-  loadPosts() {
+  async callCampusApi(data) {
+    const res = await wx.cloud.callFunction({ name: "campusApi", data });
+    if (!res.result || !res.result.success) {
+      throw new Error((res.result && res.result.errMsg) || "云端请求失败");
+    }
+    return res.result.data;
+  },
+
+  async loadPosts() {
+    try {
+      const tag = this.data.activeTab && !["推荐", "最新"].includes(this.data.activeTab)
+        ? TAG_TO_KEY[this.data.activeTab]
+        : "all";
+      const data = await this.callCampusApi({
+        action: "listPosts",
+        tag,
+        keyword: this.data.searchKeyword,
+        pageSize: 50,
+      });
+      const cloudPosts = (data.list || []).map((post) => this.normalizeCloudPost(post));
+      this.setData({ allPosts: cloudPosts, cloudReady: true }, () => this.applyFilter());
+    } catch (error) {
+      console.warn("load cloud posts fallback", error);
+      this.loadLocalPosts();
+    }
+  },
+
+  loadLocalPosts() {
     const saved = wx.getStorageSync(STORAGE_KEY);
     const customPosts = Array.isArray(saved) ? saved : [];
     const savedIds = customPosts.map((post) => post.id);
-    const allPosts = customPosts.concat(MOCK_POSTS.filter((post) => !savedIds.includes(post.id))).map((post) => this.decoratePost(post));
-    this.setData({ allPosts }, () => this.applyFilter());
+    const allPosts = customPosts
+      .concat(MOCK_POSTS.filter((post) => !savedIds.includes(post.id)))
+      .map((post) => this.decoratePost(post));
+    this.setData({ allPosts, cloudReady: false }, () => this.applyFilter());
   },
 
   saveCustomPosts(posts) {
@@ -135,6 +171,34 @@ Page({
     if (diff < hour) return `${Math.floor(diff / minute)}分钟前`;
     if (diff < day) return `${Math.floor(diff / hour)}小时前`;
     return `${Math.floor(diff / day)}天前`;
+  },
+
+  normalizeCloudPost(post) {
+    const price = Number(post.price || 0);
+    return this.decoratePost({
+      id: post._id,
+      cloud: true,
+      author: post.authorName || "校园用户",
+      avatar: post.authorAvatar || "/images/avatar.png",
+      tag: post.tagText || "求助",
+      tagKey: post.tag || "help",
+      topic: post.topic || post.tagText || "校园墙",
+      content: post.content || "",
+      priceText: price > 0 ? `¥${price / 100}` : "",
+      location: post.location || "崇明校区",
+      routeText: post.routeText || "",
+      departTime: post.departTime || "",
+      seats: post.seats ? `还剩 ${post.seats} 位` : "",
+      eventTitle: post.eventTitle || "",
+      eventTime: post.eventTime || "",
+      images: Array.isArray(post.images) ? post.images : [],
+      likes: Number(post.likeCount || 0),
+      commentCount: Number(post.commentCount || 0),
+      comments: [],
+      createdAt: post.createdAt,
+      liked: false,
+      collected: false,
+    });
   },
 
   decoratePost(post) {
@@ -158,7 +222,9 @@ Page({
     if (keyword) {
       feedList = feedList.filter((post) => `${post.author}${post.tag}${post.topic}${post.content}${post.location}`.toLowerCase().includes(keyword));
     }
-    if (this.data.activeTab === "最新") feedList = feedList.slice().sort((a, b) => b.createdAt - a.createdAt);
+    if (this.data.activeTab === "最新") {
+      feedList = feedList.slice().sort((a, b) => b.createdAt - a.createdAt);
+    }
     this.setData({
       feedList,
       emptyText: keyword ? "没有找到相关内容" : "暂无内容，来发布第一条吧",
@@ -173,7 +239,7 @@ Page({
   },
 
   onTabTap(e) {
-    this.setData({ activeTab: e.currentTarget.dataset.tab }, () => this.applyFilter());
+    this.setData({ activeTab: e.currentTarget.dataset.tab }, () => this.loadPosts());
   },
 
   onSearchInput(e) {
@@ -181,7 +247,7 @@ Page({
   },
 
   onClearSearch() {
-    this.setData({ searchKeyword: "" }, () => this.applyFilter());
+    this.setData({ searchKeyword: "" }, () => this.loadPosts());
   },
 
   onScanTap() {
@@ -193,6 +259,11 @@ Page({
   },
 
   onPublishTap() {
+    const userInfo = wx.getStorageSync("userInfo");
+    if (!userInfo) {
+      wx.navigateTo({ url: "/pages/login/index" });
+      return;
+    }
     this.setData({ showComposer: true });
   },
 
@@ -220,7 +291,10 @@ Page({
       mediaType: ["image"],
       sourceType: ["album", "camera"],
       success: (res) => {
-        const picked = (res.tempFiles || []).map((item) => item.tempFilePath).filter(Boolean).map((url) => ({ url }));
+        const picked = (res.tempFiles || [])
+          .map((item) => item.tempFilePath)
+          .filter(Boolean)
+          .map((url) => ({ url }));
         this.setData({ draftImages: this.data.draftImages.concat(picked).slice(0, 3) });
       },
     });
@@ -231,14 +305,23 @@ Page({
     this.setData({ draftImages: this.data.draftImages.filter((_, i) => i !== index) });
   },
 
-  onSubmitPost() {
+  async uploadDraftImages() {
+    const uploads = this.data.draftImages.map((item, index) => {
+      if (!item.url || item.url.startsWith("cloud://") || item.url.startsWith("/images/")) {
+        return Promise.resolve(item.url);
+      }
+      return wx.cloud.uploadFile({
+        cloudPath: `campus-posts/${Date.now()}-${index}.jpg`,
+        filePath: item.url,
+      }).then((res) => res.fileID);
+    });
+    return Promise.all(uploads);
+  },
+
+  buildLocalPost(imageUrls) {
     const title = (this.data.draftTitle || "").trim();
     const content = (this.data.draftContent || "").trim();
-    if (!content) {
-      wx.showToast({ title: "请输入发布内容", icon: "none" });
-      return;
-    }
-    const post = this.decoratePost({
+    return this.decoratePost({
       id: `local_${Date.now()}`,
       isCustom: true,
       author: "校园用户",
@@ -252,16 +335,16 @@ Page({
       routeText: this.data.draftCategory === "拼车" ? this.data.draftRoute : "",
       seats: this.data.draftCategory === "拼车" ? this.data.draftSeats : "",
       location: this.data.draftLocation || "崇明校区",
-      images: this.data.draftImages.map((item) => item.url),
+      images: imageUrls,
       likes: 0,
       comments: [],
       createdAt: Date.now(),
       liked: false,
       collected: false,
     });
-    const customPosts = [post].concat((wx.getStorageSync(STORAGE_KEY) || []).filter(Boolean));
-    this.saveCustomPosts(customPosts);
-    wx.showToast({ title: "发布成功" });
+  },
+
+  resetComposer() {
     this.setData({
       showComposer: false,
       activeTab: "最新",
@@ -274,18 +357,82 @@ Page({
       draftRoute: "",
       draftSeats: "",
       draftImages: [],
+      publishing: false,
     });
-    this.loadPosts();
   },
 
-  onLikeTap(e) {
-    const id = e.currentTarget.dataset.id;
-    this.updatePost(id, (post) => ({ ...post, liked: !post.liked, likes: Math.max(0, (post.likes || 0) + (post.liked ? -1 : 1)) }));
+  async onSubmitPost() {
+    const title = (this.data.draftTitle || "").trim();
+    const content = (this.data.draftContent || "").trim();
+    if (!content) {
+      wx.showToast({ title: "请输入发布内容", icon: "none" });
+      return;
+    }
+    if (this.data.publishing) return;
+    this.setData({ publishing: true });
+
+    let imageUrls = this.data.draftImages.map((item) => item.url);
+    try {
+      imageUrls = await this.uploadDraftImages();
+      await this.callCampusApi({
+        action: "createPost",
+        post: {
+          tag: TAG_TO_KEY[this.data.draftCategory] || "help",
+          tagText: this.data.draftCategory,
+          topic: title || this.data.draftCategory,
+          content,
+          images: imageUrls,
+          location: this.data.draftLocation || "崇明校区",
+          price: this.data.draftCategory === "闲置" ? Math.round(Number(this.data.draftPrice || 0) * 100) : 0,
+          eventTitle: this.data.draftCategory === "活动" ? title || "校园活动" : "",
+          eventTime: this.data.draftCategory === "活动" ? this.data.draftEventTime : "",
+          routeText: this.data.draftCategory === "拼车" ? this.data.draftRoute : "",
+          seats: this.data.draftCategory === "拼车" ? Number(this.data.draftSeats || 0) : 0,
+        },
+      });
+      wx.showToast({ title: "发布成功" });
+      this.resetComposer();
+      this.loadPosts();
+    } catch (error) {
+      console.warn("create cloud post fallback", error);
+      const post = this.buildLocalPost(imageUrls);
+      const customPosts = [post].concat((wx.getStorageSync(STORAGE_KEY) || []).filter(Boolean));
+      this.saveCustomPosts(customPosts);
+      wx.showToast({ title: "已本地发布", icon: "none" });
+      this.resetComposer();
+      this.loadLocalPosts();
+    }
   },
 
-  onCollectTap(e) {
+  async onLikeTap(e) {
     const id = e.currentTarget.dataset.id;
-    this.updatePost(id, (post) => ({ ...post, collected: !post.collected }));
+    const post = this.data.allPosts.find((item) => item.id === id);
+    if (post && post.cloud) {
+      try {
+        await this.callCampusApi({ action: "toggleInteraction", targetType: "post", targetId: id, interactionType: "like" });
+        this.loadPosts();
+      } catch (error) {
+        wx.showToast({ title: "点赞失败", icon: "none" });
+      }
+      return;
+    }
+    this.updatePost(id, (item) => ({ ...item, liked: !item.liked, likes: Math.max(0, (item.likes || 0) + (item.liked ? -1 : 1)) }));
+  },
+
+  async onCollectTap(e) {
+    const id = e.currentTarget.dataset.id;
+    const post = this.data.allPosts.find((item) => item.id === id);
+    if (post && post.cloud) {
+      try {
+        await this.callCampusApi({ action: "toggleInteraction", targetType: "post", targetId: id, interactionType: "favorite" });
+        wx.showToast({ title: "已更新收藏" });
+        this.loadPosts();
+      } catch (error) {
+        wx.showToast({ title: "收藏失败", icon: "none" });
+      }
+      return;
+    }
+    this.updatePost(id, (item) => ({ ...item, collected: !item.collected }));
     wx.showToast({ title: "已更新收藏" });
   },
 
@@ -307,23 +454,44 @@ Page({
     this.setData({ commentInput: e.detail.value || "" });
   },
 
-  onSubmitComment() {
+  async onSubmitComment() {
     const content = (this.data.commentInput || "").trim();
     const id = this.data.activePostId;
     if (!content || !id) return;
-    this.updatePost(id, (post) => ({ ...post, comments: (post.comments || []).concat({ id: `comment_${Date.now()}`, nickname: "我", content }) }));
+    const post = this.data.allPosts.find((item) => item.id === id);
+    if (post && post.cloud) {
+      try {
+        await this.callCampusApi({ action: "addComment", postId: id, content });
+        this.setData({ activePostId: "", commentInput: "" });
+        this.loadPosts();
+      } catch (error) {
+        wx.showToast({ title: "评论失败", icon: "none" });
+      }
+      return;
+    }
+    this.updatePost(id, (item) => ({ ...item, comments: (item.comments || []).concat({ id: `comment_${Date.now()}`, nickname: "我", content }) }));
     this.setData({ activePostId: "", commentInput: "" });
   },
 
-  onDeletePost(e) {
+  async onDeletePost(e) {
     const id = e.currentTarget.dataset.id;
+    const post = this.data.allPosts.find((item) => item.id === id);
     wx.showModal({
       title: "删除帖子",
-      content: "确定删除这条本地发布吗？",
-      success: (res) => {
+      content: "确定删除这条发布吗？",
+      success: async (res) => {
         if (!res.confirm) return;
-        this.saveCustomPosts((wx.getStorageSync(STORAGE_KEY) || []).filter((post) => post.id !== id));
-        this.loadPosts();
+        if (post && post.cloud) {
+          try {
+            await this.callCampusApi({ action: "deletePost", id });
+            this.loadPosts();
+          } catch (error) {
+            wx.showToast({ title: "删除失败", icon: "none" });
+          }
+          return;
+        }
+        this.saveCustomPosts((wx.getStorageSync(STORAGE_KEY) || []).filter((item) => item.id !== id));
+        this.loadLocalPosts();
       },
     });
   },
