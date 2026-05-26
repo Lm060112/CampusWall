@@ -31,13 +31,18 @@ Page({
   onLogout() {
     wx.showModal({
       title: "退出登录",
-      content: "当前是前端模拟登录，只会清除本机用户信息。",
+      content: "会清除本机用户登录状态，不会删除云数据库中的用户记录。",
       success: (res) => {
         if (!res.confirm) return;
         app.globalData.userInfo = null;
         wx.removeStorageSync("userInfo");
         wx.showToast({ title: "已退出" });
-        setTimeout(() => wx.navigateBack(), 600);
+        setTimeout(() => {
+          const pages = getCurrentPages();
+          if (pages.length > 1) {
+            wx.navigateBack();
+          }
+        }, 600);
       },
     });
   },

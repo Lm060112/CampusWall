@@ -28,7 +28,9 @@ Page({
   },
 
   onShow() {
-    const userInfo = app.globalData.userInfo || wx.getStorageSync("userInfo");
+    const userInfo = wx.getStorageSync("userInfo") || null;
+    app.globalData.userInfo = userInfo;
+
     const orders = wx.getStorageSync("mockOrders") || [];
     const posts = wx.getStorageSync(DISCOVER_STORAGE_KEY) || [];
     const publishedCount = posts.filter((item) => item.isCustom).length;
@@ -37,13 +39,20 @@ Page({
       { key: "orders", label: "我的订单", value: orders.length },
       { key: "posts", label: "我的发布", value: publishedCount },
       { key: "favorites", label: "我的收藏", value: favoriteCount },
-      { key: "points", label: "我的积分", value: 128 },
+      { key: "points", label: "我的积分", value: userInfo ? 128 : 0 },
     ];
+
     this.setData({
       stats,
-      userInfo: userInfo || null,
+      userInfo,
       hasUserInfo: !!userInfo,
     });
+  },
+
+  ensureLogin() {
+    if (this.data.hasUserInfo) return true;
+    wx.navigateTo({ url: "/pages/login/index" });
+    return false;
   },
 
   onLogin() {
@@ -59,6 +68,7 @@ Page({
   },
 
   onProfileTap() {
+    if (!this.ensureLogin()) return;
     wx.navigateTo({ url: "/pages/profile/index" });
   },
 
@@ -67,15 +77,18 @@ Page({
   },
 
   onOrderListTap() {
+    if (!this.ensureLogin()) return;
     wx.navigateTo({ url: "/pages/order/list?filter=allOrders" });
   },
 
   openMinePosts(mode) {
+    if (!this.ensureLogin()) return;
     wx.navigateTo({ url: `/pages/mine/posts/index?mode=${mode}` });
   },
 
   onStatTap(e) {
     const key = e.currentTarget.dataset.key;
+    if (!this.ensureLogin()) return;
     if (key === "orders") {
       this.onOrderListTap();
       return;
@@ -95,6 +108,8 @@ Page({
 
   onFeatureTap(e) {
     const key = e.currentTarget.dataset.key;
+    if (key !== "settings" && key !== "service" && !this.ensureLogin()) return;
+
     const orderKeys = ["allOrders", "pay", "doing", "comment", "refund", "done"];
     if (orderKeys.includes(key)) {
       wx.navigateTo({ url: `/pages/order/list?filter=${key}` });

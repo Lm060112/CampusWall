@@ -11,15 +11,19 @@
     <view class="profile-row">
       <image class="avatar" src="{{ hasUserInfo && userInfo.avatarUrl ? userInfo.avatarUrl : '/images/avatar.png' }}" mode="aspectFill" />
       <view class="profile-main">
-        <text class="nickname">{{ hasUserInfo ? userInfo.nickName : '小汤圆' }}</text>
-        <text class="slogan">校园生活更轻松</text>
+        <text class="nickname">{{ hasUserInfo ? userInfo.nickName : '未登录' }}</text>
+        <text class="slogan">{{ hasUserInfo ? '校园生活更轻松' : '登录后同步发布、订单和消息' }}</text>
         <view class="campus-pill">
           <van-icon name="location" size="24rpx" color="#148844" />
-          <text>崇明校区</text>
+          <text>{{ hasUserInfo ? userInfo.campus : '请选择校区' }}</text>
         </view>
       </view>
-      <view class="profile-link" catch:tap="onProfileTap">
+      <view wx:if="{{ hasUserInfo }}" class="profile-link" catch:tap="onProfileTap">
         <text>个人主页</text>
+        <van-icon name="arrow" size="24rpx" color="#148844" />
+      </view>
+      <view wx:else class="profile-link login-link" catch:tap="onLogin">
+        <text>去登录</text>
         <van-icon name="arrow" size="24rpx" color="#148844" />
       </view>
     </view>
