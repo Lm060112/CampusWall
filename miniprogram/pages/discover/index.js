@@ -18,16 +18,12 @@ const MOCK_POSTS = [
     avatar: "/images/avatar.png",
     tag: "闲置",
     topic: "大学生活",
-    content: "出九成新蓝牙耳机，使用不到一个月，音质挺好，原价199，现价80出，感兴趣滴滴。",
+    content: "出九成新蓝牙耳机，使用不到一个月，音质不错，原价199，现价80出，感兴趣滴滴～",
     priceText: "¥80",
-    location: "崇明校区 · 第三教学楼",
+    location: "崇明校区 ｜ 第三教学楼",
     images: ["/images/default-goods-image.png", "/images/ai_example1.png", "/images/ai_example2.png"],
     likes: 26,
-    commentCount: 2,
-    comments: [
-      { id: "c_1", nickname: "阿呆同学", content: "还在吗？可以自提。" },
-      { id: "c_2", nickname: "橙子", content: "想看一下耳机盒细节。" },
-    ],
+    comments: [{ id: "c_1", nickname: "阿呜同学", content: "还在吗？可以自提。" }],
     createdAt: Date.now() - 10 * 60 * 1000,
     liked: false,
     collected: false,
@@ -38,19 +34,18 @@ const MOCK_POSTS = [
     avatar: "/images/avatar.png",
     tag: "求助",
     topic: "失物招领",
-    content: "今天中午在食堂二楼捡到一张校园卡，麻烦失主来一食堂服务台认领。",
-    location: "崇明校区 · 一食堂",
+    content: "今天中午在食堂二楼捡到一张校园卡，麻烦失主来一食堂服务台认领～",
+    location: "崇明校区 ｜ 一食堂",
     images: ["/images/database.png"],
     likes: 14,
-    commentCount: 3,
-    comments: [{ id: "c_3", nickname: "周小北", content: "帮顶，已经转发班群。" }],
+    comments: [{ id: "c_2", nickname: "周小北", content: "帮顶，已经转发班群。" }],
     createdAt: Date.now() - 65 * 60 * 1000,
     liked: false,
     collected: false,
   },
   {
     id: "mock_3",
-    author: "阿呆学姐",
+    author: "阿呜学姐",
     avatar: "/images/avatar.png",
     tag: "活动",
     topic: "活动分享",
@@ -60,7 +55,6 @@ const MOCK_POSTS = [
     eventTime: "05-31（周六）14:00-17:00",
     images: [],
     likes: 31,
-    commentCount: 7,
     comments: [],
     createdAt: Date.now() - 3 * 60 * 60 * 1000,
     liked: true,
@@ -74,9 +68,11 @@ const MOCK_POSTS = [
     topic: "拼车",
     content: "明天早上 8:30 崇明校区到市区人民广场附近，有顺路的小伙伴吗？",
     location: "崇明校区正门",
+    routeText: "崇明校区 → 人民广场",
+    departTime: "明天 08:30",
+    seats: "还剩 2 位",
     images: [],
     likes: 9,
-    commentCount: 1,
     comments: [],
     createdAt: Date.now() - 5 * 60 * 60 * 1000,
     liked: false,
@@ -101,6 +97,8 @@ Page({
     draftLocation: "崇明校区",
     draftPrice: "",
     draftEventTime: "",
+    draftRoute: "",
+    draftSeats: "",
     draftImages: [],
     publishing: false,
 
@@ -120,9 +118,7 @@ Page({
     const saved = wx.getStorageSync(STORAGE_KEY);
     const customPosts = Array.isArray(saved) ? saved : [];
     const savedIds = customPosts.map((post) => post.id);
-    const allPosts = customPosts
-      .concat(MOCK_POSTS.filter((post) => !savedIds.includes(post.id)))
-      .map((post) => this.decoratePost(post));
+    const allPosts = customPosts.concat(MOCK_POSTS.filter((post) => !savedIds.includes(post.id))).map((post) => this.decoratePost(post));
     this.setData({ allPosts }, () => this.applyFilter());
   },
 
@@ -160,14 +156,9 @@ Page({
       feedList = feedList.filter((post) => post.tag === this.data.activeTab);
     }
     if (keyword) {
-      feedList = feedList.filter((post) => {
-        const text = `${post.author}${post.tag}${post.topic}${post.content}${post.location}`.toLowerCase();
-        return text.includes(keyword);
-      });
+      feedList = feedList.filter((post) => `${post.author}${post.tag}${post.topic}${post.content}${post.location}`.toLowerCase().includes(keyword));
     }
-    if (this.data.activeTab === "最新") {
-      feedList = feedList.slice().sort((a, b) => b.createdAt - a.createdAt);
-    }
+    if (this.data.activeTab === "最新") feedList = feedList.slice().sort((a, b) => b.createdAt - a.createdAt);
     this.setData({
       feedList,
       emptyText: keyword ? "没有找到相关内容" : "暂无内容，来发布第一条吧",
@@ -198,9 +189,7 @@ Page({
   },
 
   onPostTap(e) {
-    const id = e.currentTarget.dataset.id;
-    if (!id) return;
-    wx.navigateTo({ url: `/pages/discover/detail/index?id=${id}` });
+    wx.navigateTo({ url: `/pages/discover/detail/index?id=${e.currentTarget.dataset.id}` });
   },
 
   onPublishTap() {
@@ -208,31 +197,18 @@ Page({
   },
 
   onCloseComposer() {
-    if (this.data.publishing) return;
-    this.setData({ showComposer: false });
+    if (!this.data.publishing) this.setData({ showComposer: false });
   },
 
   stopBubble() {},
 
-  onDraftTitleInput(e) {
-    this.setData({ draftTitle: e.detail.value || "" });
-  },
-
-  onDraftInput(e) {
-    this.setData({ draftContent: e.detail.value || "" });
-  },
-
-  onLocationInput(e) {
-    this.setData({ draftLocation: e.detail.value || "" });
-  },
-
-  onPriceInput(e) {
-    this.setData({ draftPrice: e.detail.value || "" });
-  },
-
-  onEventTimeInput(e) {
-    this.setData({ draftEventTime: e.detail.value || "" });
-  },
+  onDraftTitleInput(e) { this.setData({ draftTitle: e.detail.value || "" }); },
+  onDraftInput(e) { this.setData({ draftContent: e.detail.value || "" }); },
+  onLocationInput(e) { this.setData({ draftLocation: e.detail.value || "" }); },
+  onPriceInput(e) { this.setData({ draftPrice: e.detail.value || "" }); },
+  onEventTimeInput(e) { this.setData({ draftEventTime: e.detail.value || "" }); },
+  onRouteInput(e) { this.setData({ draftRoute: e.detail.value || "" }); },
+  onSeatsInput(e) { this.setData({ draftSeats: e.detail.value || "" }); },
 
   onCategoryTap(e) {
     this.setData({ draftCategory: e.currentTarget.dataset.category });
@@ -244,10 +220,7 @@ Page({
       mediaType: ["image"],
       sourceType: ["album", "camera"],
       success: (res) => {
-        const picked = (res.tempFiles || [])
-          .map((item) => item.tempFilePath)
-          .filter(Boolean)
-          .map((url) => ({ url }));
+        const picked = (res.tempFiles || []).map((item) => item.tempFilePath).filter(Boolean).map((url) => ({ url }));
         this.setData({ draftImages: this.data.draftImages.concat(picked).slice(0, 3) });
       },
     });
@@ -274,9 +247,11 @@ Page({
       topic: title || this.data.draftCategory,
       content,
       priceText: this.data.draftCategory === "闲置" && this.data.draftPrice ? `¥${this.data.draftPrice}` : "",
-      location: this.data.draftLocation || "崇明校区",
       eventTitle: this.data.draftCategory === "活动" ? title || "校园活动" : "",
       eventTime: this.data.draftCategory === "活动" ? this.data.draftEventTime : "",
+      routeText: this.data.draftCategory === "拼车" ? this.data.draftRoute : "",
+      seats: this.data.draftCategory === "拼车" ? this.data.draftSeats : "",
+      location: this.data.draftLocation || "崇明校区",
       images: this.data.draftImages.map((item) => item.url),
       likes: 0,
       comments: [],
@@ -296,6 +271,8 @@ Page({
       draftLocation: "崇明校区",
       draftPrice: "",
       draftEventTime: "",
+      draftRoute: "",
+      draftSeats: "",
       draftImages: [],
     });
     this.loadPosts();
@@ -303,11 +280,7 @@ Page({
 
   onLikeTap(e) {
     const id = e.currentTarget.dataset.id;
-    this.updatePost(id, (post) => ({
-      ...post,
-      liked: !post.liked,
-      likes: Math.max(0, (post.likes || 0) + (post.liked ? -1 : 1)),
-    }));
+    this.updatePost(id, (post) => ({ ...post, liked: !post.liked, likes: Math.max(0, (post.likes || 0) + (post.liked ? -1 : 1)) }));
   },
 
   onCollectTap(e) {
@@ -319,8 +292,7 @@ Page({
   onPreviewImage(e) {
     const { src, id } = e.currentTarget.dataset;
     const post = this.data.allPosts.find((item) => item.id === id);
-    if (!post || !post.images.length) return;
-    wx.previewImage({ current: src, urls: post.images });
+    if (post && post.images.length) wx.previewImage({ current: src, urls: post.images });
   },
 
   onShowCommentInput(e) {
@@ -339,14 +311,7 @@ Page({
     const content = (this.data.commentInput || "").trim();
     const id = this.data.activePostId;
     if (!content || !id) return;
-    this.updatePost(id, (post) => ({
-      ...post,
-      comments: (post.comments || []).concat({
-        id: `comment_${Date.now()}`,
-        nickname: "我",
-        content,
-      }),
-    }));
+    this.updatePost(id, (post) => ({ ...post, comments: (post.comments || []).concat({ id: `comment_${Date.now()}`, nickname: "我", content }) }));
     this.setData({ activePostId: "", commentInput: "" });
   },
 
@@ -357,8 +322,7 @@ Page({
       content: "确定删除这条本地发布吗？",
       success: (res) => {
         if (!res.confirm) return;
-        const customPosts = (wx.getStorageSync(STORAGE_KEY) || []).filter((post) => post.id !== id);
-        this.saveCustomPosts(customPosts);
+        this.saveCustomPosts((wx.getStorageSync(STORAGE_KEY) || []).filter((post) => post.id !== id));
         this.loadPosts();
       },
     });

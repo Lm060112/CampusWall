@@ -21,7 +21,7 @@ Page({
     }
     const normalized = {
       ...order,
-      displayStatus: this.isDone(order) ? "已完成" : order.status || "进行中",
+      displayStatus: this.getDisplayStatus(order),
       pickupNo: order.pickupNo || `A${String(order.submittedAt || order.createdAt || Date.now()).slice(-3)}`,
       itemCount: (order.items || []).reduce((sum, item) => sum + item.count, 0),
       timeText: this.formatTime(order.submittedAt || order.createdAt),
@@ -37,6 +37,12 @@ Page({
     return order.status === "已完成" || order.statusText === "订单已完成" || !!order.review;
   },
 
+  getDisplayStatus(order) {
+    if (this.isDone(order)) return "已完成";
+    if (!order.paid) return "待付款";
+    return order.status || "进行中";
+  },
+
   formatTime(ts) {
     if (!ts) return "";
     const d = new Date(ts);
@@ -45,6 +51,7 @@ Page({
   },
 
   getStatusStep(order) {
+    if (!order.paid) return 0;
     if (this.isDone(order)) return 3;
     if (["待取餐", "配送中", "进行中", "待参加"].includes(order.status)) return 2;
     return 1;
@@ -58,6 +65,7 @@ Page({
   },
 
   getPrimaryAction(order) {
+    if (!order.paid) return { text: "去支付", type: "pay" };
     if (this.isDone(order)) {
       return order.review ? { text: "再来一单", type: "again" } : { text: "去评价", type: "review" };
     }
@@ -86,7 +94,7 @@ Page({
     let updatedOrder = null;
     const nextOrders = orders.map((item) => (
       item.id === this.data.orderId
-        ? (updatedOrder = { ...item, status, statusText })
+        ? (updatedOrder = { ...item, status, statusText, paid: true })
         : item
     ));
     wx.setStorageSync("mockOrders", nextOrders);
@@ -124,6 +132,10 @@ Page({
 
   onReadyTap() {
     const action = this.data.order.primaryAction;
+    if (action.type === "pay") {
+      this.onPayTap();
+      return;
+    }
     if (action.type === "review") {
       wx.navigateTo({ url: `/pages/order/review/index?id=${this.data.order.id}` });
       return;
@@ -144,7 +156,14 @@ Page({
   },
 
   onAgainTap() {
-    wx.navigateTo({ url: "/pages/campus-order/index" });
+    const source = this.data.order.sourceType;
+    const routes = {
+      campus: "/pages/campus-order/index",
+      takeaway: "/pages/takeaway/index",
+      errand: "/pages/errand/index",
+      nearby: "/pages/nearby/index",
+    };
+    wx.navigateTo({ url: routes[source] || "/pages/campus-order/index" });
   },
 
   onBack() {

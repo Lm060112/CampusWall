@@ -39,7 +39,7 @@
         <text class="info-value">{{ order.merchant.name }}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">取餐点</text>
+        <text class="info-label">取餐/送达点</text>
         <text class="info-value">{{ order.merchant.address }}</text>
       </view>
       <view class="info-row">
@@ -55,8 +55,8 @@
         <text class="info-value">{{ order.contact.name }} {{ order.contact.phone }}</text>
       </view>
       <view wx:if="{{ order.contact }}" class="info-row">
-        <text class="info-label">送达信息</text>
-        <text class="info-value">{{ order.contact.campus }} {{ order.contact.building }} {{ order.contact.room }} · {{ order.contact.detail }}</text>
+        <text class="info-label">收货信息</text>
+        <text class="info-value">{{ order.contact.campus }} {{ order.contact.building }} {{ order.contact.room }} ｜ {{ order.contact.detail }}</text>
       </view>
     </view>
 
@@ -86,8 +86,12 @@
       <text class="review-text">{{ order.review.content }}</text>
     </view>
 
+    <view wx:if="{{ order.refund }}" class="order-card">
+      <view class="card-title">售后进度</view>
+      <text class="review-text">{{ order.refund.reason }} ｜ {{ order.refund.status }}</text>
+    </view>
+
     <view class="action-bar">
-      <view wx:if="{{ !order.paid && !order.done }}" class="secondary-btn" catch:tap="onPayTap">去支付</view>
       <view wx:if="{{ !order.refund }}" class="secondary-btn" catch:tap="onRefundTap">售后</view>
       <view class="primary-btn" catch:tap="onReadyTap">{{ order.primaryAction.text }}</view>
     </view>

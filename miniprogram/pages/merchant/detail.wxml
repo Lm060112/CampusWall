@@ -3,7 +3,7 @@
     <view class="back-btn" catch:tap="onBack">
       <van-icon name="arrow-left" size="38rpx" color="#111" />
     </view>
-    <text class="header-title">商家详情</text>
+    <text class="header-title">{{ scene === 'takeaway' ? '外卖商家' : '校内服务' }}</text>
     <view class="header-placeholder"></view>
   </view>
 
@@ -44,11 +44,8 @@
     </scroll-view>
 
     <scroll-view class="product-list" scroll-y enhanced show-scrollbar="{{ false }}">
-      <view
-        wx:for="{{ visibleProducts }}"
-        wx:key="id"
-        class="product-card"
-      >
+      <view wx:if="{{ !visibleProducts.length }}" class="empty">当前分类暂无商品</view>
+      <view wx:for="{{ visibleProducts }}" wx:key="id" class="product-card">
         <image class="product-img" src="{{ item.image }}" mode="aspectFill" />
         <view class="product-main">
           <text class="product-name">{{ item.name }}</text>
@@ -78,10 +75,8 @@
     </view>
     <view class="cart-main">
       <text class="cart-price">¥{{ cartAmount / 100 }}</text>
-      <text class="cart-tip">另需配送费以结算页为准</text>
+      <text class="cart-tip">{{ scene === 'takeaway' ? '配送费以结算页为准' : '到店自取免排队' }}</text>
     </view>
-    <view class="checkout-btn {{ cartCount ? '' : 'checkout-btn--disabled' }}" catch:tap="onCheckout">
-      去结算
-    </view>
+    <view class="checkout-btn {{ cartCount ? '' : 'checkout-btn--disabled' }}" catch:tap="onCheckout">去结算</view>
   </view>
 </view>

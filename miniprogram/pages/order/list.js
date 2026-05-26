@@ -1,6 +1,9 @@
 const FILTERS = [
   { key: "allOrders", title: "全部" },
+  { key: "pay", title: "待付款" },
   { key: "doing", title: "进行中" },
+  { key: "comment", title: "待评价" },
+  { key: "refund", title: "售后" },
   { key: "done", title: "已完成" },
 ];
 
@@ -10,20 +13,15 @@ Page({
     activeFilter: "allOrders",
     orders: [],
     visibleOrders: [],
+    emptyText: "暂无订单",
   },
 
   onLoad(options = {}) {
-    this.setData({ activeFilter: this.normalizeFilter(options.filter) });
+    this.setData({ activeFilter: options.filter || "allOrders" });
   },
 
   onShow() {
     this.loadOrders();
-  },
-
-  normalizeFilter(filter) {
-    if (filter === "done" || filter === "comment") return "done";
-    if (filter === "doing" || filter === "pay" || filter === "refund") return "doing";
-    return "allOrders";
   },
 
   isDone(order) {
@@ -33,7 +31,7 @@ Page({
   loadOrders() {
     const orders = (wx.getStorageSync("mockOrders") || []).map((order) => ({
       ...order,
-      displayStatus: this.isDone(order) ? "已完成" : order.status || "进行中",
+      displayStatus: this.isDone(order) ? "已完成" : order.status || (order.paid ? "进行中" : "待付款"),
       pickupNo: order.pickupNo || `A${String(order.submittedAt || order.createdAt || Date.now()).slice(-3)}`,
       itemCount: (order.items || []).reduce((sum, item) => sum + item.count, 0),
       previewText: (order.items || []).map((item) => `${item.name}x${item.count}`).join("、"),
@@ -52,10 +50,20 @@ Page({
 
   applyFilter() {
     const { activeFilter, orders } = this.data;
-    const visibleOrders = activeFilter === "allOrders"
-      ? orders
-      : orders.filter((order) => (activeFilter === "done" ? order.done : !order.done));
-    this.setData({ visibleOrders });
+    const visibleOrders = orders.filter((order) => {
+      if (activeFilter === "allOrders") return true;
+      if (activeFilter === "pay") return !order.paid && !order.done;
+      if (activeFilter === "doing") return order.paid && !order.done && order.status !== "售后中";
+      if (activeFilter === "comment") return order.done && !order.review;
+      if (activeFilter === "refund") return order.status === "售后中" || !!order.refund;
+      if (activeFilter === "done") return order.done;
+      return true;
+    });
+    const active = FILTERS.find((item) => item.key === activeFilter);
+    this.setData({
+      visibleOrders,
+      emptyText: active ? `${active.title}暂无订单` : "暂无订单",
+    });
   },
 
   onFilterTap(e) {
@@ -70,9 +78,13 @@ Page({
     this.loadOrders();
   },
 
+  onPayTap(e) {
+    wx.navigateTo({ url: `/pages/order/pay/index?id=${e.currentTarget.dataset.id}` });
+  },
+
   onCompleteTap(e) {
     const id = e.currentTarget.dataset.id;
-    this.updateOrder(id, { status: "已完成", statusText: "订单已完成" });
+    this.updateOrder(id, { status: "已完成", statusText: "订单已完成", paid: true });
     wx.showToast({ title: "已完成" });
   },
 

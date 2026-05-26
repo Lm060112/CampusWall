@@ -3,12 +3,7 @@
     <text class="page-title">发现</text>
     <view class="search-box">
       <van-icon name="search" size="34rpx" color="#7a7e83" />
-      <input
-        class="search-input"
-        value="{{ searchKeyword }}"
-        placeholder="搜索帖子 / 用户 / 话题"
-        bindinput="onSearchInput"
-      />
+      <input class="search-input" value="{{ searchKeyword }}" placeholder="搜索帖子 / 用户 / 话题" bindinput="onSearchInput" />
       <van-icon wx:if="{{ searchKeyword }}" name="cross" size="28rpx" color="#999" catch:tap="onClearSearch" />
     </view>
     <view class="scan-btn" catch:tap="onScanTap">
@@ -17,15 +12,7 @@
   </view>
 
   <view class="tabs">
-    <view
-      wx:for="{{ tabs }}"
-      wx:key="*this"
-      class="tab {{ activeTab === item ? 'tab--active' : '' }}"
-      data-tab="{{ item }}"
-      catch:tap="onTabTap"
-    >
-      {{ item }}
-    </view>
+    <view wx:for="{{ tabs }}" wx:key="*this" class="tab {{ activeTab === item ? 'tab--active' : '' }}" data-tab="{{ item }}" catch:tap="onTabTap">{{ item }}</view>
   </view>
 
   <scroll-view class="feed-scroll" scroll-y enhanced show-scrollbar="{{ false }}">
@@ -40,7 +27,7 @@
               <text class="author-name">{{ item.author }}</text>
               <text class="tag tag--{{ item.tagClass }}">{{ item.tag }}</text>
             </view>
-            <text class="feed-meta">{{ item.timeText }} · {{ item.topic }}</text>
+            <text class="feed-meta">{{ item.timeText }} ｜ {{ item.topic }}</text>
           </view>
           <view wx:if="{{ item.isCustom }}" class="delete-link" data-id="{{ item.id }}" catch:tap="onDeletePost">删除</view>
         </view>
@@ -48,6 +35,15 @@
         <view class="feed-content">
           <text>{{ item.content }}</text>
           <text wx:if="{{ item.priceText }}" class="price-inline"> {{ item.priceText }}</text>
+        </view>
+
+        <view wx:if="{{ item.routeText || item.seats }}" class="event-card">
+          <van-icon name="logistics" size="46rpx" color="#14a957" />
+          <view class="event-main">
+            <text class="event-title">{{ item.routeText || '拼车信息' }}</text>
+            <text class="event-time">{{ item.departTime || item.seats || item.location }}</text>
+          </view>
+          <view class="event-btn">{{ item.seats || '查看' }}</view>
         </view>
 
         <view wx:if="{{ item.images && item.images.length }}" class="image-grid image-grid--{{ item.imageClass }}">
@@ -116,52 +112,16 @@
       </view>
 
       <view class="category-row">
-        <view
-          wx:for="{{ categoryOptions }}"
-          wx:key="*this"
-          class="category-chip {{ draftCategory === item ? 'category-chip--active' : '' }}"
-          data-category="{{ item }}"
-          catch:tap="onCategoryTap"
-        >
-          {{ item }}
-        </view>
+        <view wx:for="{{ categoryOptions }}" wx:key="*this" class="category-chip {{ draftCategory === item ? 'category-chip--active' : '' }}" data-category="{{ item }}" catch:tap="onCategoryTap">{{ item }}</view>
       </view>
 
-      <input
-        class="title-input"
-        value="{{ draftTitle }}"
-        maxlength="30"
-        placeholder="标题 / 话题，可不填"
-        bindinput="onDraftTitleInput"
-      />
-      <textarea
-        class="composer-textarea"
-        value="{{ draftContent }}"
-        maxlength="300"
-        placeholder="分享校园新鲜事，或写清楚你的需求"
-        bindinput="onDraftInput"
-      />
-      <input
-        wx:if="{{ draftCategory === '闲置' }}"
-        class="location-input"
-        value="{{ draftPrice }}"
-        type="digit"
-        placeholder="价格，例如 80"
-        bindinput="onPriceInput"
-      />
-      <input
-        wx:if="{{ draftCategory === '活动' }}"
-        class="location-input"
-        value="{{ draftEventTime }}"
-        placeholder="活动时间，例如 周六 14:00-17:00"
-        bindinput="onEventTimeInput"
-      />
-      <input
-        class="location-input"
-        value="{{ draftLocation }}"
-        placeholder="地点，例如 崇明校区 · 一食堂"
-        bindinput="onLocationInput"
-      />
+      <input class="title-input" value="{{ draftTitle }}" maxlength="30" placeholder="标题 / 话题，可不填" bindinput="onDraftTitleInput" />
+      <textarea class="composer-textarea" value="{{ draftContent }}" maxlength="300" placeholder="分享校园新鲜事，或写清楚你的需求" bindinput="onDraftInput" />
+      <input wx:if="{{ draftCategory === '闲置' }}" class="location-input" value="{{ draftPrice }}" type="digit" placeholder="价格，例如 80" bindinput="onPriceInput" />
+      <input wx:if="{{ draftCategory === '活动' }}" class="location-input" value="{{ draftEventTime }}" placeholder="活动时间，例如 周六 14:00-17:00" bindinput="onEventTimeInput" />
+      <input wx:if="{{ draftCategory === '拼车' }}" class="location-input" value="{{ draftRoute }}" placeholder="路线，例如 崇明校区 → 人民广场" bindinput="onRouteInput" />
+      <input wx:if="{{ draftCategory === '拼车' }}" class="location-input" value="{{ draftSeats }}" placeholder="余位，例如 还剩2位" bindinput="onSeatsInput" />
+      <input class="location-input" value="{{ draftLocation }}" placeholder="地点，例如 崇明校区 ｜ 一食堂" bindinput="onLocationInput" />
 
       <view class="draft-images">
         <view wx:for="{{ draftImages }}" wx:key="url" class="draft-image-wrap">
@@ -182,15 +142,7 @@
 
   <view class="comment-input-overlay" wx:if="{{ activePostId }}" catch:tap="onHideCommentInput">
     <view class="comment-input-bar" catch:tap="stopBubble">
-      <input
-        class="comment-input"
-        placeholder="写下你的评论..."
-        focus="{{ !!activePostId }}"
-        bindinput="onCommentInput"
-        value="{{ commentInput }}"
-        confirm-type="send"
-        bindconfirm="onSubmitComment"
-      />
+      <input class="comment-input" placeholder="写下你的评论..." focus="{{ !!activePostId }}" bindinput="onCommentInput" value="{{ commentInput }}" confirm-type="send" bindconfirm="onSubmitComment" />
       <view class="comment-send" catch:tap="onSubmitComment">发送</view>
     </view>
   </view>

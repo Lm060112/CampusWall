@@ -1,15 +1,16 @@
-const SERVICE_MENUS = {
+const MENUS = {
   "campus-cafe": {
+    scene: "campus",
     merchant: {
       name: "崇明校区咖啡厅",
-      tag: "咖啡饮品",
+      tag: "校内服务",
       rating: "4.9",
       distance: "图书馆一楼",
       eta: "10-15分钟自取",
       sales: "今日已出 86 单",
       address: "崇明校区图书馆一楼西侧",
-      notice: "下单后请留意取餐通知，课间高峰建议提前 10 分钟下单。",
-      coupons: ["学生价", "自取免排队", "第二杯半价"],
+      notice: "下单后留意取餐通知，课间高峰建议提前 10 分钟下单。",
+      coupons: ["校内自营", "自取免排队", "第二杯半价"],
       coverUrl: "/images/default-goods-image.png",
     },
     categories: ["热销", "咖啡", "茶饮", "轻食"],
@@ -22,6 +23,7 @@ const SERVICE_MENUS = {
     ],
   },
   "noodle-window": {
+    scene: "campus",
     merchant: {
       name: "一食堂面食窗口",
       tag: "食堂窗口",
@@ -31,7 +33,7 @@ const SERVICE_MENUS = {
       sales: "今日已出 132 单",
       address: "崇明校区一食堂二楼 03 窗口",
       notice: "午餐高峰请按取餐号取餐，堂食和打包都可备注。",
-      coupons: ["校内窗口", "出餐快", "支持打包"],
+      coupons: ["食堂窗口", "出餐快", "支持打包"],
       coverUrl: "/images/default-goods-image.png",
     },
     categories: ["热销", "面食", "盖饭", "汤品"],
@@ -43,60 +45,40 @@ const SERVICE_MENUS = {
       { id: "n5", category: "汤品", name: "紫菜蛋花汤", desc: "单点汤品，温热取餐", price: 500, sales: "今日 24", image: "/images/default-goods-image.png" },
     ],
   },
-  "light-meal": {
+  "takeaway-hot": {
+    scene: "takeaway",
     merchant: {
-      name: "二食堂轻食窗口",
-      tag: "轻食小吃",
-      rating: "4.7",
-      distance: "二食堂一楼",
-      eta: "12-18分钟自取",
-      sales: "今日已出 64 单",
-      address: "崇明校区二食堂一楼东侧",
-      notice: "轻食类现做较多，晚课前建议提前下单。",
-      coupons: ["低脂套餐", "晚餐友好", "支持自取"],
+      name: "川味小馆（崇明店）",
+      tag: "川湘快餐",
+      rating: "4.8",
+      distance: "1.2km",
+      eta: "35分钟送达",
+      sales: "月售 862",
+      address: "崇明大道美食街 18 号",
+      notice: "满 29 减 5，新客下单可使用优惠券。",
+      coupons: ["新客减5元", "满29减5", "满49减10"],
       coverUrl: "/images/default-goods-image.png",
     },
-    categories: ["热销", "沙拉", "小吃", "饮品"],
+    categories: ["热销", "套餐", "小炒", "饮品"],
     products: [
-      { id: "l1", category: "热销", name: "鸡胸肉能量碗", desc: "鸡胸肉、玉米、鸡蛋和时蔬", price: 2200, sales: "今日 22", image: "/images/default-goods-image.png" },
-      { id: "l2", category: "热销", name: "酥炸小吃拼盘", desc: "鸡米花、薯条和年糕组合", price: 1500, sales: "今日 33", image: "/images/default-goods-image.png" },
-      { id: "l3", category: "沙拉", name: "金枪鱼沙拉", desc: "清爽低负担，默认油醋汁", price: 1900, sales: "今日 15", image: "/images/default-goods-image.png" },
-      { id: "l4", category: "小吃", name: "烤肠双拼", desc: "原味加黑椒，课间补能", price: 900, sales: "今日 28", image: "/images/default-goods-image.png" },
-      { id: "l5", category: "饮品", name: "冰柠檬茶", desc: "清爽解腻，少冰默认", price: 600, sales: "今日 37", image: "/images/default-goods-image.png" },
-    ],
-  },
-  "campus-store": {
-    merchant: {
-      name: "校园便利服务点",
-      tag: "便利服务",
-      rating: "4.6",
-      distance: "宿舍区",
-      eta: "营业后自取",
-      sales: "今日已出 28 单",
-      address: "崇明校区宿舍区 6 号楼旁",
-      notice: "当前为演示状态，后续可接入营业时间和库存。",
-      coupons: ["日用品", "饮料零食", "宿舍区"],
-      coverUrl: "/images/default-goods-image.png",
-    },
-    categories: ["热销", "饮料", "零食", "日用品"],
-    products: [
-      { id: "s1", category: "热销", name: "矿泉水", desc: "宿舍区常备，按瓶购买", price: 200, sales: "今日 40", image: "/images/default-goods-image.png" },
-      { id: "s2", category: "热销", name: "纸巾", desc: "抽纸一包，宿舍备用", price: 450, sales: "今日 18", image: "/images/default-goods-image.png" },
-      { id: "s3", category: "饮料", name: "无糖茶", desc: "冰柜冷藏，营业后自取", price: 550, sales: "今日 16", image: "/images/default-goods-image.png" },
-      { id: "s4", category: "零食", name: "全麦面包", desc: "早餐和夜宵都方便", price: 650, sales: "今日 21", image: "/images/default-goods-image.png" },
-      { id: "s5", category: "日用品", name: "洗衣液小瓶装", desc: "宿舍生活补给", price: 1200, sales: "今日 8", image: "/images/default-goods-image.png" },
+      { id: "t1", category: "热销", name: "香辣鸡腿饭套餐", desc: "鸡腿饭、例汤、饮品", price: 2000, sales: "月售 189", image: "/images/default-goods-image.png" },
+      { id: "t2", category: "热销", name: "双人下饭套餐", desc: "两荤一素，适合拼单", price: 4200, sales: "月售 96", image: "/images/default-goods-image.png" },
+      { id: "t3", category: "套餐", name: "鱼香肉丝盖饭", desc: "酸甜微辣，配送友好", price: 1800, sales: "月售 143", image: "/images/default-goods-image.png" },
+      { id: "t4", category: "小炒", name: "小炒黄牛肉", desc: "香辣下饭，可选微辣", price: 2800, sales: "月售 67", image: "/images/default-goods-image.png" },
+      { id: "t5", category: "饮品", name: "冰柠檬茶", desc: "解辣搭配", price: 600, sales: "月售 120", image: "/images/default-goods-image.png" },
     ],
   },
 };
 
-const DEFAULT_SERVICE_ID = "campus-cafe";
+const DEFAULT_ID = "campus-cafe";
 
 Page({
   data: {
-    merchant: SERVICE_MENUS[DEFAULT_SERVICE_ID].merchant,
-    categories: SERVICE_MENUS[DEFAULT_SERVICE_ID].categories,
+    scene: "campus",
+    merchant: MENUS[DEFAULT_ID].merchant,
+    categories: MENUS[DEFAULT_ID].categories,
     activeCategory: "热销",
-    products: SERVICE_MENUS[DEFAULT_SERVICE_ID].products,
+    products: MENUS[DEFAULT_ID].products,
     visibleProducts: [],
     cart: {},
     cartCount: 0,
@@ -104,8 +86,10 @@ Page({
   },
 
   onLoad(options = {}) {
-    const menu = SERVICE_MENUS[options.id] || SERVICE_MENUS[DEFAULT_SERVICE_ID];
+    const id = options.id === "m1" || options.id === "r2" ? "takeaway-hot" : options.id;
+    const menu = MENUS[id] || MENUS[DEFAULT_ID];
     this.setData({
+      scene: menu.scene,
       merchant: menu.merchant,
       categories: menu.categories,
       activeCategory: menu.categories[0],
@@ -117,15 +101,12 @@ Page({
   },
 
   onCategoryTap(e) {
-    this.setData({ activeCategory: e.currentTarget.dataset.category }, () => {
-      this.applyCategory();
-    });
+    this.setData({ activeCategory: e.currentTarget.dataset.category }, () => this.applyCategory());
   },
 
   applyCategory() {
-    const active = this.data.activeCategory;
     this.setData({
-      visibleProducts: this.data.products.filter((item) => item.category === active),
+      visibleProducts: this.data.products.filter((item) => item.category === this.data.activeCategory),
     });
   },
 
@@ -137,8 +118,8 @@ Page({
     let cartCount = 0;
     let cartAmount = 0;
     Object.keys(cart).forEach((id) => {
-      const count = cart[id] || 0;
       const product = this.getProductById(id);
+      const count = cart[id] || 0;
       if (!product || count <= 0) return;
       cartCount += count;
       cartAmount += count * product.price;
@@ -148,8 +129,7 @@ Page({
 
   onAdd(e) {
     const id = e.currentTarget.dataset.id;
-    const cart = { ...this.data.cart };
-    cart[id] = (cart[id] || 0) + 1;
+    const cart = { ...this.data.cart, [id]: (this.data.cart[id] || 0) + 1 };
     this.recalcCart(cart);
   },
 
@@ -157,7 +137,7 @@ Page({
     const id = e.currentTarget.dataset.id;
     const cart = { ...this.data.cart };
     cart[id] = Math.max((cart[id] || 0) - 1, 0);
-    if (cart[id] === 0) delete cart[id];
+    if (!cart[id]) delete cart[id];
     this.recalcCart(cart);
   },
 
@@ -166,20 +146,10 @@ Page({
       wx.showToast({ title: "请先选择商品", icon: "none" });
       return;
     }
-    const items = Object.keys(this.data.cart)
-      .map((id) => {
-        const product = this.getProductById(id);
-        const count = this.data.cart[id];
-        if (!product || !count) return null;
-        return {
-          id,
-          name: product.name,
-          price: product.price,
-          count,
-          image: product.image,
-        };
-      })
-      .filter(Boolean);
+    const items = Object.keys(this.data.cart).map((id) => {
+      const product = this.getProductById(id);
+      return product ? { id, name: product.name, price: product.price, count: this.data.cart[id], image: product.image } : null;
+    }).filter(Boolean);
     const draft = {
       merchant: {
         name: this.data.merchant.name,
@@ -189,13 +159,11 @@ Page({
       },
       items,
       totalAmount: this.data.cartAmount,
-      pickupType: "到店自取",
-      sourceType: "campus",
+      pickupType: this.data.scene === "takeaway" ? "配送到寝" : "到店自取",
+      sourceType: this.data.scene,
       createdAt: Date.now(),
     };
-    wx.navigateTo({
-      url: `/pages/order/confirm?draft=${encodeURIComponent(JSON.stringify(draft))}`,
-    });
+    wx.navigateTo({ url: `/pages/order/confirm?draft=${encodeURIComponent(JSON.stringify(draft))}` });
   },
 
   onBack() {
