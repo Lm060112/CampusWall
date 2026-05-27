@@ -243,6 +243,8 @@ async function addComment(event) {
   if (!content) return fail("content is required");
 
   const user = await getCurrentUser(openid);
+  const postRes = await db.collection("posts").doc(postId).get().catch(() => null);
+  if (!postRes || !postRes.data || postRes.data.status === "deleted") return fail("post not found");
   const time = now();
   const data = {
     _openid: openid,
@@ -263,6 +265,15 @@ async function addComment(event) {
       updatedAt: time,
     },
   });
+  if (postRes.data._openid && postRes.data._openid !== openid) {
+    await addInteractionMessage(postRes.data._openid, {
+      targetId: postId,
+      title: `${data.authorName} 评论了你的动态`,
+      content,
+      icon: data.authorAvatar,
+      badgeIcon: "comment",
+    });
+  }
 
   return ok({ _id: res._id, _openid: openid, ...data });
 }
@@ -286,6 +297,8 @@ async function toggleInteraction(event) {
     return ok({ action: "removed" });
   }
 
+  const targetRes = await db.collection(collection).doc(targetId).get().catch(() => null);
+
   await db.collection("interactions").add({
     data: {
       _openid: openid,
@@ -296,6 +309,17 @@ async function toggleInteraction(event) {
     },
   });
   await db.collection(collection).doc(targetId).update({ data: { [countField]: _.inc(1), updatedAt: now() } });
+  if (targetType === "post" && targetRes && targetRes.data && targetRes.data._openid && targetRes.data._openid !== openid) {
+    const user = await getCurrentUser(openid);
+    const actionText = interactionType === "like" ? "赞了你的动态" : "收藏了你的动态";
+    await addInteractionMessage(targetRes.data._openid, {
+      targetId,
+      title: `${(user && user.nickName) || "校园用户"}${actionText}`,
+      content: targetRes.data.content || targetRes.data.topic || "你发布的内容有了新的互动",
+      icon: (user && user.avatarUrl) || "/images/avatar.png",
+      badgeIcon: interactionType === "like" ? "like" : "star",
+    });
+  }
   return ok({ action: "added" });
 }
 
@@ -313,6 +337,76 @@ async function listMessages(event) {
     .get();
 
   return ok(res.data);
+}
+
+async function addInteractionMessage(openid, message) {
+  if (!openid) return;
+  const time = now();
+  await db.collection("messages").add({
+    data: {
+      _openid: openid,
+      category: "interaction",
+      type: "interaction",
+      targetType: message.targetType || "post",
+      targetId: message.targetId || "",
+      title: message.title,
+      content: message.content,
+      icon: message.icon || "/images/avatar.png",
+      badgeIcon: message.badgeIcon || "",
+      actionText: message.actionText || "查看动态",
+      targetUrl: message.targetUrl || "/pages/discover/index",
+      isRead: false,
+      unread: true,
+      createdAt: time,
+    },
+  }).catch(() => null);
+}
+
+async function getMessage(event) {
+  const { openid } = requireOpenId();
+  const messageId = event.messageId || event.id;
+  if (!messageId) return fail("messageId is required");
+
+  const messageRes = await db.collection("messages").doc(messageId).get().catch(() => null);
+  if (!messageRes || !messageRes.data) return fail("message not found");
+  if (messageRes.data._openid !== openid) return fail("permission denied");
+
+  return ok(messageRes.data);
+}
+
+async function markMessageRead(event) {
+  const { openid } = requireOpenId();
+  const messageId = event.messageId || event.id;
+  if (!messageId) return fail("messageId is required");
+
+  const messageRes = await db.collection("messages").doc(messageId).get().catch(() => null);
+  if (!messageRes || !messageRes.data) return fail("message not found");
+  if (messageRes.data._openid !== openid) return fail("permission denied");
+
+  await db.collection("messages").doc(messageId).update({
+    data: {
+      isRead: true,
+      unread: false,
+      readAt: now(),
+    },
+  });
+  return ok({ messageId });
+}
+
+async function markAllMessagesRead(event) {
+  const { openid } = requireOpenId();
+  const category = event.category;
+  const where = { _openid: openid };
+  if (category && category !== "all") where.category = category;
+
+  await db.collection("messages").where(where).update({
+    data: {
+      isRead: true,
+      unread: false,
+      readAt: now(),
+    },
+  }).catch(() => null);
+  return ok({ category: category || "all" });
 }
 
 async function listAddresses() {
@@ -608,6 +702,9 @@ const handlers = {
   addComment,
   toggleInteraction,
   listMessages,
+  getMessage,
+  markMessageRead,
+  markAllMessagesRead,
   listAddresses,
   saveAddress,
   setDefaultAddress,

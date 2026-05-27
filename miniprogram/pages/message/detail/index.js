@@ -6,7 +6,7 @@ const STATIC_MESSAGES = [
     content: "你发布的校园美食探店内容很有用，已经被更多同学看到了。",
     time: "2分钟前",
     icon: "/images/avatar.png",
-    actionText: "去查看动态",
+    actionText: "查看动态",
     targetUrl: "/pages/discover/index",
   },
   {
@@ -40,42 +40,100 @@ const STATIC_MESSAGES = [
   },
 ];
 
+const STATUS_TEXT_MAP = {
+  pending_pay: "待付款",
+  preparing: "处理中",
+  ready: "待取餐",
+  delivering: "配送中",
+  processing: "进行中",
+  reserved: "已预约",
+  active: "待参加",
+  completed: "已完成",
+  refund_pending: "售后中",
+  refunded: "已退款",
+};
+
+function callCampusApi(data) {
+  return wx.cloud.callFunction({
+    name: "campusApi",
+    data,
+  });
+}
+
 Page({
   data: {
     message: null,
   },
 
   onLoad(options = {}) {
-    this.markRead(options.id);
     this.loadMessage(options.id);
   },
 
-  getAllMessages() {
-    const orderMessages = (wx.getStorageSync("mockMessages") || []).map((item) => ({
+  normalizeMessage(item, cloudSynced = false) {
+    const id = item._id || item.id;
+    return {
       ...item,
+      id,
+      cloudId: item._id || item.cloudId,
+      type: item.category || item.type || "system",
       icon: item.icon || "/images/default-goods-image.png",
-      actionText: item.orderId ? "查看订单" : "知道了",
-      targetUrl: item.orderId ? `/pages/order/detail?id=${item.orderId}` : "",
-    }));
-    return orderMessages.concat(STATIC_MESSAGES);
+      time: item.time || this.formatRelativeTime(item.createdAt),
+      statusText: STATUS_TEXT_MAP[item.status] || item.status,
+      actionText: item.actionText || (item.orderId ? "查看订单" : "知道了"),
+      targetUrl: item.targetUrl || (item.orderId ? `/pages/order/detail?id=${item.orderId}` : ""),
+      cloudSynced,
+    };
   },
 
-  markRead(id) {
-    const readIds = wx.getStorageSync("readMessageIds") || [];
-    if (id && !readIds.includes(id)) wx.setStorageSync("readMessageIds", readIds.concat(id));
-    const messages = wx.getStorageSync("mockMessages") || [];
-    wx.setStorageSync("mockMessages", messages.map((item) => (
-      item.id === id ? { ...item, unread: false } : item
-    )));
+  getLocalMessages() {
+    const orderMessages = (wx.getStorageSync("mockMessages") || []).map((item) => this.normalizeMessage(item, !!item.cloudSynced));
+    return orderMessages.concat(STATIC_MESSAGES.map((item) => this.normalizeMessage(item, false)));
   },
 
-  loadMessage(id) {
-    const message = this.getAllMessages().find((item) => item.id === id);
+  async loadMessage(id) {
+    if (!id) return;
+    let message = null;
+
+    try {
+      const result = await callCampusApi({ action: "getMessage", messageId: id });
+      if (!result.result || !result.result.success || !result.result.data) {
+        throw new Error((result.result && result.result.errMsg) || "get message failed");
+      }
+      message = this.normalizeMessage(result.result.data, true);
+      await callCampusApi({ action: "markMessageRead", messageId: message.cloudId || message.id }).catch(() => null);
+    } catch (err) {
+      console.warn("load cloud message failed, use local fallback", err);
+      message = this.getLocalMessages().find((item) => item.id === id);
+      this.markLocalRead(id);
+    }
+
     if (!message) {
       wx.showToast({ title: "消息不存在", icon: "none" });
       return;
     }
     this.setData({ message: { ...message, unread: false } });
+  },
+
+  markLocalRead(id) {
+    const readIds = wx.getStorageSync("readMessageIds") || [];
+    if (id && !readIds.includes(id)) wx.setStorageSync("readMessageIds", readIds.concat(id));
+    const messages = wx.getStorageSync("mockMessages") || [];
+    wx.setStorageSync("mockMessages", messages.map((item) => (
+      item.id === id || item._id === id ? { ...item, unread: false, isRead: true } : item
+    )));
+  },
+
+  formatRelativeTime(ts) {
+    if (!ts) return "";
+    const diff = Date.now() - ts;
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    if (diff < minute) return "刚刚";
+    if (diff < hour) return `${Math.floor(diff / minute)}分钟前`;
+    if (diff < 24 * hour) return `${Math.floor(diff / hour)}小时前`;
+    const d = new Date(ts);
+    const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
+    return `${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   },
 
   onBack() {

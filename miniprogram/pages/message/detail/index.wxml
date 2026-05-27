@@ -14,7 +14,7 @@
     <view class="content-box">
       <text>{{ message.content }}</text>
     </view>
-    <text wx:if="{{ message.status }}" class="status-pill status-pill--{{ message.statusClass }}">{{ message.status }}</text>
+    <text wx:if="{{ message.statusText }}" class="status-pill status-pill--{{ message.statusClass }}">{{ message.statusText }}</text>
     <view class="action-btn" catch:tap="onActionTap">{{ message.actionText || '知道了' }}</view>
   </view>
 </view>

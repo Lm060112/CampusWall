@@ -107,12 +107,23 @@
   background: #ff4d4f;
 }
 
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 36rpx 6rpx 18rpx;
+}
+
 .section-title {
   display: block;
-  margin: 36rpx 0 18rpx 6rpx;
   color: #111;
   font-size: 32rpx;
   font-weight: 800;
+}
+
+.read-all {
+  color: #18a957;
+  font-size: 25rpx;
 }
 
 .message-list {
@@ -166,6 +177,10 @@
 
 .mini-badge--comment {
   background: #378bff;
+}
+
+.mini-badge--star {
+  background: #ffb13b;
 }
 
 .message-main {
@@ -232,4 +247,25 @@
   margin-left: 6rpx;
   border-radius: 7rpx;
   background: #ff3b30;
+}
+
+.empty {
+  display: flex;
+  min-height: 420rpx;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8a8f98;
+}
+
+.empty-title {
+  margin-top: 22rpx;
+  color: #111;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.empty-desc {
+  margin-top: 10rpx;
+  font-size: 24rpx;
 }

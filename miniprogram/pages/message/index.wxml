@@ -30,9 +30,12 @@
     </view>
   </view>
 
-  <text class="section-title">最新消息</text>
+  <view class="section-head">
+    <text class="section-title">最新消息</text>
+    <text wx:if="{{ messages.length }}" class="read-all" catch:tap="onReadAllTap">全部已读</text>
+  </view>
 
-  <view class="message-list">
+  <view wx:if="{{ messages.length }}" class="message-list">
     <view
       wx:for="{{ messages }}"
       wx:key="id"
@@ -50,6 +53,9 @@
         <view wx:if="{{ item.badgeIcon === 'comment' }}" class="mini-badge mini-badge--comment">
           <van-icon name="chat" size="24rpx" color="#fff" />
         </view>
+        <view wx:if="{{ item.badgeIcon === 'star' }}" class="mini-badge mini-badge--star">
+          <van-icon name="star" size="24rpx" color="#fff" />
+        </view>
       </view>
       <view class="message-main">
         <view class="message-title-row">
@@ -58,10 +64,16 @@
         </view>
         <view class="message-content-row">
           <text class="message-content">{{ item.content }}</text>
-          <text wx:if="{{ item.status }}" class="status-pill status-pill--{{ item.statusClass }}">{{ item.status }}</text>
+          <text wx:if="{{ item.statusText }}" class="status-pill status-pill--{{ item.statusClass }}">{{ item.statusText }}</text>
         </view>
       </view>
       <view wx:if="{{ item.unread }}" class="unread-dot"></view>
     </view>
+  </view>
+
+  <view wx:else class="empty">
+    <van-icon name="comment-o" size="92rpx" color="#b7c0ca" />
+    <text class="empty-title">暂无消息</text>
+    <text class="empty-desc">订单状态、评论点赞和系统通知会显示在这里。</text>
   </view>
 </view>
