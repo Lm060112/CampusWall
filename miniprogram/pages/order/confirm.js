@@ -161,11 +161,20 @@ Page({
     this.setData({ remark: e.detail.value });
   },
 
-  loadAddress() {
-    const address = wx.getStorageSync("mockDefaultAddress") || getDefaultAddress();
+  async loadAddress() {
+    let address = wx.getStorageSync("mockDefaultAddress") || getDefaultAddress();
+    try {
+      const result = await callCampusApi({ action: "listAddresses" });
+      if (result.result && result.result.success && Array.isArray(result.result.data) && result.result.data.length) {
+        address = result.result.data.find((item) => item.isDefault) || result.result.data[0];
+        wx.setStorageSync("mockDefaultAddress", { ...address, id: address._id || address.id, isDefault: true });
+      }
+    } catch (err) {
+      console.warn("load cloud default address failed, use local fallback", err);
+    }
     const addressText = `${address.campus} ${address.building}${address.room ? ` ${address.room}` : ""}${address.detail ? ` · ${address.detail}` : ""}`;
     const contactText = `${address.name} ${address.phone}`;
-    this.setData({ address, addressText, contactText });
+    this.setData({ address: { ...address, id: address._id || address.id }, addressText, contactText });
   },
 
   onAddressTap() {

@@ -315,6 +315,118 @@ async function listMessages(event) {
   return ok(res.data);
 }
 
+async function listAddresses() {
+  const { openid } = requireOpenId();
+  const res = await db
+    .collection("addresses")
+    .where({ _openid: openid, status: "active" })
+    .orderBy("isDefault", "desc")
+    .orderBy("updatedAt", "desc")
+    .limit(50)
+    .get();
+
+  return ok(res.data);
+}
+
+async function saveAddress(event) {
+  const { openid } = requireOpenId();
+  const address = event.address || {};
+  const name = String(address.name || "").trim();
+  const phone = String(address.phone || "").trim();
+  const building = String(address.building || "").trim();
+  if (!name || !phone || !building) return fail("name, phone and building are required");
+  if (!/^1\d{10}$/.test(phone)) return fail("phone is invalid");
+
+  const time = now();
+  const data = {
+    _openid: openid,
+    name,
+    phone,
+    campus: String(address.campus || "崇明校区").trim(),
+    building,
+    room: String(address.room || "").trim(),
+    detail: String(address.detail || "").trim(),
+    isDefault: !!address.isDefault,
+    status: "active",
+    updatedAt: time,
+  };
+
+  const existed = await db.collection("addresses").where({ _openid: openid, status: "active" }).limit(1).get();
+  if (!existed.data.length) data.isDefault = true;
+  if (data.isDefault) {
+    await db.collection("addresses").where({ _openid: openid, status: "active" }).update({
+      data: { isDefault: false, updatedAt: time },
+    }).catch(() => null);
+  }
+
+  if (address._id || address.id) {
+    const addressId = address._id || address.id;
+    const addressRes = await db.collection("addresses").doc(addressId).get().catch(() => null);
+    if (!addressRes || !addressRes.data) return fail("address not found");
+    if (addressRes.data._openid !== openid) return fail("permission denied");
+    await db.collection("addresses").doc(addressId).update({ data });
+    return ok({ ...addressRes.data, ...data, _id: addressId });
+  }
+
+  const res = await db.collection("addresses").add({
+    data: {
+      ...data,
+      createdAt: time,
+    },
+  });
+  return ok({ _id: res._id, ...data, createdAt: time });
+}
+
+async function setDefaultAddress(event) {
+  const { openid } = requireOpenId();
+  const addressId = event.addressId || event.id;
+  if (!addressId) return fail("addressId is required");
+
+  const addressRes = await db.collection("addresses").doc(addressId).get().catch(() => null);
+  if (!addressRes || !addressRes.data) return fail("address not found");
+  if (addressRes.data._openid !== openid) return fail("permission denied");
+
+  const time = now();
+  await db.collection("addresses").where({ _openid: openid, status: "active" }).update({
+    data: { isDefault: false, updatedAt: time },
+  }).catch(() => null);
+  await db.collection("addresses").doc(addressId).update({
+    data: { isDefault: true, updatedAt: time },
+  });
+
+  return ok({ addressId });
+}
+
+async function deleteAddress(event) {
+  const { openid } = requireOpenId();
+  const addressId = event.addressId || event.id;
+  if (!addressId) return fail("addressId is required");
+
+  const addressRes = await db.collection("addresses").doc(addressId).get().catch(() => null);
+  if (!addressRes || !addressRes.data) return fail("address not found");
+  if (addressRes.data._openid !== openid) return fail("permission denied");
+
+  const time = now();
+  await db.collection("addresses").doc(addressId).update({
+    data: { status: "deleted", isDefault: false, updatedAt: time },
+  });
+
+  if (addressRes.data.isDefault) {
+    const nextDefault = await db.collection("addresses")
+      .where({ _openid: openid, status: "active" })
+      .orderBy("updatedAt", "desc")
+      .limit(1)
+      .get();
+    if (nextDefault.data.length) {
+      await db.collection("addresses").doc(nextDefault.data[0]._id).update({
+        data: { isDefault: true, updatedAt: time },
+      });
+    }
+  }
+
+  return ok({ addressId });
+}
+
 function getOrderStatusText(status, sourceType) {
   const common = {
     pending_pay: "待付款",
@@ -496,6 +608,10 @@ const handlers = {
   addComment,
   toggleInteraction,
   listMessages,
+  listAddresses,
+  saveAddress,
+  setDefaultAddress,
+  deleteAddress,
   createOrder,
   listOrders,
   getOrder,
