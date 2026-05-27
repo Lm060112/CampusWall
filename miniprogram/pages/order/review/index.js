@@ -1,3 +1,10 @@
+function callCampusApi(data) {
+  return wx.cloud.callFunction({
+    name: "campusApi",
+    data,
+  });
+}
+
 Page({
   data: {
     orderId: "",
@@ -15,10 +22,22 @@ Page({
     this.loadOrder();
   },
 
-  loadOrder() {
-    const orders = wx.getStorageSync("mockOrders") || [];
-    const order = orders.find((item) => item.id === this.data.orderId);
-    this.setData({ order: order || null });
+  async loadOrder() {
+    try {
+      const result = await callCampusApi({ action: "getOrder", orderId: this.data.orderId });
+      if (!result.result || !result.result.success || !result.result.data) {
+        throw new Error((result.result && result.result.errMsg) || "get order failed");
+      }
+      this.applyOrder(result.result.data, true);
+    } catch (err) {
+      console.warn("load cloud order failed, use local fallback", err);
+      const order = (wx.getStorageSync("mockOrders") || []).find((item) => item.id === this.data.orderId || item._id === this.data.orderId);
+      this.applyOrder(order || null, false);
+    }
+  },
+
+  applyOrder(order, cloudSynced) {
+    this.setData({ order: order ? { ...order, id: order._id || order.id, cloudSynced } : null });
     if (order && order.review) {
       const tags = order.review.tags || [];
       this.setData({
@@ -80,7 +99,16 @@ Page({
     this.setData({ images: this.data.images.filter((_, itemIndex) => itemIndex !== index) });
   },
 
-  onSubmit() {
+  saveLocalReview(review) {
+    const orders = (wx.getStorageSync("mockOrders") || []).map((order) => (
+      order.id === this.data.orderId || order._id === this.data.orderId
+        ? { ...order, status: "completed", statusText: "订单已完成", review }
+        : order
+    ));
+    wx.setStorageSync("mockOrders", orders);
+  },
+
+  async onSubmit() {
     if (!this.data.order) return;
     const review = {
       rating: this.data.rating,
@@ -89,13 +117,21 @@ Page({
       images: this.data.images,
       createdAt: Date.now(),
     };
-    const orders = (wx.getStorageSync("mockOrders") || []).map((order) => (
-      order.id === this.data.orderId
-        ? { ...order, status: "已完成", statusText: "订单已完成", review }
-        : order
-    ));
-    wx.setStorageSync("mockOrders", orders);
-    wx.showToast({ title: "评价成功" });
+    try {
+      const result = await callCampusApi({
+        action: "submitOrderReview",
+        orderId: this.data.order.id,
+        review,
+      });
+      if (!result.result || !result.result.success) {
+        throw new Error((result.result && result.result.errMsg) || "submit review failed");
+      }
+      wx.showToast({ title: "评价成功" });
+    } catch (err) {
+      console.warn("submit cloud review failed, use local fallback", err);
+      this.saveLocalReview(review);
+      wx.showToast({ title: "已本地评价", icon: "none" });
+    }
     setTimeout(() => wx.navigateBack(), 700);
   },
 });

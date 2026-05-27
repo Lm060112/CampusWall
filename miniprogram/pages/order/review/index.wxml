@@ -24,13 +24,7 @@
     </view>
 
     <view class="tag-row">
-      <view
-        wx:for="{{ tags }}"
-        wx:key="*this"
-        class="tag {{ selectedTagMap[item] ? 'tag--active' : '' }}"
-        data-tag="{{ item }}"
-        catch:tap="onTagTap"
-      >
+      <view wx:for="{{ tags }}" wx:key="*this" class="tag {{ selectedTagMap[item] ? 'tag--active' : '' }}" data-tag="{{ item }}" catch:tap="onTagTap">
         {{ item }}
       </view>
     </view>

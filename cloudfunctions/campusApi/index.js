@@ -290,11 +290,12 @@ async function upsertUser(event) {
 }
 
 async function listPosts(event) {
-  requireOpenId();
+  const { openid } = requireOpenId();
   const page = Math.max(Number(event.page || 1), 1);
   const pageSize = Math.min(Math.max(Number(event.pageSize || 20), 1), 50);
   const where = { status: "published" };
   if (event.tag && event.tag !== "all") where.tag = event.tag;
+  if (event.mine) where._openid = openid;
 
   const res = await db
     .collection("posts")
@@ -310,6 +311,38 @@ async function listPosts(event) {
     : res.data;
 
   return ok({ list: data, page, pageSize });
+}
+
+async function listMyPosts(event) {
+  const { openid } = requireOpenId();
+  const mode = event.mode === "favorites" ? "favorites" : "published";
+  const page = Math.max(Number(event.page || 1), 1);
+  const pageSize = Math.min(Math.max(Number(event.pageSize || 50), 1), 100);
+
+  if (mode === "favorites") {
+    const interactionsRes = await db
+      .collection("interactions")
+      .where({ _openid: openid, targetType: "post", interactionType: "favorite" })
+      .orderBy("createdAt", "desc")
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .get();
+    const list = [];
+    for (const item of interactionsRes.data) {
+      const postRes = await db.collection("posts").doc(item.targetId).get().catch(() => null);
+      if (postRes && postRes.data && postRes.data.status !== "deleted") list.push(postRes.data);
+    }
+    return ok({ list, page, pageSize });
+  }
+
+  const postsRes = await db
+    .collection("posts")
+    .where({ _openid: openid, status: "published" })
+    .orderBy("createdAt", "desc")
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .get();
+  return ok({ list: postsRes.data, page, pageSize });
 }
 
 async function getPost(event) {
@@ -588,6 +621,101 @@ async function markAllMessagesRead(event) {
   return ok({ category: category || "all" });
 }
 
+async function getMessageSettings() {
+  const { openid } = requireOpenId();
+  const user = await getCurrentUser(openid);
+  return ok((user && user.messageSettings) || {
+    interaction: true,
+    order: true,
+    system: true,
+    quiet: false,
+  });
+}
+
+async function saveMessageSettings(event) {
+  const { openid } = requireOpenId();
+  const settings = {
+    interaction: event.settings ? event.settings.interaction !== false : true,
+    order: event.settings ? event.settings.order !== false : true,
+    system: event.settings ? event.settings.system !== false : true,
+    quiet: !!(event.settings && event.settings.quiet),
+  };
+  const time = now();
+  const userRes = await db.collection("users").where({ _openid: openid }).limit(1).get();
+  if (userRes.data.length) {
+    await db.collection("users").doc(userRes.data[0]._id).update({
+      data: { messageSettings: settings, updatedAt: time },
+    });
+  } else {
+    await db.collection("users").add({
+      data: {
+        _openid: openid,
+        role: "student",
+        status: "active",
+        studentVerified: false,
+        messageSettings: settings,
+        createdAt: time,
+        updatedAt: time,
+      },
+    });
+  }
+  return ok(settings);
+}
+
+async function searchAll(event) {
+  requireOpenId();
+  await ensureBaseDataSeeded();
+  const keyword = String(event.keyword || "").trim().toLowerCase();
+  const activeType = event.activeType || "全部";
+  const results = [
+    { id: "takeaway", type: "外卖", title: "校外外卖", desc: "像普通外卖平台一样选商家、选商品、结算", url: "/pages/takeaway/index" },
+    { id: "errand", type: "跑腿", title: "跑腿代取", desc: "代取快递、代买、代送需求发布", url: "/pages/errand/index" },
+    { id: "nearby", type: "活动", title: "周边玩乐", desc: "周边活动、预约体验和报名", url: "/pages/nearby/index" },
+    { id: "orders", type: "功能", title: "我的订单", desc: "查看订单、支付、售后和评价", url: "/pages/order/list?filter=allOrders" },
+    { id: "address", type: "功能", title: "收货地址", desc: "新增、编辑和设置默认地址", url: "/pages/address/index" },
+  ];
+
+  const merchantRes = await db.collection("merchants").orderBy("sort", "asc").limit(50).get();
+  merchantRes.data.forEach((item) => {
+    results.push({
+      id: item.id,
+      type: item.sourceType === "campus" ? "校内服务" : "外卖",
+      title: item.name,
+      desc: `${item.tag || ""} ${item.address || ""} ${item.eta || ""}`.trim(),
+      url: `/pages/merchant/detail?id=${item.id}`,
+    });
+  });
+
+  const announcementRes = await db.collection("announcements").where({ status: "published" }).orderBy("sort", "asc").limit(50).get();
+  announcementRes.data.forEach((item) => {
+    results.push({
+      id: item.id,
+      type: "公告",
+      title: item.title,
+      desc: item.content || item.type || "",
+      url: `/pages/announcement/detail/index?id=${item.id}`,
+    });
+  });
+
+  const postRes = await db.collection("posts").where({ status: "published" }).orderBy("createdAt", "desc").limit(50).get().catch(() => ({ data: [] }));
+  postRes.data.forEach((item) => {
+    results.push({
+      id: item._id,
+      type: "帖子",
+      title: item.topic || item.tagText || "校园墙动态",
+      desc: item.content || "",
+      url: `/pages/discover/detail/index?id=${item._id}`,
+    });
+  });
+
+  const list = results.filter((item) => {
+    const typeMatched = activeType === "全部" || item.type === activeType;
+    const text = `${item.title}${item.desc}${item.type}`.toLowerCase();
+    return typeMatched && (!keyword || text.includes(keyword));
+  });
+  return ok(list);
+}
+
 async function listMerchants(event) {
   requireOpenId();
   await ensureBaseDataSeeded();
@@ -724,6 +852,79 @@ async function getHomeData() {
     nearbyMerchant: nearbyRes.data[0] || null,
     announcements: announcementsRes.data,
   });
+}
+
+async function saveMerchant(event) {
+  requireOpenId();
+  const merchant = event.merchant || {};
+  const id = String(merchant.id || "").trim();
+  const name = String(merchant.name || "").trim();
+  if (!id || !name) return fail("merchant id and name are required");
+
+  await upsertByBizId("merchants", id, {
+    sourceType: merchant.sourceType || "campus",
+    name,
+    tag: merchant.tag || "",
+    category: merchant.category || "校内服务",
+    status: merchant.status || "营业中",
+    rating: merchant.rating || "4.8",
+    distance: merchant.distance || "",
+    eta: merchant.eta || "",
+    sales: merchant.sales || "",
+    address: merchant.address || "",
+    notice: merchant.notice || "",
+    coupons: Array.isArray(merchant.coupons) ? merchant.coupons : [],
+    coverUrl: merchant.coverUrl || "/images/default-goods-image.png",
+    image: merchant.image || merchant.coverUrl || "/images/default-goods-image.png",
+    sort: Number(merchant.sort || 99),
+    isHot: !!merchant.isHot,
+    isNearby: !!merchant.isNearby,
+    minPrice: Number(merchant.minPrice || 0),
+    deliveryFee: Number(merchant.deliveryFee || 0),
+  });
+  return ok({ id });
+}
+
+async function saveProduct(event) {
+  requireOpenId();
+  const product = event.product || {};
+  const id = String(product.id || "").trim();
+  const merchantId = String(product.merchantId || "").trim();
+  const name = String(product.name || "").trim();
+  if (!id || !merchantId || !name) return fail("product id, merchantId and name are required");
+
+  await upsertByBizId("products", id, {
+    merchantId,
+    sourceType: product.sourceType || "campus",
+    category: product.category || "热销",
+    name,
+    desc: product.desc || product.description || "",
+    image: product.image || "/images/default-goods-image.png",
+    price: Number(product.price || 0),
+    stock: Number(product.stock || 999),
+    sales: product.sales || "0",
+    status: product.status || "active",
+    sort: Number(product.sort || 99),
+  });
+  return ok({ id, merchantId });
+}
+
+async function saveAnnouncement(event) {
+  requireOpenId();
+  const announcement = event.announcement || {};
+  const id = String(announcement.id || "").trim();
+  const title = String(announcement.title || "").trim();
+  if (!id || !title) return fail("announcement id and title are required");
+
+  await upsertByBizId("announcements", id, {
+    type: announcement.type || "通知",
+    title,
+    date: announcement.date || "",
+    content: announcement.content || "",
+    sort: Number(announcement.sort || 99),
+    status: announcement.status || "published",
+  });
+  return ok({ id });
 }
 
 async function listAddresses() {
@@ -1006,6 +1207,68 @@ async function updateOrderStatus(event) {
   return ok({ orderId, ...nextOrder });
 }
 
+async function submitOrderReview(event) {
+  const { openid } = requireOpenId();
+  const { orderId } = event;
+  const review = event.review || {};
+  if (!orderId) return fail("orderId is required");
+
+  const orderRes = await db.collection("orders").doc(orderId).get().catch(() => null);
+  if (!orderRes || !orderRes.data) return fail("order not found");
+  if (orderRes.data._openid !== openid) return fail("permission denied");
+
+  const time = now();
+  const data = {
+    rating: Math.min(Math.max(Number(review.rating || 5), 1), 5),
+    tags: Array.isArray(review.tags) ? review.tags : [],
+    content: String(review.content || "整体体验不错").trim(),
+    images: Array.isArray(review.images) ? review.images.slice(0, 3) : [],
+    createdAt: time,
+  };
+  await db.collection("orders").doc(orderId).update({
+    data: {
+      review: data,
+      status: "completed",
+      statusText: "订单已完成",
+      updatedAt: time,
+    },
+  });
+  await addOrderLog(orderId, openid, orderRes.data.status, "completed", "用户已评价", time);
+  return ok({ orderId, review: data });
+}
+
+async function requestOrderRefund(event) {
+  const { openid } = requireOpenId();
+  const { orderId } = event;
+  const refund = event.refund || {};
+  if (!orderId) return fail("orderId is required");
+
+  const orderRes = await db.collection("orders").doc(orderId).get().catch(() => null);
+  if (!orderRes || !orderRes.data) return fail("order not found");
+  if (orderRes.data._openid !== openid) return fail("permission denied");
+
+  const time = now();
+  const data = {
+    reason: String(refund.reason || "不想要了"),
+    desc: String(refund.desc || ""),
+    images: Array.isArray(refund.images) ? refund.images.slice(0, 3) : [],
+    status: "售后中",
+    createdAt: time,
+  };
+  await db.collection("orders").doc(orderId).update({
+    data: {
+      refund: data,
+      status: "refund_pending",
+      statusText: "退款申请已提交",
+      updatedAt: time,
+    },
+  });
+  const nextOrder = { ...orderRes.data, refund: data, status: "refund_pending", statusText: "退款申请已提交" };
+  await addOrderLog(orderId, openid, orderRes.data.status, "refund_pending", "用户提交售后申请", time);
+  await addOrderMessage(orderId, "refund_pending", nextOrder, time);
+  return ok({ orderId, refund: data });
+}
+
 const handlers = {
   createCollections,
   seedBaseData,
@@ -1013,6 +1276,7 @@ const handlers = {
   getCurrentUser: getCurrentUserInfo,
   upsertUser,
   listPosts,
+  listMyPosts,
   getPost,
   createPost,
   deletePost,
@@ -1023,6 +1287,9 @@ const handlers = {
   getMessage,
   markMessageRead,
   markAllMessagesRead,
+  getMessageSettings,
+  saveMessageSettings,
+  searchAll,
   listMerchants,
   getMerchant,
   listAnnouncements,
@@ -1030,6 +1297,9 @@ const handlers = {
   listCoupons,
   claimCoupon,
   getHomeData,
+  saveMerchant,
+  saveProduct,
+  saveAnnouncement,
   listAddresses,
   saveAddress,
   setDefaultAddress,
@@ -1038,6 +1308,8 @@ const handlers = {
   listOrders,
   getOrder,
   updateOrderStatus,
+  submitOrderReview,
+  requestOrderRefund,
 };
 
 exports.main = async (event = {}) => {

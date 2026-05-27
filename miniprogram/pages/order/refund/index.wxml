@@ -13,13 +13,7 @@
   <view class="panel">
     <text class="panel-title">退款原因</text>
     <view class="reason-list">
-      <view
-        wx:for="{{ reasons }}"
-        wx:key="*this"
-        class="reason {{ selectedReason === item ? 'reason--active' : '' }}"
-        data-reason="{{ item }}"
-        catch:tap="onReasonTap"
-      >
+      <view wx:for="{{ reasons }}" wx:key="*this" class="reason {{ selectedReason === item ? 'reason--active' : '' }}" data-reason="{{ item }}" catch:tap="onReasonTap">
         {{ item }}
       </view>
     </view>

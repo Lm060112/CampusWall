@@ -23,7 +23,7 @@
         <text class="content">{{ item.content }}</text>
         <view class="post-meta">
           <text>{{ item.location }}</text>
-          <text>{{ item.likes || 0 }} 赞 · {{ item.comments ? item.comments.length : 0 }} 评论</text>
+          <text>{{ item.likes || 0 }} 赞 · {{ item.commentSize || 0 }} 评论</text>
         </view>
       </view>
       <view class="remove-btn" data-id="{{ item.id }}" catch:tap="onRemoveTap">

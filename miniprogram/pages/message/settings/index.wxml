@@ -18,7 +18,7 @@
       <switch checked="{{ settings.system }}" data-key="system" bindchange="onSwitchChange" color="#12b85b" />
     </view>
     <view class="setting-row">
-      <view><text class="title">免打扰模式</text><text class="desc">仅做前端状态模拟</text></view>
+      <view><text class="title">免打扰模式</text><text class="desc">仅做状态保存，后续可接推送策略</text></view>
       <switch checked="{{ settings.quiet }}" data-key="quiet" bindchange="onSwitchChange" color="#12b85b" />
     </view>
   </view>
