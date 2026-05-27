@@ -12,14 +12,9 @@ const CONFIRM_META = {
     feeLabel: "取餐方式",
     feeText: "自取 ¥0",
     remarkTitle: "取餐备注",
-    remarkPlaceholder: "例如：少冰、不要辣、打包、下课后取",
+    remarkPlaceholder: "例如：少冰、不辣、打包、下课后取",
     submitText: "提交订单",
-    initialStatus: "制作中",
-    initialStatusText: "订单已提交",
-    messageTitle: "订单已提交",
-    messageContent(order) {
-      return `${order.merchant.name} 已收到你的点单，取餐号 ${order.pickupNo}`;
-    },
+    needsAddress: false,
   },
   takeaway: {
     title: "确认外卖",
@@ -34,14 +29,8 @@ const CONFIRM_META = {
     feeLabel: "配送方式",
     feeText: "校外配送",
     remarkTitle: "配送备注",
-    remarkPlaceholder: "例如：送到6号楼门口、少冰、不要辣、电话联系",
+    remarkPlaceholder: "例如：送到6号楼门口、少冰、不辣、电话联系",
     submitText: "提交外卖订单",
-    initialStatus: "商家备餐",
-    initialStatusText: "商家已接收订单",
-    messageTitle: "外卖订单已提交",
-    messageContent(order) {
-      return `${order.merchant.name} 已接收订单，预计 ${order.merchant.eta}`;
-    },
     needsAddress: true,
   },
   errand: {
@@ -59,12 +48,6 @@ const CONFIRM_META = {
     remarkTitle: "补充说明",
     remarkPlaceholder: "例如：取件码、购买品牌、送达后放门口、联系电话",
     submitText: "发布跑腿需求",
-    initialStatus: "待接单",
-    initialStatusText: "等待同学接单",
-    messageTitle: "跑腿需求已发布",
-    messageContent(order) {
-      return `${order.merchant.name} 已发布，赏金 ¥${order.totalAmount / 100}`;
-    },
     needsAddress: true,
   },
   nearby: {
@@ -82,14 +65,62 @@ const CONFIRM_META = {
     remarkTitle: "预约备注",
     remarkPlaceholder: "例如：同行人数、是否新手、希望分到同一组",
     submitText: "确认预约",
-    initialStatus: "已预约",
-    initialStatusText: "预约成功，等待参加",
-    messageTitle: "活动预约成功",
-    messageContent(order) {
-      return `${order.merchant.name} 已预约成功，时间：${order.merchant.eta}`;
-    },
+    needsAddress: false,
   },
 };
+
+function callCampusApi(data) {
+  return wx.cloud.callFunction({
+    name: "campusApi",
+    data,
+  });
+}
+
+function getDefaultAddress() {
+  return {
+    name: "小汤圆",
+    phone: "13800000000",
+    campus: "崇明校区",
+    building: "6号宿舍楼",
+    room: "602",
+    detail: "宿舍区东门取餐点",
+    isDefault: true,
+  };
+}
+
+function buildLocalOrder(draft, viewMeta, address, remark) {
+  const time = Date.now();
+  return {
+    id: `MOCK${time}`,
+    pickupNo: `A${String(time).slice(-3)}`,
+    ...draft,
+    contact: viewMeta.needsAddress ? address : null,
+    remark,
+    status: "pending_pay",
+    statusText: "待付款",
+    paid: false,
+    paymentStatus: "unpaid",
+    submittedAt: time,
+    createdAt: time,
+  };
+}
+
+function normalizeCloudOrder(order) {
+  return {
+    ...order,
+    id: order._id || order.id,
+    cloudId: order._id || order.cloudId,
+    cloudSynced: true,
+    submittedAt: order.createdAt || order.submittedAt || Date.now(),
+  };
+}
+
+function saveLocalOrder(order) {
+  const orders = wx.getStorageSync("mockOrders") || [];
+  const id = order.id || order._id;
+  const nextOrders = [order, ...orders.filter((item) => item.id !== id && item._id !== id)];
+  wx.setStorageSync("mockOrders", nextOrders);
+}
 
 Page({
   data: {
@@ -131,15 +162,7 @@ Page({
   },
 
   loadAddress() {
-    const address = wx.getStorageSync("mockDefaultAddress") || {
-      name: "小汤圆",
-      phone: "13800000000",
-      campus: "崇明校区",
-      building: "6号宿舍楼",
-      room: "602",
-      detail: "宿舍区东门取餐点",
-      isDefault: true,
-    };
+    const address = wx.getStorageSync("mockDefaultAddress") || getDefaultAddress();
     const addressText = `${address.campus} ${address.building}${address.room ? ` ${address.room}` : ""}${address.detail ? ` · ${address.detail}` : ""}`;
     const contactText = `${address.name} ${address.phone}`;
     this.setData({ address, addressText, contactText });
@@ -149,48 +172,57 @@ Page({
     wx.navigateTo({ url: "/pages/address/index" });
   },
 
-  onSubmit() {
+  async onSubmit() {
     if (!this.data.draft.items.length || this.data.submitting) return;
     this.setData({ submitting: true });
-    const now = Date.now();
-    const order = {
-      id: `MOCK${now}`,
-      pickupNo: `A${String(now).slice(-3)}`,
-      ...this.data.draft,
-      contact: this.data.viewMeta.needsAddress ? this.data.address : null,
-      remark: this.data.remark,
-      status: this.data.viewMeta.initialStatus,
-      statusText: this.data.viewMeta.initialStatusText,
-      paid: false,
-      submittedAt: now,
-    };
-    const orders = wx.getStorageSync("mockOrders") || [];
-    wx.setStorageSync("mockOrders", [order, ...orders]);
-    this.addOrderMessage(order, this.data.viewMeta.messageTitle, this.data.viewMeta.messageContent(order), order.status);
-    wx.showToast({ title: "订单已生成", icon: "success" });
-    setTimeout(() => {
-      wx.redirectTo({ url: `/pages/order/pay/index?id=${order.id}` });
-    }, 600);
+
+    const localOrder = buildLocalOrder(
+      this.data.draft,
+      this.data.viewMeta,
+      this.data.address,
+      this.data.remark,
+    );
+
+    try {
+      const result = await callCampusApi({
+        action: "createOrder",
+        order: {
+          sourceType: localOrder.sourceType,
+          merchantId: localOrder.merchantId || (localOrder.merchant && localOrder.merchant.id) || "",
+          merchant: localOrder.merchant,
+          items: localOrder.items,
+          totalAmount: localOrder.totalAmount,
+          contact: localOrder.contact,
+          remark: localOrder.remark,
+          pickupNo: localOrder.pickupNo,
+          pickupType: localOrder.pickupType,
+        },
+      });
+
+      const cloudData = result && result.result && result.result.data;
+      if (!result.result || !result.result.success || !cloudData) {
+        throw new Error((result.result && result.result.errMsg) || "create order failed");
+      }
+
+      const order = normalizeCloudOrder(cloudData);
+      saveLocalOrder(order);
+      wx.showToast({ title: "订单已生成", icon: "success" });
+      setTimeout(() => {
+        wx.redirectTo({ url: `/pages/order/pay/index?id=${order.id}` });
+      }, 500);
+    } catch (err) {
+      console.warn("create cloud order failed, use local fallback", err);
+      saveLocalOrder(localOrder);
+      wx.showToast({ title: "已本地生成订单", icon: "none" });
+      setTimeout(() => {
+        wx.redirectTo({ url: `/pages/order/pay/index?id=${localOrder.id}` });
+      }, 500);
+    } finally {
+      this.setData({ submitting: false });
+    }
   },
 
   onBack() {
     wx.navigateBack();
-  },
-
-  addOrderMessage(order, title, content, status) {
-    const messages = wx.getStorageSync("mockMessages") || [];
-    const message = {
-      id: `MSG${Date.now()}`,
-      type: "order",
-      orderId: order.id,
-      title,
-      content,
-      status,
-      statusClass: status === "已完成" ? "done" : "processing",
-      icon: "/images/default-goods-image.png",
-      unread: true,
-      createdAt: Date.now(),
-    };
-    wx.setStorageSync("mockMessages", [message, ...messages]);
   },
 });

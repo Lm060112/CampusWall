@@ -76,11 +76,17 @@ async function getCurrentUserInfo() {
   });
 }
 
+async function getCurrentUser(openid) {
+  const res = await db.collection("users").where({ _openid: openid }).limit(1).get();
+  return res.data[0] || null;
+}
+
 async function upsertUser(event) {
   const { openid } = requireOpenId();
   const profile = event.profile || {};
   const time = now();
   const data = {
+    _openid: openid,
     ...pick(profile, ["nickName", "avatarUrl", "campus", "phone"]),
     role: profile.role || "student",
     status: "active",
@@ -102,11 +108,6 @@ async function upsertUser(event) {
     },
   });
   return ok({ _id: addRes._id, _openid: openid, ...data, createdAt: time });
-}
-
-async function getCurrentUser(openid) {
-  const res = await db.collection("users").where({ _openid: openid }).limit(1).get();
-  return res.data[0] || null;
 }
 
 async function listPosts(event) {
@@ -172,6 +173,7 @@ async function createPost(event) {
   const time = now();
 
   const data = {
+    _openid: openid,
     authorId: user ? user._id : "",
     authorName: payload.authorName || (user && user.nickName) || "校园用户",
     authorAvatar: payload.authorAvatar || (user && user.avatarUrl) || "/images/avatar.png",
@@ -243,6 +245,7 @@ async function addComment(event) {
   const user = await getCurrentUser(openid);
   const time = now();
   const data = {
+    _openid: openid,
     postId,
     authorId: user ? user._id : "",
     authorName: event.authorName || (user && user.nickName) || "校园用户",
@@ -285,6 +288,7 @@ async function toggleInteraction(event) {
 
   await db.collection("interactions").add({
     data: {
+      _openid: openid,
       targetType,
       targetId,
       interactionType,
@@ -311,6 +315,78 @@ async function listMessages(event) {
   return ok(res.data);
 }
 
+function getOrderStatusText(status, sourceType) {
+  const common = {
+    pending_pay: "待付款",
+    completed: "订单已完成",
+    refund_pending: "售后处理中",
+    refunded: "已退款",
+  };
+  const sourceMap = {
+    campus: { preparing: "制作中", ready: "待取餐" },
+    takeaway: { preparing: "商家备餐中", delivering: "配送中" },
+    errand: { waiting: "等待接单", processing: "跑腿处理中" },
+    nearby: { reserved: "预约成功", active: "待参加" },
+  };
+  return common[status] || (sourceMap[sourceType] && sourceMap[sourceType][status]) || status;
+}
+
+function getOrderMessage(status, order) {
+  const merchantName = order.merchant && order.merchant.name ? order.merchant.name : "订单";
+  const pickupNo = order.pickupNo ? `，取餐号 ${order.pickupNo}` : "";
+  const messages = {
+    pending_pay: { title: "订单已创建", content: `${merchantName} 已生成订单，请完成支付${pickupNo}` },
+    preparing: { title: "订单已支付", content: `${merchantName} 已收到订单，正在处理中${pickupNo}` },
+    ready: { title: "餐品已备好", content: `${merchantName} 已备好，请及时领取${pickupNo}` },
+    delivering: { title: "订单配送中", content: `${merchantName} 的订单正在配送中，请留意取餐点` },
+    processing: { title: "跑腿已接单", content: `${merchantName} 正在处理中，请保持联系` },
+    reserved: { title: "预约成功", content: `${merchantName} 已预约成功，请按时参加` },
+    active: { title: "活动即将开始", content: `${merchantName} 即将开始，请按时到达` },
+    completed: { title: "订单已完成", content: `你在 ${merchantName} 的订单已完成` },
+    refund_pending: { title: "售后申请已提交", content: `${merchantName} 的售后申请已提交，请等待处理` },
+    refunded: { title: "退款成功", content: `${merchantName} 的退款已处理完成` },
+  };
+  return messages[status] || {
+    title: getOrderStatusText(status, order.sourceType),
+    content: `${merchantName} 状态已更新为 ${getOrderStatusText(status, order.sourceType)}`,
+  };
+}
+
+async function addOrderLog(orderId, openid, fromStatus, toStatus, note, time) {
+  await db.collection("order_logs").add({
+    data: {
+      orderId,
+      _openid: openid,
+      fromStatus: fromStatus || "",
+      toStatus,
+      note: note || "",
+      createdAt: time,
+    },
+  }).catch(() => null);
+}
+
+async function addOrderMessage(orderId, status, order, time) {
+  const message = getOrderMessage(status, order);
+  await db.collection("messages").add({
+    data: {
+      _openid: order._openid || "",
+      category: "order",
+      type: "order",
+      targetType: "order",
+      targetId: orderId,
+      orderId,
+      title: message.title,
+      content: message.content,
+      status,
+      statusClass: status === "completed" || status === "refunded" ? "done" : "processing",
+      icon: order.merchant && order.merchant.image ? order.merchant.image : "/images/default-goods-image.png",
+      isRead: false,
+      unread: true,
+      createdAt: time,
+    },
+  }).catch(() => null);
+}
+
 async function createOrder(event) {
   const { openid } = requireOpenId();
   const order = event.order || {};
@@ -318,6 +394,7 @@ async function createOrder(event) {
 
   const time = now();
   const data = {
+    _openid: openid,
     orderNo: `CW${time}${String(Math.floor(Math.random() * 1000)).padStart(3, "0")}`,
     sourceType: order.sourceType || "campus",
     merchantId: order.merchantId || "",
@@ -331,17 +408,52 @@ async function createOrder(event) {
     contact: order.contact || null,
     remark: order.remark || "",
     pickupNo: order.pickupNo || `A${String(time).slice(-3)}`,
+    pickupType: order.pickupType || "",
+    payMethod: "",
+    payTime: 0,
     createdAt: time,
     updatedAt: time,
   };
 
   const res = await db.collection("orders").add({ data });
+  await addOrderLog(res._id, openid, "", "pending_pay", "订单已创建", time);
+  await addOrderMessage(res._id, "pending_pay", data, time);
   return ok({ _id: res._id, _openid: openid, ...data });
+}
+
+async function listOrders(event) {
+  const { openid } = requireOpenId();
+  const page = Math.max(Number(event.page || 1), 1);
+  const pageSize = Math.min(Math.max(Number(event.pageSize || 50), 1), 100);
+  const where = { _openid: openid };
+  if (event.status) where.status = event.status;
+
+  const res = await db
+    .collection("orders")
+    .where(where)
+    .orderBy("createdAt", "desc")
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .get();
+
+  return ok({ list: res.data, page, pageSize });
+}
+
+async function getOrder(event) {
+  const { openid } = requireOpenId();
+  const orderId = event.orderId || event.id;
+  if (!orderId) return fail("orderId is required");
+
+  const orderRes = await db.collection("orders").doc(orderId).get().catch(() => null);
+  if (!orderRes || !orderRes.data) return fail("order not found");
+  if (orderRes.data._openid !== openid) return fail("permission denied");
+
+  return ok(orderRes.data);
 }
 
 async function updateOrderStatus(event) {
   const { openid } = requireOpenId();
-  const { orderId, status, statusText } = event;
+  const { orderId, status, statusText, payMethod } = event;
   if (!orderId || !status) return fail("orderId and status are required");
 
   const orderRes = await db.collection("orders").doc(orderId).get().catch(() => null);
@@ -349,25 +461,26 @@ async function updateOrderStatus(event) {
   if (orderRes.data._openid !== openid) return fail("permission denied");
 
   const time = now();
-  await db.collection("orders").doc(orderId).update({
-    data: {
-      status,
-      statusText: statusText || status,
-      paid: status === "pending_pay" ? orderRes.data.paid : true,
-      paymentStatus: status === "pending_pay" ? "unpaid" : orderRes.data.paymentStatus || "paid",
-      updatedAt: time,
-    },
-  });
-  await db.collection("order_logs").add({
-    data: {
-      orderId,
-      fromStatus: orderRes.data.status,
-      toStatus: status,
-      note: statusText || "",
-      createdAt: time,
-    },
-  });
-  return ok({ orderId, status, statusText });
+  const nextStatusText = statusText || getOrderStatusText(status, orderRes.data.sourceType);
+  const nextPaymentStatus = status === "pending_pay" ? "unpaid" : (status === "refunded" ? "refunded" : "paid");
+  const nextPaid = status === "pending_pay" ? false : status !== "refunded";
+  const updateData = {
+    status,
+    statusText: nextStatusText,
+    paid: nextPaid,
+    paymentStatus: nextPaymentStatus,
+    updatedAt: time,
+  };
+  if (payMethod) {
+    updateData.payMethod = payMethod;
+    updateData.payTime = time;
+  }
+
+  await db.collection("orders").doc(orderId).update({ data: updateData });
+  const nextOrder = { ...orderRes.data, ...updateData };
+  await addOrderLog(orderId, openid, orderRes.data.status, status, nextStatusText, time);
+  await addOrderMessage(orderId, status, nextOrder, time);
+  return ok({ orderId, ...nextOrder });
 }
 
 const handlers = {
@@ -384,6 +497,8 @@ const handlers = {
   toggleInteraction,
   listMessages,
   createOrder,
+  listOrders,
+  getOrder,
   updateOrderStatus,
 };
 

@@ -7,6 +7,13 @@ const FILTERS = [
   { key: "done", title: "已完成" },
 ];
 
+function callCampusApi(data) {
+  return wx.cloud.callFunction({
+    name: "campusApi",
+    data,
+  });
+}
+
 Page({
   data: {
     filters: FILTERS,
@@ -14,6 +21,7 @@ Page({
     orders: [],
     visibleOrders: [],
     emptyText: "暂无订单",
+    cloudReady: false,
   },
 
   onLoad(options = {}) {
@@ -25,20 +33,51 @@ Page({
   },
 
   isDone(order) {
-    return order.status === "已完成" || order.statusText === "订单已完成" || !!order.review;
+    return order.status === "completed" || order.statusText === "订单已完成" || !!order.review;
   },
 
-  loadOrders() {
-    const orders = (wx.getStorageSync("mockOrders") || []).map((order) => ({
+  isPendingPay(order) {
+    return !order.paid || order.paymentStatus === "unpaid" || order.status === "pending_pay";
+  },
+
+  getDisplayStatus(order) {
+    if (this.isDone(order)) return "已完成";
+    if (this.isPendingPay(order)) return "待付款";
+    return order.statusText || "进行中";
+  },
+
+  async loadOrders() {
+    try {
+      const result = await callCampusApi({ action: "listOrders", pageSize: 100 });
+      if (!result.result || !result.result.success) {
+        throw new Error((result.result && result.result.errMsg) || "list orders failed");
+      }
+      const list = (result.result.data && result.result.data.list) || [];
+      this.setData({
+        orders: list.map((order) => this.normalizeOrder(order, true)),
+        cloudReady: true,
+      }, () => this.applyFilter());
+    } catch (err) {
+      console.warn("load cloud orders failed, use local fallback", err);
+      const orders = (wx.getStorageSync("mockOrders") || []).map((order) => this.normalizeOrder(order, !!order.cloudSynced));
+      this.setData({ orders, cloudReady: false }, () => this.applyFilter());
+    }
+  },
+
+  normalizeOrder(order, cloudSynced = false) {
+    const normalized = {
       ...order,
-      displayStatus: this.isDone(order) ? "已完成" : order.status || (order.paid ? "进行中" : "待付款"),
+      id: order._id || order.id,
+      cloudId: order._id || order.cloudId,
+      cloudSynced,
       pickupNo: order.pickupNo || `A${String(order.submittedAt || order.createdAt || Date.now()).slice(-3)}`,
-      itemCount: (order.items || []).reduce((sum, item) => sum + item.count, 0),
+      itemCount: (order.items || []).reduce((sum, item) => sum + Number(item.count || 0), 0),
       previewText: (order.items || []).map((item) => `${item.name}x${item.count}`).join("、"),
       timeText: this.formatTime(order.submittedAt || order.createdAt),
-      done: this.isDone(order),
-    }));
-    this.setData({ orders }, () => this.applyFilter());
+    };
+    normalized.done = this.isDone(normalized);
+    normalized.displayStatus = this.getDisplayStatus(normalized);
+    return normalized;
   },
 
   formatTime(ts) {
@@ -52,10 +91,10 @@ Page({
     const { activeFilter, orders } = this.data;
     const visibleOrders = orders.filter((order) => {
       if (activeFilter === "allOrders") return true;
-      if (activeFilter === "pay") return !order.paid && !order.done;
-      if (activeFilter === "doing") return order.paid && !order.done && order.status !== "售后中";
+      if (activeFilter === "pay") return this.isPendingPay(order) && !order.done;
+      if (activeFilter === "doing") return !this.isPendingPay(order) && !order.done && order.status !== "refund_pending";
       if (activeFilter === "comment") return order.done && !order.review;
-      if (activeFilter === "refund") return order.status === "售后中" || !!order.refund;
+      if (activeFilter === "refund") return order.status === "refund_pending" || order.status === "refunded" || !!order.refund;
       if (activeFilter === "done") return order.done;
       return true;
     });
@@ -70,11 +109,36 @@ Page({
     this.setData({ activeFilter: e.currentTarget.dataset.key }, () => this.applyFilter());
   },
 
-  updateOrder(id, patch) {
+  updateLocalOrder(id, patch) {
     const orders = (wx.getStorageSync("mockOrders") || []).map((order) => (
-      order.id === id ? { ...order, ...patch } : order
+      order.id === id || order._id === id ? { ...order, ...patch } : order
     ));
     wx.setStorageSync("mockOrders", orders);
+  },
+
+  async updateOrder(id, patch) {
+    const target = this.data.orders.find((order) => order.id === id);
+    if (!target) return;
+
+    if (target.cloudSynced) {
+      try {
+        const result = await callCampusApi({
+          action: "updateOrderStatus",
+          orderId: target.cloudId || target.id,
+          status: patch.status,
+          statusText: patch.statusText,
+        });
+        if (!result.result || !result.result.success) {
+          throw new Error((result.result && result.result.errMsg) || "update order failed");
+        }
+        this.loadOrders();
+        return;
+      } catch (err) {
+        console.warn("update cloud order failed, use local fallback", err);
+      }
+    }
+
+    this.updateLocalOrder(id, patch);
     this.loadOrders();
   },
 
@@ -82,9 +146,9 @@ Page({
     wx.navigateTo({ url: `/pages/order/pay/index?id=${e.currentTarget.dataset.id}` });
   },
 
-  onCompleteTap(e) {
+  async onCompleteTap(e) {
     const id = e.currentTarget.dataset.id;
-    this.updateOrder(id, { status: "已完成", statusText: "订单已完成", paid: true });
+    await this.updateOrder(id, { status: "completed", statusText: "订单已完成", paid: true, paymentStatus: "paid" });
     wx.showToast({ title: "已完成" });
   },
 
@@ -98,12 +162,12 @@ Page({
 
   onClearTap() {
     wx.showModal({
-      title: "清空模拟订单",
-      content: "仅清空本机模拟数据，不影响后续正式数据库。",
+      title: "清空本地订单",
+      content: this.data.cloudReady ? "当前订单来自云端，本按钮只清空本地缓存，不会删除云数据库订单。" : "仅清空本机模拟订单，不影响云数据库。",
       success: (res) => {
         if (!res.confirm) return;
         wx.removeStorageSync("mockOrders");
-        this.setData({ orders: [], visibleOrders: [] });
+        this.loadOrders();
       },
     });
   },

@@ -24,14 +24,14 @@
       <view class="order-head">
         <view>
           <text class="merchant-name">{{ item.merchant.name }}</text>
-          <text class="order-time">{{ item.timeText }} ｜ 取餐号 {{ item.pickupNo }}</text>
+          <text class="order-time">{{ item.timeText }} · 取餐号 {{ item.pickupNo }}</text>
         </view>
         <text class="status {{ item.done ? 'status--done' : 'status--doing' }}">{{ item.displayStatus }}</text>
       </view>
 
       <view class="order-body">
         <text class="preview">{{ item.previewText }}</text>
-        <text class="pickup">{{ item.pickupType }} ｜ {{ item.merchant.eta }}</text>
+        <text class="pickup">{{ item.pickupType }} · {{ item.merchant.eta }}</text>
         <text wx:if="{{ item.remark }}" class="remark">备注：{{ item.remark }}</text>
       </view>
 

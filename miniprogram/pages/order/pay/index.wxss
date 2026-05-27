@@ -13,3 +13,4 @@
 .method-title { display: block; color: #111; font-size: 29rpx; font-weight: 800; }
 .method-desc { display: block; margin-top: 8rpx; color: #777; font-size: 24rpx; }
 .pay-btn { position: fixed; left: 28rpx; right: 28rpx; bottom: 34rpx; height: 84rpx; line-height: 84rpx; text-align: center; color: #fff; font-size: 30rpx; font-weight: 900; border-radius: 42rpx; background: #12b85b; }
+.pay-btn--disabled { opacity: .65; }
