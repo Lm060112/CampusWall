@@ -19,7 +19,122 @@ const COLLECTIONS = [
   "products",
   "addresses",
   "coupons",
+  "coupon_records",
   "announcements",
+];
+
+const MERCHANT_SEEDS = [
+  {
+    id: "campus-cafe",
+    sourceType: "campus",
+    name: "崇明校区咖啡厅",
+    tag: "校内服务",
+    category: "咖啡饮品",
+    status: "营业中",
+    rating: "4.9",
+    distance: "图书馆一楼",
+    eta: "10-15分钟自取",
+    sales: "今日已出 86 单",
+    address: "崇明校区图书馆一楼西侧",
+    notice: "下单后留意取餐通知，课间高峰建议提前 10 分钟下单。",
+    coupons: ["校内自营", "自取免排队", "第二杯半价"],
+    coverUrl: "/images/default-goods-image.png",
+    image: "/images/default-goods-image.png",
+    sort: 10,
+    isHot: true,
+    isNearby: false,
+    products: [
+      { id: "c1", category: "热销", name: "拿铁咖啡", desc: "默认热饮，可备注少冰/少糖", price: 1600, sales: "今日 36", image: "/images/default-goods-image.png", sort: 10 },
+      { id: "c2", category: "热销", name: "冰美式", desc: "清爽提神，课前快速取", price: 1200, sales: "今日 42", image: "/images/default-goods-image.png", sort: 20 },
+      { id: "c3", category: "咖啡", name: "燕麦拿铁", desc: "燕麦奶替换，口感更轻", price: 1800, sales: "今日 21", image: "/images/default-goods-image.png", sort: 30 },
+      { id: "c4", category: "茶饮", name: "茉莉柠檬茶", desc: "清爽解腻，默认少糖", price: 1100, sales: "今日 29", image: "/images/default-goods-image.png", sort: 40 },
+      { id: "c5", category: "轻食", name: "火腿芝士三明治", desc: "适合早餐和下午课间", price: 1500, sales: "今日 18", image: "/images/default-goods-image.png", sort: 50 },
+    ],
+  },
+  {
+    id: "noodle-window",
+    sourceType: "campus",
+    name: "一食堂面食窗口",
+    tag: "食堂窗口",
+    category: "食堂窗口",
+    status: "营业中",
+    rating: "4.8",
+    distance: "一食堂二楼",
+    eta: "8-12分钟自取",
+    sales: "今日已出 132 单",
+    address: "崇明校区一食堂二楼 03 窗口",
+    notice: "午餐高峰请按取餐号取餐，堂食和打包都可备注。",
+    coupons: ["食堂窗口", "出餐快", "支持打包"],
+    coverUrl: "/images/default-goods-image.png",
+    image: "/images/default-goods-image.png",
+    sort: 20,
+    isHot: true,
+    isNearby: false,
+    products: [
+      { id: "n1", category: "热销", name: "招牌牛肉面", desc: "大块牛肉，汤底浓郁", price: 1800, sales: "今日 58", image: "/images/default-goods-image.png", sort: 10 },
+      { id: "n2", category: "热销", name: "香辣鸡腿饭", desc: "微辣口味，配菜每日更新", price: 1600, sales: "今日 46", image: "/images/default-goods-image.png", sort: 20 },
+      { id: "n3", category: "面食", name: "番茄鸡蛋面", desc: "酸甜口，适合清淡一点", price: 1200, sales: "今日 35", image: "/images/default-goods-image.png", sort: 30 },
+      { id: "n4", category: "盖饭", name: "黑椒牛柳盖饭", desc: "黑椒香气足，默认微辣", price: 1700, sales: "今日 31", image: "/images/default-goods-image.png", sort: 40 },
+      { id: "n5", category: "汤品", name: "紫菜蛋花汤", desc: "单点汤品，温热取餐", price: 500, sales: "今日 24", image: "/images/default-goods-image.png", sort: 50 },
+    ],
+  },
+  {
+    id: "takeaway-hot",
+    sourceType: "takeaway",
+    name: "川味小馆（崇明店）",
+    tag: "川湘快餐",
+    category: "川湘快餐",
+    status: "营业中",
+    rating: "4.8",
+    distance: "1.2km",
+    eta: "35分钟送达",
+    sales: "月售 862",
+    address: "崇明大道美食街 18 号",
+    minPrice: 0,
+    deliveryFee: 0,
+    notice: "满 29 减 5，新客下单可使用优惠券。",
+    coupons: ["新客减5元", "满29减5", "满49减10"],
+    coverUrl: "/images/default-goods-image.png",
+    image: "/images/default-goods-image.png",
+    sort: 30,
+    isHot: true,
+    isNearby: true,
+    products: [
+      { id: "t1", category: "热销", name: "香辣鸡腿饭套餐", desc: "鸡腿饭、例汤、饮品", price: 2000, sales: "月售 189", image: "/images/default-goods-image.png", sort: 10 },
+      { id: "t2", category: "热销", name: "双人下饭套餐", desc: "两荤一素，适合拼单", price: 4200, sales: "月售 96", image: "/images/default-goods-image.png", sort: 20 },
+      { id: "t3", category: "套餐", name: "鱼香肉丝盖饭", desc: "酸甜微辣，配送友好", price: 1800, sales: "月售 143", image: "/images/default-goods-image.png", sort: 30 },
+      { id: "t4", category: "小炒", name: "小炒黄牛肉", desc: "香辣下饭，可选微辣", price: 2800, sales: "月售 67", image: "/images/default-goods-image.png", sort: 40 },
+      { id: "t5", category: "饮品", name: "冰柠檬茶", desc: "解辣搭配", price: 600, sales: "月售 120", image: "/images/default-goods-image.png", sort: 50 },
+    ],
+  },
+];
+
+const ANNOUNCEMENT_SEEDS = [
+  {
+    id: "a1",
+    type: "通知",
+    title: "关于秋季学期宿舍电费充值的通知",
+    date: "09-06",
+    content: "为保障宿舍用电稳定，请同学们在本周内完成宿舍电费充值。充值完成后可在宿舍服务台或线上入口查询余额。",
+    sort: 10,
+    status: "published",
+  },
+  {
+    id: "a2",
+    type: "活动",
+    title: "迎新嘉年华 | 趣味打卡赢好礼",
+    date: "09-05",
+    content: "迎新嘉年华将在中心广场举行，现场设置集章打卡、社团展示、校园服务咨询等环节，欢迎同学们参加。",
+    sort: 20,
+    status: "published",
+  },
+];
+
+const COUPON_SEEDS = [
+  { id: "coupon-campus-5", title: "校园咖啡满减券", desc: "满 20 减 5，校内咖啡可用", amount: "¥5", amountValue: 500, threshold: 2000, scope: "campus", status: "available", sort: 10 },
+  { id: "coupon-takeaway-8", title: "外卖新客券", desc: "校外外卖订单可用", amount: "¥8", amountValue: 800, threshold: 3000, scope: "takeaway", status: "available", sort: 20 },
+  { id: "coupon-errand-3", title: "跑腿服务券", desc: "跑腿代取满 10 可用", amount: "¥3", amountValue: 300, threshold: 1000, scope: "errand", status: "available", sort: 30 },
+  { id: "coupon-nearby-10", title: "周边活动券", desc: "活动预约可抵扣", amount: "¥10", amountValue: 1000, threshold: 5000, scope: "nearby", status: "available", sort: 40 },
 ];
 
 const ok = (data = null) => ({ success: true, data });
@@ -61,6 +176,70 @@ async function createCollections() {
     }
   }
   return ok(results);
+}
+
+async function upsertByBizId(collectionName, id, data) {
+  const collection = db.collection(collectionName);
+  const existed = await collection.where({ id }).limit(1).get();
+  if (existed.data.length) {
+    await collection.doc(existed.data[0]._id).update({
+      data: {
+        ...data,
+        updatedAt: now(),
+      },
+    });
+    return existed.data[0]._id;
+  }
+  const res = await collection.add({
+    data: {
+      id,
+      ...data,
+      createdAt: now(),
+      updatedAt: now(),
+    },
+  });
+  return res._id;
+}
+
+async function seedBaseData() {
+  requireOpenId();
+  for (const merchant of MERCHANT_SEEDS) {
+    const { products, ...merchantData } = merchant;
+    await upsertByBizId("merchants", merchant.id, {
+      ...merchantData,
+      status: merchant.status || "营业中",
+    });
+    for (const product of products) {
+      await upsertByBizId("products", product.id, {
+        ...product,
+        merchantId: merchant.id,
+        sourceType: merchant.sourceType,
+        status: "active",
+      });
+    }
+  }
+  for (const announcement of ANNOUNCEMENT_SEEDS) {
+    await upsertByBizId("announcements", announcement.id, announcement);
+  }
+  for (const coupon of COUPON_SEEDS) {
+    await upsertByBizId("coupons", coupon.id, {
+      ...coupon,
+      enabled: true,
+    });
+  }
+  return ok({
+    merchants: MERCHANT_SEEDS.length,
+    products: MERCHANT_SEEDS.reduce((sum, item) => sum + item.products.length, 0),
+    announcements: ANNOUNCEMENT_SEEDS.length,
+    coupons: COUPON_SEEDS.length,
+  });
+}
+
+async function ensureBaseDataSeeded() {
+  const existed = await db.collection("merchants").where({ id: "campus-cafe" }).limit(1).get().catch(() => ({ data: [] }));
+  if (!existed.data.length) {
+    await seedBaseData();
+  }
 }
 
 async function getOpenId() {
@@ -409,6 +588,144 @@ async function markAllMessagesRead(event) {
   return ok({ category: category || "all" });
 }
 
+async function listMerchants(event) {
+  requireOpenId();
+  await ensureBaseDataSeeded();
+  const where = {};
+  if (event.sourceType) where.sourceType = event.sourceType;
+  if (event.category && event.category !== "全部") where.category = event.category;
+  if (event.isHot !== undefined) where.isHot = !!event.isHot;
+  if (event.isNearby !== undefined) where.isNearby = !!event.isNearby;
+
+  const res = await db
+    .collection("merchants")
+    .where(where)
+    .orderBy("sort", "asc")
+    .limit(Math.min(Number(event.pageSize || 50), 100))
+    .get();
+
+  return ok(res.data);
+}
+
+async function getMerchant(event) {
+  requireOpenId();
+  await ensureBaseDataSeeded();
+  const merchantId = event.merchantId || event.id;
+  if (!merchantId) return fail("merchantId is required");
+
+  const merchantRes = await db.collection("merchants").where({ id: merchantId }).limit(1).get();
+  if (!merchantRes.data.length) return fail("merchant not found");
+  const merchant = merchantRes.data[0];
+  const productsRes = await db
+    .collection("products")
+    .where({ merchantId, status: "active" })
+    .orderBy("sort", "asc")
+    .limit(100)
+    .get();
+  const products = productsRes.data;
+  const categories = Array.from(new Set(products.map((item) => item.category))).filter(Boolean);
+
+  return ok({
+    scene: merchant.sourceType,
+    merchant,
+    products,
+    categories: categories.length ? categories : ["全部"],
+  });
+}
+
+async function listAnnouncements(event) {
+  requireOpenId();
+  await ensureBaseDataSeeded();
+  const res = await db
+    .collection("announcements")
+    .where({ status: "published" })
+    .orderBy("sort", "asc")
+    .limit(Math.min(Number(event.pageSize || 20), 50))
+    .get();
+
+  return ok(res.data);
+}
+
+async function getAnnouncement(event) {
+  requireOpenId();
+  await ensureBaseDataSeeded();
+  const announcementId = event.announcementId || event.id;
+  if (!announcementId) return fail("announcementId is required");
+
+  const res = await db.collection("announcements").where({ id: announcementId }).limit(1).get();
+  if (!res.data.length) return fail("announcement not found");
+  return ok(res.data[0]);
+}
+
+async function listCoupons() {
+  const { openid } = requireOpenId();
+  await ensureBaseDataSeeded();
+  const couponRes = await db
+    .collection("coupons")
+    .where({ enabled: true })
+    .orderBy("sort", "asc")
+    .limit(100)
+    .get();
+  const recordRes = await db.collection("coupon_records").where({ _openid: openid }).limit(100).get().catch(() => ({ data: [] }));
+  const recordMap = recordRes.data.reduce((acc, item) => {
+    acc[item.couponId] = item;
+    return acc;
+  }, {});
+  const coupons = couponRes.data.map((coupon) => {
+    const record = recordMap[coupon.id];
+    return {
+      ...coupon,
+      status: record ? record.status : "available",
+      recordId: record ? record._id : "",
+    };
+  });
+  return ok(coupons);
+}
+
+async function claimCoupon(event) {
+  const { openid } = requireOpenId();
+  await ensureBaseDataSeeded();
+  const couponId = event.couponId || event.id;
+  if (!couponId) return fail("couponId is required");
+
+  const couponRes = await db.collection("coupons").where({ id: couponId, enabled: true }).limit(1).get();
+  if (!couponRes.data.length) return fail("coupon not found");
+  const existed = await db.collection("coupon_records").where({ _openid: openid, couponId }).limit(1).get().catch(() => ({ data: [] }));
+  if (existed.data.length) return ok({ couponId, status: existed.data[0].status, recordId: existed.data[0]._id });
+
+  const time = now();
+  const res = await db.collection("coupon_records").add({
+    data: {
+      _openid: openid,
+      couponId,
+      status: "claimed",
+      createdAt: time,
+      updatedAt: time,
+    },
+  });
+  return ok({ couponId, status: "claimed", recordId: res._id });
+}
+
+async function getHomeData() {
+  requireOpenId();
+  await ensureBaseDataSeeded();
+  const merchantsRes = await db.collection("merchants").where({ isHot: true }).orderBy("sort", "asc").limit(10).get();
+  const nearbyRes = await db.collection("merchants").where({ isNearby: true }).orderBy("sort", "asc").limit(1).get();
+  const announcementsRes = await db.collection("announcements").where({ status: "published" }).orderBy("sort", "asc").limit(2).get();
+  return ok({
+    recommendations: merchantsRes.data.map((item) => ({
+      id: item.id,
+      name: item.name,
+      badge: item.coupons && item.coupons[0] ? item.coupons[0] : item.tag,
+      eta: item.eta,
+      price: item.sourceType === "takeaway" ? "20" : "16",
+      image: item.image || item.coverUrl || "/images/default-goods-image.png",
+    })),
+    nearbyMerchant: nearbyRes.data[0] || null,
+    announcements: announcementsRes.data,
+  });
+}
+
 async function listAddresses() {
   const { openid } = requireOpenId();
   const res = await db
@@ -691,6 +1008,7 @@ async function updateOrderStatus(event) {
 
 const handlers = {
   createCollections,
+  seedBaseData,
   getOpenId,
   getCurrentUser: getCurrentUserInfo,
   upsertUser,
@@ -705,6 +1023,13 @@ const handlers = {
   getMessage,
   markMessageRead,
   markAllMessagesRead,
+  listMerchants,
+  getMerchant,
+  listAnnouncements,
+  getAnnouncement,
+  listCoupons,
+  claimCoupon,
+  getHomeData,
   listAddresses,
   saveAddress,
   setDefaultAddress,

@@ -9,12 +9,12 @@
 
   <view class="notice">
     <van-icon name="logistics" size="40rpx" color="#f08a1f" />
-    <text>当前为模拟流程，后期可接真实商家、配送员和支付。</text>
+    <text>当前使用云数据库商家数据，后期可继续接入真实商家、配送员和微信支付。</text>
   </view>
 
   <view class="merchant-list">
     <view wx:for="{{ merchants }}" wx:key="id" class="merchant-card" data-id="{{ item.id }}" catch:tap="onMerchantTap">
-      <image class="merchant-img" src="/images/default-goods-image.png" mode="aspectFill" />
+      <image class="merchant-img" src="{{ item.image }}" mode="aspectFill" />
       <view class="merchant-main">
         <view class="merchant-head">
           <text class="merchant-name">{{ item.name }}</text>

@@ -5,7 +5,7 @@
     </view>
     <view class="header-copy">
       <text class="title">校内点单</text>
-      <text class="subtitle">{{ campusName }} ｜ 到店自取</text>
+      <text class="subtitle">{{ campusName }} · 到店自取</text>
     </view>
     <view class="search-btn" catch:tap="onSearchTap">
       <van-icon name="search" size="38rpx" color="#111" />
@@ -37,13 +37,7 @@
   </scroll-view>
 
   <view class="service-list">
-    <view
-      wx:for="{{ visibleServices }}"
-      wx:key="id"
-      class="service-card"
-      data-id="{{ item.id }}"
-      catch:tap="onServiceTap"
-    >
+    <view wx:for="{{ visibleServices }}" wx:key="id" class="service-card" data-id="{{ item.id }}" catch:tap="onServiceTap">
       <image class="service-img" src="{{ item.image }}" mode="aspectFill" />
       <view class="service-info">
         <view class="service-head">

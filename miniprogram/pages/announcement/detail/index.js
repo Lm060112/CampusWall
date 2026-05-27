@@ -1,4 +1,4 @@
-const ANNOUNCEMENTS = [
+const FALLBACK_ANNOUNCEMENTS = [
   {
     id: "a1",
     type: "通知",
@@ -15,14 +15,36 @@ const ANNOUNCEMENTS = [
   },
 ];
 
+function callCampusApi(data) {
+  return wx.cloud.callFunction({
+    name: "campusApi",
+    data,
+  });
+}
+
 Page({
   data: {
     item: null,
   },
 
   onLoad(options = {}) {
-    const item = ANNOUNCEMENTS.find((entry) => entry.id === options.id) || ANNOUNCEMENTS[Number(options.index || 0)] || ANNOUNCEMENTS[0];
-    this.setData({ item });
+    this.loadAnnouncement(options.id, options.index);
+  },
+
+  async loadAnnouncement(id, index = 0) {
+    try {
+      const result = await callCampusApi({ action: "getAnnouncement", announcementId: id || "a1" });
+      if (!result.result || !result.result.success || !result.result.data) {
+        throw new Error((result.result && result.result.errMsg) || "get announcement failed");
+      }
+      this.setData({ item: result.result.data });
+    } catch (err) {
+      console.warn("load cloud announcement failed, use fallback", err);
+      const item = FALLBACK_ANNOUNCEMENTS.find((entry) => entry.id === id)
+        || FALLBACK_ANNOUNCEMENTS[Number(index || 0)]
+        || FALLBACK_ANNOUNCEMENTS[0];
+      this.setData({ item });
+    }
   },
 
   onBack() {

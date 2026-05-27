@@ -1,6 +1,6 @@
 const CATEGORIES = ["全部", "咖啡饮品", "食堂窗口", "轻食小吃", "便利服务"];
 
-const SERVICES = [
+const FALLBACK_SERVICES = [
   {
     id: "campus-cafe",
     name: "崇明校区咖啡厅",
@@ -25,39 +25,53 @@ const SERVICES = [
     notice: "面食、盖饭和汤品，午餐高峰建议提前下单。",
     image: "/images/default-goods-image.png",
   },
-  {
-    id: "light-meal",
-    name: "二食堂轻食窗口",
-    category: "轻食小吃",
-    status: "营业中",
-    location: "二食堂一楼东侧",
-    pickupTime: "12-18分钟自取",
-    rating: "4.7",
-    tags: ["轻食沙拉", "低脂套餐", "晚餐友好"],
-    notice: "轻食、三明治和小吃，适合晚课前后补充能量。",
-    image: "/images/default-goods-image.png",
-  },
-  {
-    id: "campus-store",
-    name: "校园便利服务点",
-    category: "便利服务",
-    status: "休息中",
-    location: "宿舍区 6 号楼旁",
-    pickupTime: "次日 08:30 后自取",
-    rating: "4.6",
-    tags: ["日用品", "饮料零食", "宿舍区"],
-    notice: "日用品和饮料零食，营业后可继续下单。",
-    image: "/images/default-goods-image.png",
-  },
 ];
+
+function callCampusApi(data) {
+  return wx.cloud.callFunction({
+    name: "campusApi",
+    data,
+  });
+}
 
 Page({
   data: {
     campusName: "崇明校区",
     categories: CATEGORIES,
     activeCategory: "全部",
-    services: SERVICES,
-    visibleServices: SERVICES,
+    services: FALLBACK_SERVICES,
+    visibleServices: FALLBACK_SERVICES,
+  },
+
+  onLoad() {
+    this.loadServices();
+  },
+
+  async loadServices() {
+    try {
+      const result = await callCampusApi({ action: "listMerchants", sourceType: "campus", pageSize: 100 });
+      if (!result.result || !result.result.success) {
+        throw new Error((result.result && result.result.errMsg) || "list merchants failed");
+      }
+      const services = (result.result.data || []).map((item) => ({
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        status: item.status,
+        location: item.distance || item.address,
+        pickupTime: item.eta,
+        rating: item.rating,
+        tags: item.coupons || [],
+        notice: item.notice,
+        image: item.image || item.coverUrl || "/images/default-goods-image.png",
+      }));
+      this.setData({
+        services: services.length ? services : FALLBACK_SERVICES,
+      }, () => this.applyCategory());
+    } catch (err) {
+      console.warn("load cloud campus services failed, use fallback", err);
+      this.setData({ services: FALLBACK_SERVICES }, () => this.applyCategory());
+    }
   },
 
   onCategoryTap(e) {

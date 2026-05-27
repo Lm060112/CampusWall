@@ -8,7 +8,7 @@
   </view>
 
   <view class="merchant-hero">
-    <image class="merchant-cover" src="{{ merchant.coverUrl }}" mode="aspectFill" />
+    <image class="merchant-cover" src="{{ merchant.coverUrl || merchant.image }}" mode="aspectFill" />
     <view class="merchant-info">
       <view class="name-row">
         <text class="merchant-name">{{ merchant.name }}</text>
