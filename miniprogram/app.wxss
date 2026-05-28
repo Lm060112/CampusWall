@@ -24,4 +24,19 @@ page {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+view,
+text,
+input,
+textarea,
+scroll-view {
+  box-sizing: border-box;
+}
+
+image {
+  max-width: 100%;
 }

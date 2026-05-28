@@ -1,10 +1,10 @@
-.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.page { min-height: 100vh; padding: 48rpx 24rpx calc(44rpx + env(safe-area-inset-bottom)); box-sizing: border-box; background: #fbfbfb; }
 .header { display: flex; align-items: center; gap: 16rpx; }
 .back-btn { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
 .header-main { flex: 1; }
 .title { display: block; color: #111; font-size: 42rpx; font-weight: 900; }
 .subtitle { display: block; margin-top: 6rpx; color: #69707a; font-size: 25rpx; }
-.type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14rpx; margin-top: 28rpx; }
+.type-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14rpx; margin-top: 28rpx; }
 .type-card { min-height: 116rpx; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10rpx; border-radius: 8rpx; color: #178dff; font-size: 24rpx; background: #eef7ff; }
 .type-card--active { color: #fff; font-weight: 800; background: #178dff; }
 .form-card { margin-top: 24rpx; padding: 8rpx 24rpx; border: 1rpx solid #edf0f2; border-radius: 8rpx; background: #fff; }
@@ -16,3 +16,12 @@ input, textarea { flex: 1; min-width: 0; color: #222; font-size: 27rpx; }
 textarea { height: 150rpx; line-height: 1.45; }
 .unit { color: #69707a; font-size: 26rpx; }
 .submit-btn { height: 82rpx; line-height: 82rpx; margin-top: 28rpx; text-align: center; color: #fff; font-size: 30rpx; font-weight: 900; border-radius: 41rpx; background: #178dff; }
+
+@media (max-width: 390px) {
+  .page { padding-left: 20rpx; padding-right: 20rpx; }
+  .title { font-size: 38rpx; }
+  .type-grid { gap: 10rpx; }
+  .type-card { min-height: 104rpx; font-size: 22rpx; }
+  .form-card { padding-left: 20rpx; padding-right: 20rpx; }
+  .label { width: 76rpx; font-size: 26rpx; }
+}

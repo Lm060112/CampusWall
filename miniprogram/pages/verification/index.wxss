@@ -1,0 +1,12 @@
+.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #f6f8f7; }
+.hero,.form-card { border: 1rpx solid #e5ece8; border-radius: 8rpx; background: #fff; }
+.hero { padding: 28rpx; }
+.title { display: block; color: #111; font-size: 40rpx; font-weight: 900; }
+.desc { display: block; margin-top: 12rpx; color: #5f6d66; font-size: 25rpx; line-height: 1.55; }
+.form-card { margin-top: 20rpx; padding: 24rpx; }
+.field { margin-bottom: 20rpx; }
+.field text { display: block; margin-bottom: 10rpx; color: #26342c; font-size: 25rpx; font-weight: 800; }
+input,textarea { width: 100%; box-sizing: border-box; padding: 20rpx; color: #111; font-size: 26rpx; border: 1rpx solid #e1e8e4; border-radius: 8rpx; background: #f9fbfa; }
+input { min-height: 76rpx; }
+textarea { min-height: 160rpx; line-height: 1.5; }
+.primary-btn { min-height: 82rpx; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 28rpx; font-weight: 900; border-radius: 8rpx; background: #18bf6a; }

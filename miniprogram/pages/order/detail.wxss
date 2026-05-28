@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx 28rpx 150rpx;
+  padding: 48rpx 24rpx calc(150rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -241,8 +241,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 118rpx;
-  padding: 16rpx 28rpx 24rpx;
+  min-height: 118rpx;
+  padding: 16rpx 24rpx calc(20rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   gap: 14rpx;
   border-top: 1rpx solid #edf0f2;
@@ -283,4 +283,35 @@
   gap: 16rpx;
   color: #8a9099;
   font-size: 28rpx;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .status-card,
+  .pickup-card,
+  .order-card {
+    padding: 22rpx;
+  }
+
+  .step-item {
+    width: 96rpx;
+    font-size: 20rpx;
+  }
+
+  .info-row {
+    gap: 14rpx;
+  }
+
+  .info-label {
+    width: 96rpx;
+  }
+
+  .secondary-btn {
+    width: 112rpx;
+    font-size: 25rpx;
+  }
 }

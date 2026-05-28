@@ -16,7 +16,7 @@ Page({
     publishItems: [
       { key: "published", title: "我发布的", icon: "guide-o", color: "#35c46a" },
       { key: "sold", title: "我卖出的", icon: "notes-o", color: "#ff7a45" },
-      { key: "bought", title: "我买到的", icon: "shopping-bag-o", color: "#2f80ed" },
+      { key: "bought", title: "我买到的", icon: "bag-o", color: "#2f80ed" },
       { key: "history", title: "浏览记录", icon: "bar-chart-o", color: "#8b62f2" },
     ],
     menuItems: [
@@ -25,6 +25,8 @@ Page({
       { key: "service", title: "联系客服", icon: "service-o", color: "#2f80ed" },
       { key: "settings", title: "设置", icon: "setting-o", color: "#111" },
     ],
+    canManage: false,
+    roleText: "",
   },
 
   onShow() {
@@ -46,7 +48,52 @@ Page({
       stats,
       userInfo,
       hasUserInfo: !!userInfo,
+      canManage: this.canManage(userInfo),
+      roleText: this.getRoleText(userInfo && userInfo.role),
     });
+    this.refreshCloudUser();
+  },
+
+  canManage(userInfo) {
+    return !!(userInfo && ["admin", "merchant_staff", "runner"].includes(userInfo.role));
+  },
+
+  getRoleText(role) {
+    const map = {
+      admin: "管理员",
+      merchant_staff: "运营人员",
+      runner: "跑腿人员",
+      student: "学生",
+    };
+    return map[role] || "";
+  },
+
+  async refreshCloudUser() {
+    if (!this.data.hasUserInfo || !wx.cloud) return;
+    try {
+      const res = await wx.cloud.callFunction({
+        name: "campusApi",
+        data: { action: "getCurrentUser" },
+      });
+      const user = res.result && res.result.success && res.result.data && res.result.data.user;
+      if (!user) return;
+      const nextUserInfo = {
+        ...this.data.userInfo,
+        _id: user._id || this.data.userInfo._id,
+        openid: user._openid || this.data.userInfo.openid,
+        role: user.role || "student",
+        permissions: user.permissions || [],
+      };
+      wx.setStorageSync("userInfo", nextUserInfo);
+      app.globalData.userInfo = nextUserInfo;
+      this.setData({
+        userInfo: nextUserInfo,
+        canManage: this.canManage(nextUserInfo),
+        roleText: this.getRoleText(nextUserInfo.role),
+      });
+    } catch (err) {
+      console.warn("refresh cloud user failed", err);
+    }
   },
 
   ensureLogin() {
@@ -141,6 +188,10 @@ Page({
     }
     if (key === "service") {
       wx.navigateTo({ url: "/pages/scan/result/index?type=service" });
+      return;
+    }
+    if (key === "admin") {
+      wx.navigateTo({ url: "/pages/admin/index" });
       return;
     }
     if (key === "settings") {

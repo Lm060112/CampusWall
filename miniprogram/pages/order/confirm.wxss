@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx 28rpx 150rpx;
+  padding: 48rpx 24rpx calc(150rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -213,9 +213,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 120rpx;
+  min-height: 120rpx;
   gap: 24rpx;
-  padding: 16rpx 28rpx 24rpx;
+  padding: 16rpx 24rpx calc(20rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   border-top: 1rpx solid #edf0f2;
   background: #fff;
@@ -252,4 +252,36 @@
 
 .submit-btn--disabled {
   background: #9aa3ad;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .pickup-card,
+  .address-card,
+  .order-card,
+  .remark-card {
+    padding: 22rpx;
+  }
+
+  .info-row {
+    gap: 14rpx;
+  }
+
+  .info-label {
+    width: 96rpx;
+  }
+
+  .item-img {
+    width: 96rpx;
+    height: 96rpx;
+  }
+
+  .submit-btn {
+    width: 178rpx;
+    font-size: 27rpx;
+  }
 }

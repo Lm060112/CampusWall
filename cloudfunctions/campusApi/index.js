@@ -21,6 +21,9 @@ const COLLECTIONS = [
   "coupons",
   "coupon_records",
   "announcements",
+  "reports",
+  "verification_requests",
+  "admin_logs",
 ];
 
 const MERCHANT_SEEDS = [
@@ -147,6 +150,8 @@ const ROLE_PERMISSIONS = {
   merchant_staff: ["read", "post:create", "order:create", "message:read", "merchant:manage", "product:manage"],
   admin: ["*"],
 };
+
+const SENSITIVE_WORDS = ["广告刷屏", "辱骂", "诈骗", "加群返利"];
 
 function getContext() {
   const wxContext = cloud.getWXContext();
@@ -277,6 +282,18 @@ function attachPermissions(user) {
   };
 }
 
+function hasSensitiveText(text) {
+  const content = String(text || "");
+  return SENSITIVE_WORDS.some((word) => content.includes(word));
+}
+
+function assertSafeId(value, fieldName) {
+  const id = String(value || "").trim();
+  if (!id) throw new Error(`${fieldName} is required`);
+  if (!/^[\w-]{2,64}$/.test(id)) throw new Error(`${fieldName} format is invalid`);
+  return id;
+}
+
 async function requireRole(openid, roles) {
   const user = await getCurrentUser(openid);
   const role = user && user.role ? user.role : "student";
@@ -296,6 +313,25 @@ async function requireOrderOwnerOrRole(openid, order, roles = []) {
   if (order && order._openid === openid) return true;
   await requireRole(openid, roles);
   return true;
+}
+
+async function logAdminAction(openid, action, targetType, targetId, detail = {}) {
+  const user = await getCurrentUser(openid).catch(() => null);
+  const role = user && user.role ? user.role : "student";
+  if (!["admin", "merchant_staff", "runner"].includes(role)) return;
+  await db.collection("admin_logs").add({
+    data: {
+      _openid: openid,
+      operatorId: user ? user._id : "",
+      operatorName: user ? user.nickName || "" : "",
+      role,
+      action,
+      targetType,
+      targetId: targetId || "",
+      detail,
+      createdAt: now(),
+    },
+  }).catch(() => null);
 }
 
 async function upsertUser(event) {
@@ -376,7 +412,7 @@ async function listMyPosts(event) {
     const list = [];
     for (const item of interactionsRes.data) {
       const postRes = await db.collection("posts").doc(item.targetId).get().catch(() => null);
-      if (postRes && postRes.data && postRes.data.status !== "deleted") list.push(postRes.data);
+      if (postRes && postRes.data && postRes.data.status === "published") list.push(postRes.data);
     }
     return ok({ list, page, pageSize });
   }
@@ -397,7 +433,7 @@ async function getPost(event) {
   if (!id) return fail("post id is required");
 
   const postRes = await db.collection("posts").doc(id).get().catch(() => null);
-  if (!postRes || !postRes.data || postRes.data.status === "deleted") {
+  if (!postRes || !postRes.data || postRes.data.status !== "published") {
     return fail("post not found");
   }
 
@@ -420,6 +456,7 @@ async function createPost(event) {
   const payload = event.post || {};
   const content = String(payload.content || "").trim();
   if (!content) return fail("content is required");
+  if (hasSensitiveText(content)) return fail("content contains sensitive words");
 
   const tag = payload.tag || "help";
   const tagTextMap = {
@@ -478,6 +515,46 @@ async function deletePost(event) {
   return ok({ id });
 }
 
+async function listManagePosts(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+  const page = Math.max(Number(event.page || 1), 1);
+  const pageSize = Math.min(Math.max(Number(event.pageSize || 50), 1), 100);
+  const where = {};
+  if (event.status) where.status = event.status;
+
+  const res = await db
+    .collection("posts")
+    .where(where)
+    .orderBy("createdAt", "desc")
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .get();
+
+  return ok({ list: res.data, page, pageSize });
+}
+
+async function moderatePost(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+  const postId = event.postId || event.id;
+  const status = event.status || "published";
+  if (!postId) return fail("postId is required");
+  if (!["published", "hidden", "deleted"].includes(status)) return fail("invalid status");
+
+  await db.collection("posts").doc(postId).update({
+    data: {
+      status,
+      auditNote: event.note || "",
+      auditBy: openid,
+      auditedAt: now(),
+      updatedAt: now(),
+    },
+  });
+  await logAdminAction(openid, "moderatePost", "post", postId, { status, note: event.note || "" });
+  return ok({ postId, status });
+}
+
 async function listComments(event) {
   requireOpenId();
   const postId = event.postId;
@@ -499,6 +576,7 @@ async function addComment(event) {
   const content = String(event.content || "").trim();
   if (!postId) return fail("postId is required");
   if (!content) return fail("content is required");
+  if (hasSensitiveText(content)) return fail("comment contains sensitive words");
 
   const user = await getCurrentUser(openid);
   const postRes = await db.collection("posts").doc(postId).get().catch(() => null);
@@ -534,6 +612,62 @@ async function addComment(event) {
   }
 
   return ok({ _id: res._id, _openid: openid, ...data });
+}
+
+async function reportContent(event) {
+  const { openid } = requireOpenId();
+  const targetType = event.targetType || "post";
+  const targetId = event.targetId || event.postId || event.commentId;
+  const reason = String(event.reason || "内容不适").trim();
+  if (!targetId) return fail("targetId is required");
+  if (!["post", "comment"].includes(targetType)) return fail("invalid targetType");
+
+  const time = now();
+  const data = {
+    _openid: openid,
+    targetType,
+    targetId,
+    reason,
+    desc: String(event.desc || "").trim(),
+    status: "pending",
+    createdAt: time,
+    updatedAt: time,
+  };
+  const res = await db.collection("reports").add({ data });
+  return ok({ _id: res._id, ...data });
+}
+
+async function listReports(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+  const where = {};
+  if (event.status) where.status = event.status;
+  if (event.targetType) where.targetType = event.targetType;
+
+  const res = await db
+    .collection("reports")
+    .where(where)
+    .orderBy("createdAt", "desc")
+    .limit(Math.min(Number(event.pageSize || 100), 100))
+    .get();
+  return ok(res.data);
+}
+
+async function resolveReport(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+  const reportId = event.reportId || event.id;
+  if (!reportId) return fail("reportId is required");
+
+  const data = {
+    status: event.status || "resolved",
+    result: event.result || "",
+    handledBy: openid,
+    updatedAt: now(),
+  };
+  await db.collection("reports").doc(reportId).update({ data });
+  await logAdminAction(openid, "resolveReport", "report", reportId, data);
+  return ok({ reportId, ...data });
 }
 
 async function toggleInteraction(event) {
@@ -807,6 +941,25 @@ async function getMerchant(event) {
   });
 }
 
+async function listProducts(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin", "merchant_staff"]);
+  await ensureBaseDataSeeded();
+  const where = {};
+  if (event.merchantId) where.merchantId = event.merchantId;
+  if (event.sourceType) where.sourceType = event.sourceType;
+  if (event.status) where.status = event.status;
+
+  const res = await db
+    .collection("products")
+    .where(where)
+    .orderBy("sort", "asc")
+    .limit(Math.min(Number(event.pageSize || 100), 100))
+    .get();
+
+  return ok(res.data);
+}
+
 async function listAnnouncements(event) {
   requireOpenId();
   await ensureBaseDataSeeded();
@@ -904,9 +1057,9 @@ async function saveMerchant(event) {
   const { openid } = requireOpenId();
   await requireRole(openid, ["admin", "merchant_staff"]);
   const merchant = event.merchant || {};
-  const id = String(merchant.id || "").trim();
+  const id = assertSafeId(merchant.id, "merchant id");
   const name = String(merchant.name || "").trim();
-  if (!id || !name) return fail("merchant id and name are required");
+  if (!name) return fail("merchant name is required");
 
   await upsertByBizId("merchants", id, {
     sourceType: merchant.sourceType || "campus",
@@ -929,6 +1082,7 @@ async function saveMerchant(event) {
     minPrice: Number(merchant.minPrice || 0),
     deliveryFee: Number(merchant.deliveryFee || 0),
   });
+  await logAdminAction(openid, "saveMerchant", "merchant", id, { name, sourceType: merchant.sourceType || "campus" });
   return ok({ id });
 }
 
@@ -936,10 +1090,11 @@ async function saveProduct(event) {
   const { openid } = requireOpenId();
   await requireRole(openid, ["admin", "merchant_staff"]);
   const product = event.product || {};
-  const id = String(product.id || "").trim();
-  const merchantId = String(product.merchantId || "").trim();
+  const id = assertSafeId(product.id, "product id");
+  const merchantId = assertSafeId(product.merchantId, "merchantId");
   const name = String(product.name || "").trim();
-  if (!id || !merchantId || !name) return fail("product id, merchantId and name are required");
+  if (!name) return fail("product name is required");
+  if (Number(product.price || 0) < 0) return fail("product price is invalid");
 
   await upsertByBizId("products", id, {
     merchantId,
@@ -954,6 +1109,7 @@ async function saveProduct(event) {
     status: product.status || "active",
     sort: Number(product.sort || 99),
   });
+  await logAdminAction(openid, "saveProduct", "product", id, { merchantId, name });
   return ok({ id, merchantId });
 }
 
@@ -961,9 +1117,9 @@ async function saveAnnouncement(event) {
   const { openid } = requireOpenId();
   await requireRole(openid, ["admin"]);
   const announcement = event.announcement || {};
-  const id = String(announcement.id || "").trim();
+  const id = assertSafeId(announcement.id, "announcement id");
   const title = String(announcement.title || "").trim();
-  if (!id || !title) return fail("announcement id and title are required");
+  if (!title) return fail("announcement title is required");
 
   await upsertByBizId("announcements", id, {
     type: announcement.type || "通知",
@@ -973,6 +1129,7 @@ async function saveAnnouncement(event) {
     sort: Number(announcement.sort || 99),
     status: announcement.status || "published",
   });
+  await logAdminAction(openid, "saveAnnouncement", "announcement", id, { title });
   return ok({ id });
 }
 
@@ -1198,8 +1355,14 @@ async function listOrders(event) {
   const { openid } = requireOpenId();
   const page = Math.max(Number(event.page || 1), 1);
   const pageSize = Math.min(Math.max(Number(event.pageSize || 50), 1), 100);
-  const where = { _openid: openid };
+  const isManageMode = !!event.manage;
+  if (isManageMode) {
+    await requireRole(openid, ["admin", "merchant_staff", "runner"]);
+  }
+  const where = isManageMode ? {} : { _openid: openid };
   if (event.status) where.status = event.status;
+  if (event.sourceType) where.sourceType = event.sourceType;
+  if (event.merchantId) where.merchantId = event.merchantId;
 
   const res = await db
     .collection("orders")
@@ -1219,7 +1382,7 @@ async function getOrder(event) {
 
   const orderRes = await db.collection("orders").doc(orderId).get().catch(() => null);
   if (!orderRes || !orderRes.data) return fail("order not found");
-  if (orderRes.data._openid !== openid) return fail("permission denied");
+  await requireOrderOwnerOrRole(openid, orderRes.data, ["admin", "merchant_staff", "runner"]);
 
   return ok(orderRes.data);
 }
@@ -1253,6 +1416,7 @@ async function updateOrderStatus(event) {
   const nextOrder = { ...orderRes.data, ...updateData };
   await addOrderLog(orderId, openid, orderRes.data.status, status, nextStatusText, time);
   await addOrderMessage(orderId, status, nextOrder, time);
+  await logAdminAction(openid, "updateOrderStatus", "order", orderId, { fromStatus: orderRes.data.status, toStatus: status, statusText: nextStatusText });
   return ok({ orderId, ...nextOrder });
 }
 
@@ -1318,6 +1482,47 @@ async function requestOrderRefund(event) {
   return ok({ orderId, refund: data });
 }
 
+async function getAdminDashboard() {
+  const { openid } = requireOpenId();
+  const user = await requireRole(openid, ["admin", "merchant_staff", "runner"]);
+  const role = user.role || "student";
+
+  const safeCount = async (collection, where = {}) => {
+    const res = await db.collection(collection).where(where).count().catch(() => ({ total: 0 }));
+    return res.total || 0;
+  };
+
+  const data = {
+    role,
+    pendingOrders: await safeCount("orders", { status: _.neq("completed") }),
+    refundOrders: await safeCount("orders", { status: "refund_pending" }),
+    merchants: role === "runner" ? 0 : await safeCount("merchants"),
+    products: role === "runner" ? 0 : await safeCount("products", { status: "active" }),
+    pendingReports: role === "admin" ? await safeCount("reports", { status: "pending" }) : 0,
+    pendingVerifications: role === "admin" ? await safeCount("verification_requests", { status: "pending" }) : 0,
+    users: role === "admin" ? await safeCount("users", { status: "active" }) : 0,
+    adminLogs: role === "admin" ? await safeCount("admin_logs") : 0,
+  };
+
+  return ok(data);
+}
+
+async function listAdminLogs(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+  const where = {};
+  if (event.actionName) where.action = event.actionName;
+  if (event.targetType) where.targetType = event.targetType;
+
+  const res = await db
+    .collection("admin_logs")
+    .where(where)
+    .orderBy("createdAt", "desc")
+    .limit(Math.min(Number(event.pageSize || 100), 100))
+    .get();
+  return ok(res.data);
+}
+
 async function listUsers(event) {
   const { openid } = requireOpenId();
   await requireRole(openid, ["admin"]);
@@ -1356,7 +1561,83 @@ async function updateUserRole(event) {
     updatedAt: now(),
   };
   await db.collection("users").doc(userId).update({ data });
+  await logAdminAction(openid, "updateUserRole", "user", userId, { fromRole: userRes.data.role || "student", toRole: role });
   return ok(attachPermissions({ ...userRes.data, ...data }));
+}
+
+async function submitVerification(event) {
+  const { openid } = requireOpenId();
+  const user = await getCurrentUser(openid);
+  const payload = event.verification || {};
+  const time = now();
+  const data = {
+    _openid: openid,
+    userId: user ? user._id : "",
+    name: String(payload.name || "").trim(),
+    campus: String(payload.campus || (user && user.campus) || "").trim(),
+    studentNo: String(payload.studentNo || "").trim(),
+    desc: String(payload.desc || "").trim(),
+    images: Array.isArray(payload.images) ? payload.images.slice(0, 3) : [],
+    status: "pending",
+    createdAt: time,
+    updatedAt: time,
+  };
+  if (!data.name || !data.campus) return fail("name and campus are required");
+
+  const res = await db.collection("verification_requests").add({ data });
+  await db.collection("users").where({ _openid: openid }).update({
+    data: {
+      verificationStatus: "pending",
+      updatedAt: time,
+    },
+  }).catch(() => null);
+  return ok({ _id: res._id, ...data });
+}
+
+async function listVerificationRequests(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+  const where = {};
+  if (event.status) where.status = event.status;
+
+  const res = await db
+    .collection("verification_requests")
+    .where(where)
+    .orderBy("createdAt", "desc")
+    .limit(Math.min(Number(event.pageSize || 100), 100))
+    .get();
+  return ok(res.data);
+}
+
+async function reviewVerification(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+  const requestId = event.requestId || event.id;
+  const status = event.status || "approved";
+  if (!requestId) return fail("requestId is required");
+  if (!["approved", "rejected"].includes(status)) return fail("invalid status");
+
+  const requestRes = await db.collection("verification_requests").doc(requestId).get().catch(() => null);
+  if (!requestRes || !requestRes.data) return fail("verification request not found");
+  const time = now();
+  await db.collection("verification_requests").doc(requestId).update({
+    data: {
+      status,
+      reviewNote: event.note || "",
+      reviewedBy: openid,
+      reviewedAt: time,
+      updatedAt: time,
+    },
+  });
+  await db.collection("users").where({ _openid: requestRes.data._openid }).update({
+    data: {
+      studentVerified: status === "approved",
+      verificationStatus: status,
+      updatedAt: time,
+    },
+  }).catch(() => null);
+  await logAdminAction(openid, "reviewVerification", "verification_request", requestId, { status });
+  return ok({ requestId, status });
 }
 
 const handlers = {
@@ -1370,8 +1651,13 @@ const handlers = {
   getPost,
   createPost,
   deletePost,
+  listManagePosts,
+  moderatePost,
   listComments,
   addComment,
+  reportContent,
+  listReports,
+  resolveReport,
   toggleInteraction,
   listMessages,
   getMessage,
@@ -1382,6 +1668,7 @@ const handlers = {
   searchAll,
   listMerchants,
   getMerchant,
+  listProducts,
   listAnnouncements,
   getAnnouncement,
   listCoupons,
@@ -1400,8 +1687,13 @@ const handlers = {
   updateOrderStatus,
   submitOrderReview,
   requestOrderRefund,
+  getAdminDashboard,
+  listAdminLogs,
   listUsers,
   updateUserRole,
+  submitVerification,
+  listVerificationRequests,
+  reviewVerification,
 };
 
 exports.main = async (event = {}) => {

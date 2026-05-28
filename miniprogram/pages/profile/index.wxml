@@ -12,6 +12,13 @@
       <text class="campus">崇明校区</text>
     </view>
   </view>
+  <view class="verify-card" catch:tap="onVerifyTap">
+    <view>
+      <text class="verify-title">学生认证</text>
+      <text class="verify-desc">{{ user.studentVerified ? '已完成认证' : '认证后可提升校园交易可信度' }}</text>
+    </view>
+    <text class="verify-action">{{ user.studentVerified ? '已认证' : '去认证' }}</text>
+  </view>
   <view class="stats">
     <view wx:for="{{ stats }}" wx:key="label" class="stat">
       <text class="stat-value">{{ item.value }}</text>

@@ -1,0 +1,322 @@
+<view class="page">
+  <view class="hero">
+    <view>
+      <text class="title">管理后台</text>
+      <text class="subtitle">{{ roleText }} · 校园生活运营区</text>
+    </view>
+    <view class="refresh" catch:tap="loadActiveData">
+      <van-icon name="replay" size="28rpx" color="#158344" />
+      <text>刷新</text>
+    </view>
+  </view>
+
+  <view wx:if="{{ !tabs.length }}" class="empty">
+    <van-icon name="lock" size="82rpx" color="#a8b0b8" />
+    <text>当前账号没有管理权限</text>
+  </view>
+
+  <view wx:else>
+    <view wx:if="{{ loading }}" class="loading-bar">处理中，请稍候...</view>
+
+    <scroll-view class="tabs-scroll" scroll-x enhanced show-scrollbar="{{ false }}">
+      <view class="tabs">
+        <view
+          wx:for="{{ tabs }}"
+          wx:key="key"
+          class="tab {{ activeTab === item.key ? 'tab--active' : '' }}"
+          data-key="{{ item.key }}"
+          catch:tap="onTabTap"
+        >
+          {{ item.title }}
+        </view>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{ activeTab !== 'overview' }}" class="filter-bar">
+      <input class="search-input" placeholder="搜索当前列表" value="{{ searchKeyword }}" bindinput="onSearchInput" />
+      <view wx:if="{{ activeTab === 'orders' || activeTab === 'moderation' }}" class="filter-btn" catch:tap="onStatusFilterTap">状态</view>
+      <view wx:if="{{ activeTab === 'users' }}" class="filter-btn" catch:tap="onRoleFilterTap">角色</view>
+    </view>
+
+    <view wx:if="{{ activeTab === 'overview' }}" class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">运营总览</text>
+          <text class="section-desc">优先处理有数字的事项</text>
+        </view>
+        <text class="section-count">{{ roleText }}</text>
+      </view>
+      <view class="dashboard-grid">
+        <view
+          wx:for="{{ dashboardCards }}"
+          wx:key="key"
+          class="dashboard-card"
+          data-tab="{{ item.tab }}"
+          catch:tap="onDashboardCardTap"
+        >
+          <text class="dashboard-value">{{ item.value }}</text>
+          <text class="dashboard-label">{{ item.label }}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{ activeTab === 'orders' }}" class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">订单处理</text>
+          <text class="section-desc">查看全部订单，并推进状态</text>
+        </view>
+        <text class="section-count">{{ visibleOrders.length }} 单</text>
+      </view>
+
+      <view wx:for="{{ visibleOrders }}" wx:key="id" class="list-card">
+        <view class="card-main">
+          <text class="card-title">{{ item.merchantName }}</text>
+          <text class="card-desc">{{ item.itemText || '暂无商品明细' }}</text>
+          <view class="meta-row">
+            <text>{{ item.statusText || item.status }}</text>
+            <text>¥{{ item.totalText }}</text>
+          </view>
+        </view>
+        <view class="small-btn" data-id="{{ item.id }}" data-source-type="{{ item.sourceType }}" catch:tap="onOrderStatusTap">改状态</view>
+      </view>
+      <view wx:if="{{ !visibleOrders.length }}" class="mini-empty">暂无订单</view>
+    </view>
+
+    <view wx:if="{{ activeTab === 'content' }}" class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">公告管理</text>
+          <text class="section-desc">新增或编辑校园公告</text>
+        </view>
+        <text class="section-count">{{ visibleAnnouncements.length }} 条</text>
+      </view>
+
+      <view class="form-card">
+        <text class="form-title">公告信息</text>
+        <view class="field">
+          <text>公告ID</text>
+          <input placeholder="notice-001" value="{{ noticeForm.id }}" data-field="id" bindinput="onNoticeInput" />
+        </view>
+        <view class="field">
+          <text>标题</text>
+          <input placeholder="请输入公告标题" value="{{ noticeForm.title }}" data-field="title" bindinput="onNoticeInput" />
+        </view>
+        <view class="field-row">
+          <view class="field field-half">
+            <text>类型</text>
+            <input placeholder="通知 / 活动" value="{{ noticeForm.type }}" data-field="type" bindinput="onNoticeInput" />
+          </view>
+          <view class="field field-half">
+            <text>日期</text>
+            <input placeholder="05-28" value="{{ noticeForm.date }}" data-field="date" bindinput="onNoticeInput" />
+          </view>
+        </view>
+        <view class="field">
+          <text>内容</text>
+          <textarea placeholder="请输入公告内容" value="{{ noticeForm.content }}" data-field="content" bindinput="onNoticeInput" />
+        </view>
+        <view class="form-actions">
+          <view class="ghost-btn" catch:tap="onClearNotice">清空</view>
+          <view class="primary-btn" catch:tap="onSaveAnnouncement">保存公告</view>
+        </view>
+      </view>
+
+      <view class="list-title">已发布公告</view>
+      <view wx:for="{{ visibleAnnouncements }}" wx:key="id" class="list-card" data-id="{{ item.id }}" catch:tap="fillAnnouncement">
+        <view class="card-main">
+          <text class="card-title">{{ item.title }}</text>
+          <text class="card-desc">{{ item.content || item.type }}</text>
+        </view>
+        <van-icon name="edit" size="32rpx" color="#777" />
+      </view>
+    </view>
+
+    <view wx:if="{{ activeTab === 'goods' }}" class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">商家 / 商品</text>
+          <text class="section-desc">维护校内服务、外卖商家和商品</text>
+        </view>
+        <text class="section-count">{{ visibleMerchants.length }} 家 · {{ visibleProducts.length }} 件</text>
+      </view>
+
+      <view class="form-card">
+        <text class="form-title">商家信息</text>
+        <view class="field">
+          <text>商家ID</text>
+          <input placeholder="campus-cafe" value="{{ merchantForm.id }}" data-field="id" bindinput="onMerchantInput" />
+        </view>
+        <view class="field">
+          <text>商家名称</text>
+          <input placeholder="请输入商家名称" value="{{ merchantForm.name }}" data-field="name" bindinput="onMerchantInput" />
+        </view>
+        <view class="field-row">
+          <view class="field field-half">
+            <text>类型</text>
+            <input placeholder="campus / takeaway" value="{{ merchantForm.sourceType }}" data-field="sourceType" bindinput="onMerchantInput" />
+          </view>
+          <view class="field field-half">
+            <text>分类</text>
+            <input placeholder="校内服务" value="{{ merchantForm.category }}" data-field="category" bindinput="onMerchantInput" />
+          </view>
+        </view>
+        <view class="field">
+          <text>地址 / 位置</text>
+          <input placeholder="请输入位置" value="{{ merchantForm.address }}" data-field="address" bindinput="onMerchantInput" />
+        </view>
+        <view class="field">
+          <text>预计时间</text>
+          <input placeholder="10-15分钟自取" value="{{ merchantForm.eta }}" data-field="eta" bindinput="onMerchantInput" />
+        </view>
+        <view class="form-actions">
+          <view class="ghost-btn" catch:tap="onClearMerchant">清空</view>
+          <view class="primary-btn" catch:tap="onSaveMerchant">保存商家</view>
+        </view>
+      </view>
+
+      <view class="form-card">
+        <text class="form-title">商品信息</text>
+        <view class="field">
+          <text>商品ID</text>
+          <input placeholder="coffee-01" value="{{ productForm.id }}" data-field="id" bindinput="onProductInput" />
+        </view>
+        <view class="field">
+          <text>所属商家ID</text>
+          <view class="field-with-action">
+            <input placeholder="campus-cafe" value="{{ productForm.merchantId }}" data-field="merchantId" bindinput="onProductInput" />
+            <view class="inline-btn" catch:tap="onMerchantPickTap">选择</view>
+          </view>
+          <text wx:if="{{ selectedMerchantName }}" class="field-tip">已选：{{ selectedMerchantName }}</text>
+        </view>
+        <view class="field">
+          <text>商品名称</text>
+          <input placeholder="请输入商品名称" value="{{ productForm.name }}" data-field="name" bindinput="onProductInput" />
+        </view>
+        <view class="field-row">
+          <view class="field field-half">
+            <text>分类</text>
+            <input placeholder="热销" value="{{ productForm.category }}" data-field="category" bindinput="onProductInput" />
+          </view>
+          <view class="field field-half">
+            <text>价格</text>
+            <input placeholder="单位元" type="digit" value="{{ productForm.price }}" data-field="price" bindinput="onProductInput" />
+          </view>
+        </view>
+        <view class="field">
+          <text>库存</text>
+          <input placeholder="99" type="number" value="{{ productForm.stock }}" data-field="stock" bindinput="onProductInput" />
+        </view>
+        <view class="form-actions">
+          <view class="ghost-btn" catch:tap="onClearProduct">清空</view>
+          <view class="primary-btn" catch:tap="onSaveProduct">保存商品</view>
+        </view>
+      </view>
+
+      <view class="list-title">商家列表</view>
+      <view wx:for="{{ visibleMerchants }}" wx:key="id" class="list-card" data-id="{{ item.id }}" catch:tap="fillMerchant">
+        <view class="card-main">
+          <text class="card-title">{{ item.name }}</text>
+          <text class="card-desc">{{ item.category }} · {{ item.address || item.distance }}</text>
+        </view>
+        <van-icon name="edit" size="32rpx" color="#777" />
+      </view>
+
+      <view class="list-title">商品列表</view>
+      <view wx:for="{{ visibleProducts }}" wx:key="id" class="list-card" data-id="{{ item.id }}" catch:tap="fillProduct">
+        <view class="card-main">
+          <text class="card-title">{{ item.name }}</text>
+          <text class="card-desc">{{ item.merchantName }} · {{ item.category }} · ¥{{ item.priceText }}</text>
+        </view>
+        <van-icon name="edit" size="32rpx" color="#777" />
+      </view>
+    </view>
+
+    <view wx:if="{{ activeTab === 'moderation' }}" class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">内容审核</text>
+          <text class="section-desc">处理举报，并隐藏不合规内容</text>
+        </view>
+        <text class="section-count">{{ visibleReports.length }} 条</text>
+      </view>
+
+      <view class="list-title">待处理举报</view>
+      <view wx:for="{{ visibleReports }}" wx:key="_id" class="list-card">
+        <view class="card-main">
+          <text class="card-title">{{ item.targetType }} · {{ item.reason }}</text>
+          <text class="card-desc">{{ item.desc || item.targetId }}</text>
+          <text class="card-meta">状态：{{ item.status }}</text>
+        </view>
+        <view class="small-btn" data-id="{{ item._id }}" catch:tap="onResolveReportTap">处理</view>
+      </view>
+      <view wx:if="{{ !visibleReports.length }}" class="mini-empty">暂无待处理举报</view>
+
+      <view class="list-title">帖子审核</view>
+      <view wx:for="{{ visiblePosts }}" wx:key="_id" class="list-card">
+        <view class="card-main">
+          <text class="card-title">{{ item.topic || item.tagText || '校园帖子' }}</text>
+          <text class="card-desc">{{ item.content }}</text>
+          <text class="card-meta">状态：{{ item.status }}</text>
+        </view>
+        <view class="small-btn" data-id="{{ item._id }}" catch:tap="onModeratePostTap">审核</view>
+      </view>
+    </view>
+
+    <view wx:if="{{ activeTab === 'verify' }}" class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">学生认证</text>
+          <text class="section-desc">审核用户提交的校园身份信息</text>
+        </view>
+        <text class="section-count">{{ visibleVerifications.length }} 条</text>
+      </view>
+      <view wx:for="{{ visibleVerifications }}" wx:key="_id" class="list-card">
+        <view class="card-main">
+          <text class="card-title">{{ item.name || '认证用户' }}</text>
+          <text class="card-desc">{{ item.campus }} · {{ item.studentNo || '未填学号' }}</text>
+          <text class="card-meta">状态：{{ item.status }}</text>
+        </view>
+        <view class="small-btn" data-id="{{ item._id }}" catch:tap="onReviewVerificationTap">审核</view>
+      </view>
+      <view wx:if="{{ !visibleVerifications.length }}" class="mini-empty">暂无认证申请</view>
+    </view>
+
+    <view wx:if="{{ activeTab === 'users' }}" class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">用户角色</text>
+          <text class="section-desc">给协作人员配置管理权限</text>
+        </view>
+        <text class="section-count">{{ visibleUsers.length }} 人</text>
+      </view>
+      <view wx:for="{{ visibleUsers }}" wx:key="_id" class="list-card">
+        <view class="card-main">
+          <text class="card-title">{{ item.nickName || '未命名用户' }}</text>
+          <text class="card-desc">{{ item.campus || '未填写校区' }}</text>
+          <text class="card-meta">当前角色：{{ item.roleText }}</text>
+        </view>
+        <view class="small-btn" data-id="{{ item._id }}" catch:tap="onRoleTap">改角色</view>
+      </view>
+      <view wx:if="{{ !visibleUsers.length }}" class="mini-empty">暂无用户</view>
+    </view>
+
+    <view wx:if="{{ activeTab === 'logs' }}" class="section">
+      <view class="section-head">
+        <view>
+          <text class="section-title">操作日志</text>
+          <text class="section-desc">记录管理员和运营人员的关键操作</text>
+        </view>
+        <text class="section-count">{{ visibleAdminLogs.length }} 条</text>
+      </view>
+      <view wx:for="{{ visibleAdminLogs }}" wx:key="_id" class="list-card">
+        <view class="card-main">
+          <text class="card-title">{{ item.action }} · {{ item.targetType }}</text>
+          <text class="card-desc">{{ item.operatorName || item.role }} 操作 {{ item.targetId }}</text>
+          <text class="card-meta">{{ item.timeText }}</text>
+        </view>
+      </view>
+      <view wx:if="{{ !visibleAdminLogs.length }}" class="mini-empty">暂无操作日志</view>
+    </view>
+  </view>
+</view>

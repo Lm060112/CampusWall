@@ -1,7 +1,7 @@
 .page {
   position: relative;
   min-height: 100vh;
-  padding: 30rpx 28rpx 0;
+  padding: 54rpx 24rpx 0;
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -81,11 +81,11 @@
 }
 
 .feed-scroll {
-  height: calc(100vh - 164rpx);
+  height: calc(100vh - 164rpx - env(safe-area-inset-bottom));
 }
 
 .feed-list {
-  padding: 18rpx 0 160rpx;
+  padding: 18rpx 0 calc(160rpx + env(safe-area-inset-bottom));
 }
 
 .empty-state {
@@ -132,6 +132,9 @@
   color: #111;
   font-size: 31rpx;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .feed-meta {
@@ -198,11 +201,11 @@
 }
 
 .image-grid--2 {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .image-grid--3 {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .feed-image {
@@ -329,7 +332,7 @@
 .publish-fab {
   position: fixed;
   right: 36rpx;
-  bottom: 128rpx;
+  bottom: calc(128rpx + env(safe-area-inset-bottom));
   width: 126rpx;
   height: 126rpx;
   display: flex;
@@ -359,7 +362,7 @@
 .composer {
   width: 100%;
   max-height: 86vh;
-  padding: 28rpx;
+  padding: 28rpx 28rpx calc(28rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   border-radius: 18rpx 18rpx 0 0;
   background: #fff;
@@ -376,11 +379,13 @@
 
 .category-row {
   display: flex;
+  overflow-x: auto;
   gap: 14rpx;
   margin-top: 24rpx;
 }
 
 .category-chip {
+  flex: 0 0 auto;
   padding: 10rpx 20rpx;
   color: #666;
   font-size: 25rpx;
@@ -419,6 +424,7 @@
 
 .draft-images {
   display: flex;
+  overflow-x: auto;
   gap: 14rpx;
   margin-top: 18rpx;
 }
@@ -492,7 +498,7 @@
   display: flex;
   align-items: center;
   gap: 16rpx;
-  padding: 18rpx 24rpx 32rpx;
+  padding: 18rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fff;
 }
@@ -515,4 +521,48 @@
   font-size: 26rpx;
   border-radius: 8rpx;
   background: #12b85b;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .page-title {
+    font-size: 42rpx;
+  }
+
+  .tabs {
+    margin-top: 28rpx;
+  }
+
+  .tab {
+    font-size: 28rpx;
+  }
+
+  .feed-card {
+    padding: 20rpx;
+  }
+
+  .avatar {
+    width: 74rpx;
+    height: 74rpx;
+    border-radius: 37rpx;
+  }
+
+  .feed-content,
+  .image-grid,
+  .event-card,
+  .feed-footer,
+  .comment-list {
+    margin-left: 0;
+  }
+
+  .publish-fab {
+    width: 112rpx;
+    height: 112rpx;
+    right: 28rpx;
+    font-size: 25rpx;
+  }
 }

@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 30rpx 28rpx 40rpx;
+  padding: 54rpx 24rpx calc(40rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -28,7 +28,7 @@
 
 .summary-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16rpx;
   margin-top: 38rpx;
 }
@@ -36,7 +36,7 @@
 .summary-card {
   position: relative;
   min-height: 136rpx;
-  padding: 24rpx 18rpx;
+  padding: 22rpx 16rpx;
   box-sizing: border-box;
   border: 2rpx solid transparent;
   border-radius: 8rpx;
@@ -82,6 +82,9 @@
   color: #111;
   font-size: 27rpx;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .summary-desc {
@@ -89,6 +92,8 @@
   margin-top: 8rpx;
   color: #666;
   font-size: 22rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -218,7 +223,8 @@
 }
 
 .message-content {
-  max-width: 430rpx;
+  flex: 1;
+  min-width: 0;
   color: #666;
   font-size: 25rpx;
   overflow: hidden;
@@ -268,4 +274,52 @@
 .empty-desc {
   margin-top: 10rpx;
   font-size: 24rpx;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .page-title {
+    font-size: 42rpx;
+  }
+
+  .summary-row {
+    gap: 12rpx;
+  }
+
+  .summary-card {
+    min-height: 126rpx;
+    padding: 20rpx 14rpx;
+  }
+
+  .summary-icon {
+    width: 50rpx;
+    height: 50rpx;
+    margin-bottom: 12rpx;
+  }
+
+  .summary-title {
+    font-size: 25rpx;
+  }
+
+  .summary-desc {
+    font-size: 20rpx;
+  }
+
+  .message-item {
+    gap: 18rpx;
+  }
+
+  .message-avatar-wrap,
+  .message-avatar {
+    width: 76rpx;
+    height: 76rpx;
+  }
+
+  .message-avatar {
+    border-radius: 38rpx;
+  }
 }

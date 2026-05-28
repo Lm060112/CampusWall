@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx 28rpx 150rpx;
+  padding: 48rpx 24rpx calc(150rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -59,12 +59,18 @@
 }
 
 .merchant-name {
+  flex: 1;
+  min-width: 0;
   color: #111;
   font-size: 36rpx;
   font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .merchant-tag {
+  flex: 0 0 auto;
   padding: 5rpx 10rpx;
   color: #148844;
   font-size: 22rpx;
@@ -219,9 +225,9 @@
 
 .cart-bar {
   position: fixed;
-  left: 28rpx;
-  right: 28rpx;
-  bottom: 34rpx;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: calc(24rpx + env(safe-area-inset-bottom));
   height: 96rpx;
   display: flex;
   align-items: center;
@@ -292,4 +298,47 @@
 .checkout-btn--disabled {
   color: #d2d6dc;
   background: #56616f;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .merchant-info {
+    padding: 20rpx;
+  }
+
+  .merchant-name {
+    font-size: 32rpx;
+  }
+
+  .shop-body {
+    gap: 14rpx;
+  }
+
+  .category-list {
+    width: 132rpx;
+  }
+
+  .category-item {
+    font-size: 23rpx;
+  }
+
+  .product-card {
+    gap: 12rpx;
+    padding: 16rpx;
+  }
+
+  .product-img {
+    width: 116rpx;
+    height: 116rpx;
+    flex-basis: 116rpx;
+  }
+
+  .checkout-btn {
+    width: 118rpx;
+    font-size: 25rpx;
+  }
 }

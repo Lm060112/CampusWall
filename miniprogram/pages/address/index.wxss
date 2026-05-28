@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx 28rpx 140rpx;
+  padding: 48rpx 24rpx calc(140rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -117,9 +117,9 @@
 
 .add-btn {
   position: fixed;
-  left: 28rpx;
-  right: 28rpx;
-  bottom: 34rpx;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: calc(24rpx + env(safe-area-inset-bottom));
   height: 86rpx;
   display: flex;
   align-items: center;
@@ -147,7 +147,7 @@
 .editor {
   width: 100%;
   max-height: 88vh;
-  padding: 28rpx;
+  padding: 28rpx 28rpx calc(28rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   border-radius: 18rpx 18rpx 0 0;
   background: #fff;
@@ -226,4 +226,25 @@ textarea {
   font-weight: 900;
   border-radius: 41rpx;
   background: #12b85b;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .tip-card,
+  .address-card {
+    padding: 20rpx;
+  }
+
+  .person-row {
+    flex-wrap: wrap;
+  }
+
+  .label {
+    width: 76rpx;
+    font-size: 26rpx;
+  }
 }

@@ -1,0 +1,26 @@
+<view class="page">
+  <view class="hero">
+    <text class="title">学生认证</text>
+    <text class="desc">提交后由管理员在管理后台审核。当前是模拟认证流程，后续可接入真实证件或学校认证规则。</text>
+  </view>
+
+  <view class="form-card">
+    <view class="field">
+      <text>姓名 / 昵称</text>
+      <input placeholder="请输入姓名或昵称" value="{{ form.name }}" data-field="name" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text>校区 / 学校</text>
+      <input placeholder="请输入学校或校区" value="{{ form.campus }}" data-field="campus" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text>学号</text>
+      <input placeholder="可选，正式上线前再决定是否必填" value="{{ form.studentNo }}" data-field="studentNo" bindinput="onInput" />
+    </view>
+    <view class="field">
+      <text>说明</text>
+      <textarea placeholder="例如学院、年级、认证备注" value="{{ form.desc }}" data-field="desc" bindinput="onInput" />
+    </view>
+    <view class="primary-btn" catch:tap="onSubmit">{{ submitting ? '提交中...' : '提交认证' }}</view>
+  </view>
+</view>

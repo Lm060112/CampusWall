@@ -29,4 +29,8 @@ Page({
   onPostTap(e) {
     wx.navigateTo({ url: `/pages/discover/detail/index?id=${e.currentTarget.dataset.id}` });
   },
+
+  onVerifyTap() {
+    wx.navigateTo({ url: "/pages/verification/index" });
+  },
 });

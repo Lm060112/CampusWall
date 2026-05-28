@@ -52,6 +52,22 @@
     </view>
   </view>
 
+  <view wx:if="{{ canManage }}" class="admin-card" data-key="admin" catch:tap="onFeatureTap">
+    <view class="admin-left">
+      <view class="admin-icon">
+        <van-icon name="setting-o" size="42rpx" color="#fff" />
+      </view>
+      <view>
+        <text class="admin-title">管理后台</text>
+        <text class="admin-desc">{{ roleText }}可管理订单、公告、商品和用户</text>
+      </view>
+    </view>
+    <view class="admin-btn">
+      <text>进入</text>
+      <van-icon name="arrow" size="24rpx" color="#0d7a3c" />
+    </view>
+  </view>
+
   <view class="panel">
     <view class="panel-head">
       <text catch:tap="onOrderListTap">我的订单</text>
@@ -78,7 +94,9 @@
     </view>
     <view class="publish-grid">
       <view wx:for="{{ publishItems }}" wx:key="key" class="publish-item" data-key="{{ item.key }}" data-title="{{ item.title }}" catch:tap="onFeatureTap">
-        <van-icon name="{{ item.icon }}" size="52rpx" color="{{ item.color }}" />
+        <view class="publish-icon">
+          <van-icon name="{{ item.icon }}" size="52rpx" color="{{ item.color }}" />
+        </view>
         <text>{{ item.title }}</text>
       </view>
     </view>

@@ -1,4 +1,4 @@
-.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.page { min-height: 100vh; padding: 48rpx 24rpx calc(130rpx + env(safe-area-inset-bottom)); box-sizing: border-box; background: #fbfbfb; }
 .header { display: flex; align-items: center; gap: 16rpx; }
 .back-btn,.header-placeholder { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
 .header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
@@ -12,5 +12,11 @@
 .method-row--active { background: #f2fbf5; }
 .method-title { display: block; color: #111; font-size: 29rpx; font-weight: 800; }
 .method-desc { display: block; margin-top: 8rpx; color: #777; font-size: 24rpx; }
-.pay-btn { position: fixed; left: 28rpx; right: 28rpx; bottom: 34rpx; height: 84rpx; line-height: 84rpx; text-align: center; color: #fff; font-size: 30rpx; font-weight: 900; border-radius: 42rpx; background: #12b85b; }
+.pay-btn { position: fixed; left: 24rpx; right: 24rpx; bottom: calc(24rpx + env(safe-area-inset-bottom)); height: 84rpx; line-height: 84rpx; text-align: center; color: #fff; font-size: 30rpx; font-weight: 900; border-radius: 42rpx; background: #12b85b; }
 .pay-btn--disabled { opacity: .65; }
+
+@media (max-width: 390px) {
+  .page { padding-left: 20rpx; padding-right: 20rpx; }
+  .pay-card { padding-left: 22rpx; padding-right: 22rpx; }
+  .amount { font-size: 52rpx; }
+}

@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx 28rpx 48rpx;
+  padding: 48rpx 24rpx calc(48rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -22,6 +22,7 @@
 
 .header-copy {
   flex: 1;
+  min-width: 0;
 }
 
 .title {
@@ -36,6 +37,9 @@
   margin-top: 6rpx;
   color: #69707a;
   font-size: 25rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .intro {
@@ -51,6 +55,7 @@
 
 .intro-main {
   flex: 1;
+  min-width: 0;
 }
 
 .intro-title {
@@ -184,6 +189,9 @@
   color: #59616b;
   font-size: 25rpx;
   line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .meta-row {
@@ -222,4 +230,34 @@
   color: #0b9b4b;
   font-size: 24rpx;
   font-weight: 700;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .title {
+    font-size: 40rpx;
+  }
+
+  .intro {
+    padding: 22rpx;
+  }
+
+  .intro-icon {
+    width: 92rpx;
+    height: 92rpx;
+  }
+
+  .service-card {
+    gap: 14rpx;
+    padding: 16rpx;
+  }
+
+  .service-img {
+    width: 132rpx;
+    height: 132rpx;
+  }
 }

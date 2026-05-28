@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx 28rpx 44rpx;
+  padding: 52rpx 24rpx calc(44rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -13,12 +13,19 @@
 
 .campus {
   flex: 0 0 auto;
+  max-width: 210rpx;
   display: flex;
   align-items: center;
   gap: 10rpx;
   color: #111;
   font-size: 32rpx;
   font-weight: 700;
+}
+
+.campus text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .search-box {
@@ -72,7 +79,7 @@
 
 .service-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18rpx;
   margin-top: 26rpx;
 }
@@ -83,7 +90,7 @@
   overflow: hidden;
   display: flex;
   justify-content: space-between;
-  padding: 28rpx 22rpx;
+  padding: 26rpx 20rpx;
   box-sizing: border-box;
   border-radius: 8rpx;
 }
@@ -107,13 +114,18 @@
 .service-copy {
   position: relative;
   z-index: 1;
+  min-width: 0;
+  max-width: calc(100% - 96rpx);
 }
 
 .service-title {
   display: block;
   color: #111;
-  font-size: 36rpx;
+  font-size: 34rpx;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .service-desc {
@@ -271,10 +283,12 @@
   display: flex;
   align-items: center;
   gap: 10rpx;
+  min-width: 0;
 }
 
 .merchant-name {
-  max-width: 260rpx;
+  flex: 1;
+  min-width: 0;
   color: #111;
   font-size: 28rpx;
   font-weight: 800;
@@ -284,6 +298,7 @@
 }
 
 .merchant-tag {
+  flex: 0 0 auto;
   padding: 4rpx 8rpx;
   color: #15954d;
   font-size: 20rpx;
@@ -298,6 +313,7 @@
 
 .coupon-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8rpx;
   margin-top: 18rpx;
 }
@@ -318,7 +334,8 @@
 }
 
 .merchant-side {
-  width: 96rpx;
+  width: 92rpx;
+  flex: 0 0 92rpx;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -370,6 +387,7 @@
 
 .announcement-title {
   flex: 1;
+  min-width: 0;
   color: #222;
   font-size: 25rpx;
   overflow: hidden;
@@ -387,4 +405,75 @@
   height: 12rpx;
   border-radius: 6rpx;
   background: #f04438;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .top-row {
+    gap: 12rpx;
+  }
+
+  .campus {
+    max-width: 170rpx;
+    font-size: 28rpx;
+  }
+
+  .search-box {
+    height: 68rpx;
+    padding: 0 16rpx;
+    font-size: 25rpx;
+  }
+
+  .scan-btn {
+    width: 56rpx;
+    height: 56rpx;
+  }
+
+  .service-grid {
+    gap: 14rpx;
+  }
+
+  .service-card {
+    min-height: 172rpx;
+    padding: 22rpx 16rpx;
+  }
+
+  .service-title {
+    font-size: 31rpx;
+  }
+
+  .service-desc {
+    font-size: 24rpx;
+  }
+
+  .service-visual {
+    right: 14rpx;
+    bottom: 14rpx;
+    width: 88rpx;
+    height: 88rpx;
+  }
+
+  .merchant-card {
+    gap: 14rpx;
+    padding: 14rpx;
+  }
+
+  .merchant-img {
+    width: 128rpx;
+    height: 100rpx;
+  }
+
+  .merchant-side {
+    width: 78rpx;
+    flex-basis: 78rpx;
+  }
+
+  .enter-btn {
+    width: 76rpx;
+    font-size: 22rpx;
+  }
 }

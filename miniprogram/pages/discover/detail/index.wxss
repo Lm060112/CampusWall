@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx 28rpx 130rpx;
+  padding: 28rpx 24rpx calc(130rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -95,7 +95,7 @@
 
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12rpx;
   margin-top: 24rpx;
 }
@@ -161,6 +161,11 @@
   color: #12b85b;
 }
 
+.action-report {
+  margin-left: auto;
+  color: #666;
+}
+
 .section-title {
   display: block;
   color: #111;
@@ -221,7 +226,7 @@
   display: flex;
   align-items: center;
   gap: 16rpx;
-  padding: 18rpx 24rpx 32rpx;
+  padding: 18rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fff;
   box-shadow: 0 -8rpx 24rpx rgba(20, 25, 30, 0.06);
@@ -245,4 +250,24 @@
   font-size: 26rpx;
   border-radius: 8rpx;
   background: #12b85b;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .post-card,
+  .comment-panel {
+    padding: 22rpx;
+  }
+
+  .image-grid {
+    gap: 10rpx;
+  }
+
+  .post-image {
+    height: 150rpx;
+  }
 }

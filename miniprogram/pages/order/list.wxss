@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  padding: 28rpx 28rpx 48rpx;
+  padding: 48rpx 24rpx calc(48rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #fbfbfb;
 }
@@ -86,9 +86,13 @@
 
 .merchant-name {
   display: block;
+  max-width: 430rpx;
   color: #111;
   font-size: 31rpx;
   font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .order-time {
@@ -127,6 +131,7 @@
   color: #4f5964;
   font-size: 25rpx;
   line-height: 1.45;
+  word-break: break-all;
 }
 
 .pickup,
@@ -184,4 +189,28 @@
 
 .empty-desc {
   font-size: 25rpx;
+}
+
+@media (max-width: 390px) {
+  .page {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+  }
+
+  .order-card {
+    padding: 20rpx;
+  }
+
+  .merchant-name {
+    max-width: 330rpx;
+    font-size: 29rpx;
+  }
+
+  .order-bottom {
+    gap: 12rpx;
+  }
+
+  .complete-btn {
+    padding: 0 18rpx;
+  }
 }

@@ -181,6 +181,31 @@ Page({
     wx.showToast({ title: "已更新收藏" });
   },
 
+  onReportTap() {
+    const post = this.data.post;
+    if (!post) return;
+    wx.showActionSheet({
+      itemList: ["内容不实", "广告刷屏", "不友善内容", "疑似诈骗"],
+      success: (res) => {
+        const reason = ["内容不实", "广告刷屏", "不友善内容", "疑似诈骗"][res.tapIndex];
+        if (!post.cloud) {
+          wx.showToast({ title: "已记录举报", icon: "success" });
+          return;
+        }
+        this.callCampusApi({
+          action: "reportContent",
+          targetType: "post",
+          targetId: post.id,
+          reason,
+        }).then(() => {
+          wx.showToast({ title: "已提交举报", icon: "success" });
+        }).catch((error) => {
+          wx.showToast({ title: error.message || "举报失败", icon: "none" });
+        });
+      },
+    });
+  },
+
   onCommentInput(e) {
     this.setData({ commentInput: e.detail.value || "" });
   },

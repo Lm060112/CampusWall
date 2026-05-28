@@ -1,20 +1,35 @@
-.page { min-height: 100vh; padding: 28rpx; box-sizing: border-box; background: #fbfbfb; }
+.page { min-height: 100vh; padding: 48rpx 24rpx calc(44rpx + env(safe-area-inset-bottom)); box-sizing: border-box; background: #fbfbfb; }
 .header { display: flex; align-items: center; gap: 16rpx; }
 .back-btn,.header-placeholder { width: 68rpx; height: 68rpx; display: flex; align-items: center; justify-content: center; }
 .header-title { flex: 1; text-align: center; color: #111; font-size: 36rpx; font-weight: 900; }
 .profile-card { display: flex; align-items: center; gap: 24rpx; margin-top: 24rpx; padding: 30rpx; border-radius: 8rpx; background: linear-gradient(135deg,#eff9ed,#fff); border: 1rpx solid #edf0f2; }
+.verify-card { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; margin-top: 18rpx; padding: 24rpx; border-radius: 8rpx; border: 1rpx solid #dff0e5; background: #f2fbf5; }
+.verify-title { display: block; color: #111; font-size: 29rpx; font-weight: 900; }
+.verify-desc { display: block; margin-top: 8rpx; color: #5c6b62; font-size: 24rpx; }
+.verify-action { flex: 0 0 auto; padding: 12rpx 18rpx; color: #138342; font-size: 24rpx; border-radius: 8rpx; background: #fff; }
 .avatar { width: 128rpx; height: 128rpx; border-radius: 64rpx; background: #eef2f5; }
 .profile-main { flex: 1; min-width: 0; }
-.nickname { display: block; color: #111; font-size: 40rpx; font-weight: 900; }
-.slogan { display: block; margin-top: 10rpx; color: #5f6872; font-size: 26rpx; }
+.nickname { display: block; color: #111; font-size: 40rpx; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slogan { display: block; margin-top: 10rpx; color: #5f6872; font-size: 26rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .campus { display: inline-block; margin-top: 14rpx; padding: 6rpx 12rpx; color: #148844; font-size: 23rpx; border-radius: 6rpx; background: #e7f7ec; }
-.stats { display: grid; grid-template-columns: repeat(4,1fr); margin-top: 18rpx; padding: 22rpx; border-radius: 8rpx; background: #fff; border: 1rpx solid #edf0f2; }
+.stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); margin-top: 18rpx; padding: 22rpx; border-radius: 8rpx; background: #fff; border: 1rpx solid #edf0f2; }
 .stat { text-align: center; }
 .stat-value { display: block; color: #111; font-size: 34rpx; font-weight: 900; }
-.stat-label { display: block; margin-top: 8rpx; color: #777; font-size: 24rpx; }
+.stat-label { display: block; margin-top: 8rpx; color: #777; font-size: 24rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .section-head { margin-top: 28rpx; color: #111; font-size: 32rpx; font-weight: 900; }
 .post-card { margin-top: 16rpx; padding: 22rpx; border-radius: 8rpx; border: 1rpx solid #edf0f2; background: #fff; }
 .tag { display: inline-block; padding: 5rpx 10rpx; border-radius: 6rpx; color: #148844; font-size: 22rpx; background: #e7f7ec; }
 .post-content { display: block; margin-top: 12rpx; color: #111; font-size: 28rpx; line-height: 1.5; }
 .post-meta { display: block; margin-top: 10rpx; color: #777; font-size: 24rpx; }
 .empty { padding: 80rpx 0; text-align: center; color: #8a8f98; font-size: 28rpx; }
+
+@media (max-width: 390px) {
+  .page { padding-left: 20rpx; padding-right: 20rpx; }
+  .profile-card,
+  .verify-card,
+  .post-card { padding: 22rpx; }
+  .avatar { width: 108rpx; height: 108rpx; border-radius: 54rpx; }
+  .nickname { font-size: 36rpx; }
+  .stat-value { font-size: 30rpx; }
+  .stat-label { font-size: 22rpx; }
+}
