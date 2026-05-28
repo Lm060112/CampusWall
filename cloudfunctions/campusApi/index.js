@@ -141,6 +141,13 @@ const ok = (data = null) => ({ success: true, data });
 const fail = (errMsg = "request failed") => ({ success: false, errMsg });
 const now = () => Date.now();
 
+const ROLE_PERMISSIONS = {
+  student: ["read", "post:create", "order:create", "message:read"],
+  runner: ["read", "post:create", "order:create", "message:read", "errand:accept"],
+  merchant_staff: ["read", "post:create", "order:create", "message:read", "merchant:manage", "product:manage"],
+  admin: ["*"],
+};
+
 function getContext() {
   const wxContext = cloud.getWXContext();
   return {
@@ -251,7 +258,7 @@ async function getCurrentUserInfo() {
   const user = await getCurrentUser(context.openid);
   return ok({
     ...context,
-    user,
+    user: attachPermissions(user),
   });
 }
 
@@ -260,33 +267,72 @@ async function getCurrentUser(openid) {
   return res.data[0] || null;
 }
 
+function attachPermissions(user) {
+  if (!user) return null;
+  const role = user.role || "student";
+  return {
+    ...user,
+    role,
+    permissions: ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.student,
+  };
+}
+
+async function requireRole(openid, roles) {
+  const user = await getCurrentUser(openid);
+  const role = user && user.role ? user.role : "student";
+  if (!roles.includes(role) && role !== "admin") {
+    throw new Error("permission denied");
+  }
+  return attachPermissions(user || { _openid: openid, role });
+}
+
+async function requirePostOwnerOrRole(openid, post, roles = []) {
+  if (post && post._openid === openid) return true;
+  await requireRole(openid, roles);
+  return true;
+}
+
+async function requireOrderOwnerOrRole(openid, order, roles = []) {
+  if (order && order._openid === openid) return true;
+  await requireRole(openid, roles);
+  return true;
+}
+
 async function upsertUser(event) {
   const { openid } = requireOpenId();
   const profile = event.profile || {};
   const time = now();
-  const data = {
+  const baseData = {
     _openid: openid,
     ...pick(profile, ["nickName", "avatarUrl", "campus", "phone"]),
-    role: profile.role || "student",
     status: "active",
-    studentVerified: !!profile.studentVerified,
     updatedAt: time,
   };
 
   const userRes = await db.collection("users").where({ _openid: openid }).limit(1).get();
   if (userRes.data.length) {
     const user = userRes.data[0];
+    const data = {
+      ...baseData,
+      role: user.role || "student",
+      studentVerified: !!user.studentVerified,
+    };
     await db.collection("users").doc(user._id).update({ data });
-    return ok({ ...user, ...data });
+    return ok(attachPermissions({ ...user, ...data }));
   }
 
+  const data = {
+    ...baseData,
+    role: "student",
+    studentVerified: false,
+  };
   const addRes = await db.collection("users").add({
     data: {
       ...data,
       createdAt: time,
     },
   });
-  return ok({ _id: addRes._id, _openid: openid, ...data, createdAt: time });
+  return ok(attachPermissions({ _id: addRes._id, _openid: openid, ...data, createdAt: time }));
 }
 
 async function listPosts(event) {
@@ -421,7 +467,7 @@ async function deletePost(event) {
 
   const postRes = await db.collection("posts").doc(id).get().catch(() => null);
   if (!postRes || !postRes.data) return fail("post not found");
-  if (postRes.data._openid !== openid) return fail("permission denied");
+  await requirePostOwnerOrRole(openid, postRes.data, ["admin"]);
 
   await db.collection("posts").doc(id).update({
     data: {
@@ -855,7 +901,8 @@ async function getHomeData() {
 }
 
 async function saveMerchant(event) {
-  requireOpenId();
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin", "merchant_staff"]);
   const merchant = event.merchant || {};
   const id = String(merchant.id || "").trim();
   const name = String(merchant.name || "").trim();
@@ -886,7 +933,8 @@ async function saveMerchant(event) {
 }
 
 async function saveProduct(event) {
-  requireOpenId();
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin", "merchant_staff"]);
   const product = event.product || {};
   const id = String(product.id || "").trim();
   const merchantId = String(product.merchantId || "").trim();
@@ -910,7 +958,8 @@ async function saveProduct(event) {
 }
 
 async function saveAnnouncement(event) {
-  requireOpenId();
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
   const announcement = event.announcement || {};
   const id = String(announcement.id || "").trim();
   const title = String(announcement.title || "").trim();
@@ -1182,7 +1231,7 @@ async function updateOrderStatus(event) {
 
   const orderRes = await db.collection("orders").doc(orderId).get().catch(() => null);
   if (!orderRes || !orderRes.data) return fail("order not found");
-  if (orderRes.data._openid !== openid) return fail("permission denied");
+  await requireOrderOwnerOrRole(openid, orderRes.data, ["admin", "merchant_staff", "runner"]);
 
   const time = now();
   const nextStatusText = statusText || getOrderStatusText(status, orderRes.data.sourceType);
@@ -1269,6 +1318,47 @@ async function requestOrderRefund(event) {
   return ok({ orderId, refund: data });
 }
 
+async function listUsers(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+
+  const page = Math.max(Number(event.page || 1), 1);
+  const pageSize = Math.min(Math.max(Number(event.pageSize || 50), 1), 100);
+  const where = {};
+  if (event.role) where.role = event.role;
+  if (event.status) where.status = event.status;
+
+  const res = await db
+    .collection("users")
+    .where(where)
+    .orderBy("updatedAt", "desc")
+    .skip((page - 1) * pageSize)
+    .limit(pageSize)
+    .get();
+
+  return ok(res.data.map(attachPermissions));
+}
+
+async function updateUserRole(event) {
+  const { openid } = requireOpenId();
+  await requireRole(openid, ["admin"]);
+
+  const userId = event.userId || event.id;
+  const role = event.role;
+  if (!userId) return fail("userId is required");
+  if (!ROLE_PERMISSIONS[role]) return fail("invalid role");
+
+  const userRes = await db.collection("users").doc(userId).get().catch(() => null);
+  if (!userRes || !userRes.data) return fail("user not found");
+
+  const data = {
+    role,
+    updatedAt: now(),
+  };
+  await db.collection("users").doc(userId).update({ data });
+  return ok(attachPermissions({ ...userRes.data, ...data }));
+}
+
 const handlers = {
   createCollections,
   seedBaseData,
@@ -1310,6 +1400,8 @@ const handlers = {
   updateOrderStatus,
   submitOrderReview,
   requestOrderRefund,
+  listUsers,
+  updateUserRole,
 };
 
 exports.main = async (event = {}) => {

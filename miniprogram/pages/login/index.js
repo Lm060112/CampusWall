@@ -36,6 +36,8 @@ Page({
       campus: this.data.campus || "崇明校区",
       avatarUrl: "/images/avatar.png",
       loginMode: cloudUser._openid ? "cloud" : "local",
+      role: cloudUser.role || "student",
+      permissions: cloudUser.permissions || [],
     };
   },
 
