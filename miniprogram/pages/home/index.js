@@ -1,3 +1,5 @@
+const campusScope = require("../../utils/campusScope");
+
 const SERVICE_CARDS = [
   { key: "canteen", title: "校内点单", desc: "校内服务在线点\n到店自取少排队", icon: "shop-o", theme: "green" },
   { key: "takeaway", title: "校外外卖", desc: "周边美食送到寝\n优惠多多", icon: "logistics", theme: "orange" },
@@ -35,9 +37,17 @@ function callCampusApi(data) {
   });
 }
 
+function syncGlobalCampus(campusId) {
+  const app = getApp();
+  if (app && app.globalData) {
+    app.globalData.selectedCampusId = campusId;
+  }
+}
+
 Page({
   data: {
-    campusName: "崇明校区",
+    campusId: campusScope.DEFAULT_CAMPUS_ID,
+    campusName: campusScope.getDefaultCampus().displayName,
     serviceCards: SERVICE_CARDS,
     recommendations: FALLBACK_RECOMMENDATIONS,
     nearbyMerchant: FALLBACK_MERCHANT,
@@ -46,6 +56,7 @@ Page({
   },
 
   onLoad() {
+    this.initCampus();
     this.fetchHomeData();
   },
 
@@ -78,8 +89,32 @@ Page({
     }
   },
 
+  initCampus() {
+    const savedCampusId = wx.getStorageSync("selectedCampusId");
+    const campus = campusScope.getCampusById(savedCampusId) || campusScope.getDefaultCampus();
+    wx.setStorageSync("selectedCampusId", campus.id);
+    syncGlobalCampus(campus.id);
+    this.setData({
+      campusId: campus.id,
+      campusName: campus.displayName,
+    });
+  },
+
   onCampusTap() {
-    wx.showToast({ title: "当前为崇明校区演示数据", icon: "none" });
+    const options = campusScope.getCampusOptions();
+    wx.showActionSheet({
+      itemList: options.map((item) => item.officialName),
+      success: (res) => {
+        const campus = campusScope.getCampusById(options[res.tapIndex].id);
+        if (!campus) return;
+        wx.setStorageSync("selectedCampusId", campus.id);
+        syncGlobalCampus(campus.id);
+        this.setData({
+          campusId: campus.id,
+          campusName: campus.displayName,
+        });
+      },
+    });
   },
 
   onScanTap() {
