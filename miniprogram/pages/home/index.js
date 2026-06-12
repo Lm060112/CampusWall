@@ -44,10 +44,14 @@ function syncGlobalCampus(campusId) {
   }
 }
 
+function isSelectableCampus(campus) {
+  return campus && campus.operationStatus !== "reserved";
+}
+
 Page({
   data: {
-    campusId: campusScope.DEFAULT_CAMPUS_ID,
-    campusName: campusScope.getDefaultCampus().displayName,
+    campusId: "",
+    campusName: "选择校区",
     serviceCards: SERVICE_CARDS,
     recommendations: FALLBACK_RECOMMENDATIONS,
     nearbyMerchant: FALLBACK_MERCHANT,
@@ -91,13 +95,34 @@ Page({
 
   initCampus() {
     const savedCampusId = wx.getStorageSync("selectedCampusId");
-    const campus = campusScope.getCampusById(savedCampusId) || campusScope.getDefaultCampus();
-    wx.setStorageSync("selectedCampusId", campus.id);
-    syncGlobalCampus(campus.id);
+    if (!savedCampusId) {
+      this.resetCampusSelection();
+      return;
+    }
+    const savedCampus = campusScope.getCampusById(savedCampusId);
+    if (!isSelectableCampus(savedCampus)) {
+      this.resetCampusSelection();
+      return;
+    }
+    this.applyCampus(savedCampus);
+  },
+
+  resetCampusSelection() {
+    this.setData({
+      campusId: "",
+      campusName: "选择校区",
+    });
+    wx.removeStorageSync("selectedCampusId");
+    syncGlobalCampus("");
+  },
+
+  applyCampus(campus) {
     this.setData({
       campusId: campus.id,
       campusName: campus.displayName,
     });
+    wx.setStorageSync("selectedCampusId", campus.id);
+    syncGlobalCampus(campus.id);
   },
 
   onCampusTap() {
@@ -107,12 +132,14 @@ Page({
       success: (res) => {
         const campus = campusScope.getCampusById(options[res.tapIndex].id);
         if (!campus) return;
-        wx.setStorageSync("selectedCampusId", campus.id);
-        syncGlobalCampus(campus.id);
-        this.setData({
-          campusId: campus.id,
-          campusName: campus.displayName,
-        });
+        if (campus.operationStatus === "reserved") {
+          wx.showToast({ title: "上海交通大学专区暂未开放", icon: "none" });
+          return;
+        }
+        this.applyCampus(campus);
+        if (campus.operationStatus === "pre_operation") {
+          wx.showToast({ title: "该校区处于预运营阶段，部分服务以需求登记为主", icon: "none" });
+        }
       },
     });
   },
